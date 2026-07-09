@@ -159,7 +159,7 @@ canvas{width:100%;display:block;border-radius:4px;}
   <div class="yearBtns">
     <div class="yearCard locked">1996<small>yakında</small></div>
     <div class="yearCard" onclick="pickYear(2008)">2008<small>Pan River, Kafkaslı, Turbo — 110+ gerçek at</small></div>
-    <div class="yearCard" onclick="pickYear(2026)">2026<small>Gazi Koşusu şampiyonları dahil 170+ gerçek at</small></div>
+    <div class="yearCard" onclick="pickYear(2026)">2026<small>Gazi şampiyonları dahil 1000 gerçek at</small></div>
   </div>
 </div>
 
@@ -219,6 +219,7 @@ canvas{width:100%;display:block;border-radius:4px;}
       <button id="tab5" class="mi" onclick="showTab(5)">Yarış Programı</button>
       <button id="tab11" class="mi" onclick="showTab(11)">Takvim</button>
       <button id="tab13" class="mi" onclick="showTab(13)">🎫 Büyük Koşu Yolu</button>
+      <button id="tab14" class="mi" onclick="showTab(14)">🎰 Altılı Sonuçları</button>
       <button id="tab9" class="mi" onclick="showTab(9)">Jokeyler</button>
       <button id="tab6" class="mi" onclick="showTab(6)">Personel</button>
       <div class="menuTitle">Kariyer</div>
@@ -463,7 +464,828 @@ const HORSES=[
 ["TAN YELİ","İ","D",79,2,"NERİMAN ÇİL","🌟 2 yaşlı umut — Kısrak Koşusu adayı (temsili tay)"],
 ["SERHATLI","İ","E",78,2,"EMRAH KARAMAZI","🌟 2 yaşlı umut (temsili tay)"],
 ["ÇELİKKANAT","İ","E",77,2,"SELİM KAYA","🌟 2 yaşlı umut (temsili tay)"],
-["MAVİ ŞİMŞEK","İ","E",76,2,"AHMET GÜZELOCAK","🌟 2 yaşlı umut (temsili tay)"]
+["MAVİ ŞİMŞEK","İ","E",76,2,"AHMET GÜZELOCAK","🌟 2 yaşlı umut (temsili tay)"],
+/* 🐎 EK GERÇEK SAFKANLAR — tjk.org Handikap Puanları sayfasından (2026 güncel) */
+["AFROZY RED LINE","İ","D",36,3,"MAHMUT SİNANLI"],
+["AFŞARBEY","A","E",36,4,"HAKKI GÜLAL"],
+["AFTER BURNER","İ","E",52,3,"MURAT AKÇA"],
+["AFTER LION","İ","E",36,4,"MEHMET ERCAN"],
+["AGE OF DISCOVERY","İ","E",54,4,"KURTCA KAVAS"],
+["AGE OF SKY","İ","D",25,3,"A.HALİM CELALOĞLU"],
+["AGENT OF INFLUENCE","İ","D",29,3,"ZEYNEP KELEŞOĞLU"],
+["AGGRESIVE DANCE","İ","D",37,4,"M.OZAN ŞER"],
+["AGILE GIRL","İ","D",32,3,"ADİL EREN"],
+["AGİLE SHOT","İ","E",26,4,"MEHMET KAYA"],
+["AGRESIVE ATTACK","İ","E",30,3,"RUKEN ATAŞ"],
+["AGUA REGIA","İ","E",41,3,"CELAL ŞENGİL"],
+["AĞA ABDULLAH","A","E",36,4,"EYLEM GÜN GÜNEŞ"],
+["AĞA HALİL","İ","E",47,4,"AYHAN AHRASOĞLU"],
+["AĞA SİVEREK","A","E",25,4,"SUPHİ AKPİRİNÇ"],
+["AĞACAN KIZI","A","D",31,4,"CENGİZ ÇETİN"],
+["AĞADİZDAR","A","E",25,3,"KUTBETTİN SAÇAN"],
+["AĞAM URFALI","A","E",39,5,"LÜTFİ SABANCI"],
+["AĞASAÇAN","A","E",54,4,"GÜNAYDIN SAÇAN"],
+["AĞILMUS ASLANI","A","E",45,3,"ENVER TOYDEMİR"],
+["AHMET AĞA","A","E",52,5,"FERAT ARTUN"],
+["AHMET ALİ","A","E",44,9,"-"],
+["AHSEN SULTAN","İ","D",21,2,"NURİ KAYA"],
+["AHSURBİKE","A","D",27,3,"SONGÜL ŞİMŞEK"],
+["AIBHILIN AGAIN","İ","D",51,4,"OKTAY FERHAN BİTİRMİŞ"],
+["AKALTUN BEYİ","A","E",20,4,"İSMAİL KOÇYİĞİT"],
+["AKAR EDA","A","D",47,5,"MEHMET FELHAN"],
+["AKAR YILDIZI","A","D",21,4,"ALİ BAKIR"],
+["AKAYDIN","A","E",51,5,"LEVENT DEMİR"],
+["AKBİLGE","A","D",20,4,"SİNAN SADIK BİÇER"],
+["AKBÖRÜ KIZI","A","D",22,4,"BÜLENT AKBÖRÜ"],
+["AKBURÇAK","A","D",39,3,"İBRAHİM KAYA"],
+["AKÇADAĞ","A","E",32,4,"BAKİ BAKIR BOYRAZ"],
+["AKÇALIKIZ","A","D",26,3,"MEHMET ÇELİK"],
+["AKIN BEYLİ","İ","E",40,3,"AKIN ULUSOY"],
+["AL MUHIB","İ","E",38,4,"SOLAIMAN IRHAIM"],
+["AL YELE","İ","D",43,2,"ENGİN BEKİROĞULLARI"],
+["ALASER","İ","E",45,4,"MAZLUM TURAN"],
+["ALFA ORENDA","İ","D",25,3,"MELİH YURTERİ"],
+["ALFAKONDA","İ","E",35,3,"BAHRİ ÇABUK"],
+["ALITALIA","İ","D",38,3,"FATMA YARDIMCI"],
+["ALKALI FORCE","İ","E",48,3,"V.İBRAHİM ARACI"],
+["ALL THE STARS","İ","D",22,2,"MUSTAFA YARDIMCI"],
+["ALLY SUE","İ","D",76,4,"SEDAT YILDIRIM"],
+["ALMIGHTY ESPRIT","İ","E",89,3,"GÜRHAN Ş. ÖZBELGE"],
+["ALPERİN KIZI","İ","D",30,2,"ALİ BAKIR"],
+["ALPERİN OĞLU","İ","E",32,3,"ALİ BAKIR"],
+["ALPHA JUNIOR","İ","E",51,3,"CEM SEVİM"],
+["ALPHA SKY","İ","E",31,3,"A.HALİM CELALOĞLU"],
+["ALPHECCA","İ","D",40,3,"FEDAİ KAHRAMAN"],
+["ALPS FIRE","İ","E",51,4,"ALP KOÇAK"],
+["ALTINORDA","İ","E",30,3,"GÜN E. İÇER"],
+["ALTUĞBEY","İ","E",84,7,"DEMİRKOL HAY. SAN. VE TİC. LTD. ŞTİ."],
+["ALTUN YILDIZ","İ","E",45,5,"DİNÇER MUTLU"],
+["ALTUNCAN","İ","D",47,3,"İBRAHİM CANLIKA"],
+["ALTYN ORDA","İ","D",29,3,"DUYGU FATURA"],
+["ALWAYS QUEEN","İ","D",33,4,"NİHAT TURAN"],
+["ALWAYS RISE","İ","D",26,3,"Ö.FARUK GİRGİN"],
+["ALWAYS SPARKLE","İ","D",48,4,"DENİZ KURTEL"],
+["AMBER TREASURE","İ","D",34,3,"YALÇIN GÖNÜL"],
+["AMERİKALI CENGO","İ","E",41,4,"DEMİRKOL HAY. SAN. VE TİC. LTD. ŞTİ."],
+["AMONİ","İ","D",66,3,"CELAL CİNGÖZ"],
+["ANADOLU EKSPRES","İ","E",82,5,"RUKEN ATAŞ"],
+["ANADOLU KAPLANI","İ","E",78,7,"SELAMİ NURAL"],
+["ANADOLU PRENSİ","İ","E",71,6,"ÜMİT AKTAŞ"],
+["AKDEMİR BEYİ","A","E",30,4,"MEHMET AKDEMİR"],
+["AKGOLD DATÇA","A","E",42,5,"MEHMET EMİN AKBALIK"],
+["AKGÜL HANIM","A","D",32,3,"ZEYNEL ALTUNBAŞ"],
+["AKGÜNEY","A","D",33,4,"HARUN DERİN"],
+["AKINAY","A","E",38,6,"ÖMER KARAÇİZMELİ"],
+["AKİFBERK","A","E",38,3,"İSHAK ŞAHİN"],
+["AKRÜZGAR","A","D",31,4,"ŞEYHMÜSLÜM AKSOY"],
+["AKSA ASLANI","A","E",38,3,"HALİL YILMAZER"],
+["AKSEL TAY","A","E",30,5,"HARUN YAHYA ÖNER"],
+["AKSELBEYİM","A","E",34,4,"MUSTAFA KOCATÜRK"],
+["AKSOYLUCAN","A","E",32,4,"BAHADIR YENİ"],
+["AKSU BABA","A","E",42,4,"SERKAN AKSU"],
+["AKSU EFE","A","E",51,4,"SEMRA AKSU"],
+["AKSU KAAN","A","E",35,4,"MUSTAFA NEMLİ"],
+["AKSU NEHİR","A","D",33,7,"KAYA KAYA"],
+["AKTAŞ BERK","A","E",49,4,"ADEM AKTAŞ"],
+["AKTAŞBEYLİ","A","E",51,4,"MEHMET AKTAŞ"],
+["AKTER TAY","A","E",46,6,"ERCAN PEKDEMİR"],
+["AKYEL ABİ","A","E",54,6,"H.TARIK DİKENCİK"],
+["AL CEMAL","A","E",52,3,"ERTUNÇ ERDEMİR"],
+["AL KISMET","A","D",36,5,"SALİH KAYA"],
+["AL SEHER","A","D",45,4,"DEMİRHAN YILMAZ"],
+["AL ŞEREF","A","E",27,5,"BAHADIR YILMAZ"],
+["AL YÜREK","A","D",39,4,"SALİH KAYA"],
+["ALACA HÖYÜK","A","E",40,4,"AYHAN KORKMAZ"],
+["ALACA TOPU","A","D",25,6,"ZEKİ DOĞAN"],
+["ALADAĞLAR","A","D",44,3,"TAMER AKSU"],
+/* 🔥 EN POPÜLER AKTİF SAFKANLAR — 01-08 Temmuz 2026 gerçek koşu sonuçlarından (gerçek HP/yaş/sahip) */
+["ÇELİKGİLLER","A","E",86,4,"AHMET KARACADAĞ"],
+["PRENS CORA","A","E",75,9,"İSMET TURAN"],
+["DEJAME","İ","D",73,3,"İSHAK ŞAHİN"],
+["OLGUNADAM","A","E",65,5,"MEHMET EMİN DEMİRKAPU"],
+["DİSTİLE","A","D",56,4,"AHMET KAYA"],
+["EL REY ESCORPİON","İ","E",53,3,"SEMİH KATI"],
+["CABİRE SULTAN","A","D",46,4,"MUSTAFA YAVUZ PAŞAOĞLU"],
+["EFSANE HANIM","A","D",46,4,"AHMET KAYA"],
+["ALTIN DOST","A","E",42,4,"ULAŞ YILDIZ"],
+["KUZGUNİ YEŞİL","A","D",41,4,"SUPHİYE İLERİ"],
+["LADYBIRD","İ","D",39,3,"Ö.ŞAHİN EĞİLLİ"],
+["TAYAKADIN","A","D",38,4,"ŞEYDA ERCAN"],
+["GÖKNAZ ECE","A","D",30,4,"TUNCAY YILMAZ"],
+["O BİR ÇELİK","A","E",95,6,"MUNİR GÖKÇE"],
+["BRAVE JUMPER","İ","E",95,4,"ŞEYDA ERCAN"],
+["İNEBOLU","A","E",95,7,"KASIM TAŞKIRAN"],
+["KLEIN","İ","E",95,4,"ANNABELLA SPONZA TIRPANÇEKER"],
+["HÜKÜM","A","E",95,6,"NECATİ DEMİRKOL"],
+["SEVERUS SNAPE","İ","E",95,5,"BARIŞ YAKUT"],
+["HEDBE","A","E",95,9,"HÜSEYİN ÇELİK"],
+["CAN EFE","İ","E",95,5,"MUSTAFA ALKAN"],
+["KAYAFATİH","A","E",95,6,"AHMET KAYA"],
+["SELLYBOY","İ","E",95,6,"ERSİN BAKIR"],
+["PRINCE OF DARKNESS","İ","E",95,6,"ALİ RIZA ÇELİKOĞLU"],
+["EMİR İLYAS","A","E",95,4,"FADIL BAYDAN"],
+["İSYANINOĞLU","A","E",95,4,"VELİT ARTUN"],
+["TİRİLYE KARTALI","A","E",95,4,"HÜSEYİN KÖKLÜ"],
+["SELANİK ASLANI","İ","E",95,6,"HALUK CANÇEKER"],
+["ÖZÜDOĞRU","A","E",95,9,"ALPAY DEMİREL"],
+["SIKIDOST","A","E",95,7,"MELİS KURTEL EMİN"],
+["ŞIKTURBO","A","E",95,6,"CÜNEYT BUĞDAYCI"],
+["MOUNTAIN","İ","E",95,6,"REMZİ DAĞ"],
+["THOMAS SHELBY","İ","E",95,5,"ALİ RIZA KÖSEALİ"],
+["ESTIMATE","İ","D",95,6,"SEHER ETİ"],
+["ALYCONE","İ","E",95,6,"Y.ERKUT ERSEVER"],
+["GÖLGENİN GÜCÜ","A","E",95,5,"SERKAN ÜLGEN"],
+["COLOUR OF LIGHT","İ","E",95,7,"ERCAN SÖKMEZ"],
+["SAÇANŞAH","A","E",95,4,"KUTBETTİN SAÇAN"],
+["ATABEYLİ","A","E",94,6,"ASIYA ÖNEL"],
+["SELLY SON","İ","E",94,4,"ERSİN BAKIR"],
+["İSEN BUGA","İ","E",94,6,"LEVENT SARIKAYA"],
+["TORUN YUSUF","İ","E",93,6,"MEHMET NUR BECENE"],
+["PLATFORM","A","E",93,5,"AHMET ŞAHİN"],
+["EPARVEN","A","D",93,7,"HAKAN ÇELİK"],
+["GÜNDÜZDÜŞÜ","A","D",93,8,"CUMA AKDUMAN"],
+["NİĞBOLU","A","E",92,10,"CÜNEYT ÇALICIOĞLU"],
+["DEMİR NİHAT","A","E",92,8,"GÖKHAN ERDOĞAN"],
+["MAMBA FOREVER","İ","E",92,8,"ŞENAY ÇAKIR"],
+["LADY SEPHORA","İ","D",91,8,"TUNCAY SEVDİMBAŞ"],
+["PEHLİVAN YILDIZI","İ","D",91,4,"HASAN PEHLİVAN"],
+["HIZLI ÇOCUK","A","E",91,5,"KADRİ BAŞKURT"],
+["İTAATSİZ","A","E",91,5,"ERSAN ÜLDES"],
+["BULL MAN","İ","E",91,4,"FAKİ ARDA ÖZLEN"],
+["BOLD LION","İ","E",91,4,"FEVZİ YILMAZ"],
+["DİNAMİT","A","E",90,6,"SELİM YILDIZ"],
+["FEBRİS","İ","E",90,5,"SELMAN ERDEMİRCİ"],
+["THUNDER JEST","İ","D",90,7,"OSMAN KOCABİÇAK"],
+["ASLAN YAĞIZ","A","E",90,6,"ETHEM KAPLAN"],
+["JUNIOR BAŞKAN","İ","E",89,4,"SARE SEZGİN"],
+["EMİRENES","A","E",89,7,"METİN BİNGÖL"],
+["GÖKMETE","A","E",89,4,"AHMET KAVRAN"],
+["MOTOR","A","E",88,5,"MEHMET KILINÇ"],
+["SAADIN KASIRGASI","A","E",88,6,"FERAT ÖZKAN"],
+["OHIO MAN","İ","E",88,5,"TAYRAL TUTUMLU"],
+["ÇAĞLAR TAY","A","E",88,6,"MUSTAFA POLAT"],
+["BASKINSOY","A","E",88,6,"ÖMER DERİN"],
+["LOVE WAY","İ","D",88,4,"AYTUĞ ATALAY"],
+["YURT BAŞI","İ","E",88,5,"NİHAT DERİN"],
+["WINNER GETS IT ALL","İ","E",88,8,"YILDIRIM GELGİN"],
+["KRAL SULTAN","A","E",87,4,"MUSTAFA YILMAZ"],
+["FLASH BOY","İ","E",87,5,"ERAY KOKTAY"],
+["ULTRA FAST","İ","E",87,5,"RECEP DİKKULE"],
+["SURERTAY","A","E",87,5,"ERHAN KAVÇİN"],
+["FORLORN","İ","D",87,7,"MEHMET AKGÜL"],
+["HARDOLD","İ","E",87,5,"HARUN KAHRAMAN"],
+["TUMBULKARAÜZÜM","A","E",86,5,"REŞİT TUMBUL"],
+["ASİL MİR","A","E",85,5,"NUSRET DOĞAN"],
+["ASLAN KILICI","A","E",85,5,"MAHSUM EROL"],
+["MARION","İ","D",85,4,"LEVENT SARIKAYA"],
+["SEMENDHAN","A","E",85,4,"AHMET MİZAN"],
+["İLLEDE DORU","A","D",84,6,"MEHMET ÇAVUŞ"],
+["ÖZERDEM","A","E",84,7,"HAÇIM YILDIZ"],
+["NIGHTFLYERS","İ","E",84,4,"ARZU GÜNEŞ"],
+["KAYALARIN ŞAHI","A","E",84,5,"AHMET KAYA"],
+["KOĞ TEPESİ","A","E",84,4,"İZZET ÖZEN"],
+["CANIM ÇITIR","A","D",84,8,"ABDULLAH AKDEMİR"],
+["MAHALL","İ","D",84,5,"AHMET İSTANBULLU"],
+["GREY GHOST","İ","E",83,4,"GÜLŞEN DÜLGER"],
+["LOOK NEWS","İ","D",83,5,"SIRAÇ DEMİR"],
+["HIZLI KEREM","A","E",83,4,"HALİT KEKİK"],
+["EVERYTHING ALRIGHT","İ","E",82,6,"MAHSUM EROL"],
+["GÜNÇE KIZ","A","D",82,5,"BEŞİR KAYA"],
+["HAVZALI","A","D",82,9,"RECEP KETME"],
+["GENGAR","İ","D",82,4,"FERHAN GÖKTÜRK"],
+["VICTORY MATRA","İ","D",82,4,"MAHMUT KARAKEÇİ"],
+["SURUÇLU MEMO","A","E",81,4,"MÜSLÜM BAKAY"],
+["YILMA TAY","A","E",81,4,"CÜNEYT YILDIZHAN"],
+["GÖREME BEYİ","A","E",81,4,"ŞEMSETTİN TOYDEMİR"],
+["KASAP ENDER","A","E",80,7,"YUNUS ADVAN"],
+["GROUND SPEED","İ","E",80,4,"TUNCER GÖKÇE"],
+["UFKUN ÖTESİ","A","E",80,5,"KAYA KAYA"],
+["KOCAHANIM","İ","D",79,4,"MEHMET AKGÜL"],
+["VİZİGOT","A","E",79,8,"MERT ÇELİK"],
+["STASERA","İ","D",79,5,"ORHAN KİBAR"],
+["DELİ UMUT","A","E",78,4,"İMAM KATI"],
+["UZUN TAY","A","E",78,6,"SADIK ÇETİN"],
+["FINALE DUTY","İ","D",78,6,"AKIN ÖZTÜRK"],
+["FROST CAT","İ","E",77,3,"DENİZ AK"],
+["ASAF BABA","A","E",76,6,"BİROL SÖKMEN"],
+["BERAY SULTAN","A","D",76,4,"BÜLENT TOYDEMİR"],
+["NO PASARAN","İ","E",76,5,"HİKMET TERZİ"],
+["ÇEŞME KALESİ","A","E",76,5,"GÜRHAN Ş. ÖZBELGE"],
+["JÖN ROME","A","E",75,4,"FUNDA PAMUK"],
+["KAZANCI","A","E",75,8,"ABDULLATİF BATMACI"],
+["NUSRAT ETKİSİ","A","E",75,6,"SUDE DEMİREL"],
+["JIMDEMA","İ","D",75,4,"DEMİRHAN YILMAZ"],
+["ANOTHER BANGER","İ","E",74,5,"CEM ÖZBELGE"],
+["MEHMETGİLLER","A","E",74,4,"İSMET TEKİNALP"],
+["KIVILCIM ATEŞİ","A","D",74,4,"ALİ KÖŞGER"],
+["MELIAN THE MAIA","İ","D",74,4,"ATAKAN YAZICIOĞLU"],
+["JESKO","İ","E",74,5,"NURCAN DAĞTEKİN"],
+["LEONİDAS","A","E",74,8,"METE ÇELİK"],
+["ATOMIC CAT","İ","E",73,4,"MEHMET EMEN"],
+["MANCUNIAN BEDİİ","İ","E",73,5,"ALP Ş. EVCİMEN"],
+["SÖZÜ GEÇER","A","E",73,5,"ALİ PASO"],
+["GÜRCEYHUN","A","E",73,4,"BERKCAN KESTEL"],
+["ORANGE ARMY","İ","E",72,4,"CEM ÖZBELGE"],
+["KUBAT KASIRGASI","İ","E",72,3,"EYYÜP AYDINLIKTA"],
+["THE HOCUS","İ","E",72,3,"MEHMET EMİN AKBALIK"],
+["RECUERDAME","İ","D",72,3,"İSHAK ŞAHİN"],
+["ANGEL OF DEFNE","İ","D",72,3,"İBRAHİM ENGİN"],
+["MASTER OF RACE","İ","E",71,3,"BERİN GÖKTÜRK"],
+["TRAİDORA","İ","D",71,3,"GÜLİZAR YANIK"],
+["NOBLE PRINCESS","İ","D",71,4,"MAHMUT ÇADIRCI"],
+["YETİM AMCA","A","E",70,4,"HALİL ASLAN"],
+/* 🐎 TÜM AKTİF SAFKANLAR — 01-08 Temmuz 2026 koşu sonuçlarındaki kalan gerçek atlar */
+["ADI YAŞASIN","A","D",40,3,"DENİZ AYNISOY"],
+["ALAMAÇ","A","E",51,3,"ŞEMSETTİN TOYDEMİR"],
+["ALLER GÜLÜ","A","D",58,6,"ARMAĞAN TURHAN"],
+["ALTIN ADAM","A","E",40,3,"ÖMER FARUK ÇELİK"],
+["ALTIN DERYA","A","D",47,3,"MEHMET ALTIN"],
+["ALTIN KELEBEK","İ","D",40,2,"MEHMET ALTIN"],
+["ALTINBORA","A","E",61,3,"İBRAHİM HALİL ARSLAN"],
+["ALTINEKEN","A","D",61,7,"KEMAL YAKUP ALTIN"],
+["ALŞUBATHAN","A","E",50,4,"MEHMET CAMUZ"],
+["AMANKIZIM","A","D",39,3,"EMİNE KAYA"],
+["AMORE GARDEN","İ","D",40,3,"HÜSEYİN SEZER"],
+["ANGEL OF TIME","İ","D",46,3,"HÜSEYİN GÜNER"],
+["ANGEL ON THE RIGHT","İ","E",51,4,"ERALP TURHAN"],
+["ANGEL ON THE WING","İ","E",48,3,"TAMER AKSU"],
+["ANOTHER MOMENT","İ","E",47,3,"AYTUĞ ATALAY"],
+["ARAS AHMET","A","E",40,3,"METE AYSEL"],
+["ARASLI TORUNU","A","D",49,5,"SEDEF VARDAR"],
+["ARCANE SOVEREIGN","İ","D",40,2,"SİNAN AKKUŞ"],
+["ASALETLİ ÇOCUK","A","E",62,3,"İ.SUAT KUTLU"],
+["ASEL SULTAN","A","D",39,4,"MURAT AYDIN"],
+["ASLAN SAİM","İ","E",39,3,"SAİM GÖRMEZ"],
+["ASTARA LAÇİN","A","D",32,3,"MUHAMMET ÖZTÜRK"],
+["ASTRAEA","İ","D",20,3,"HAKKI BAY"],
+["ASİL OĞLAN","A","E",64,4,"ŞEYDA ERCAN"],
+["ATICI KAYA","A","E",41,3,"AHMET KAYA"],
+["ATOMİC FORCE","İ","E",61,4,"MEHMET ZEKİ İPEK"],
+["ATİK HASAN","A","E",30,4,"MEHMET SAİT AYALP"],
+["AURELIA BLITZ","İ","D",40,2,"TUĞÇE GÖÇEN"],
+["AYANA","A","D",30,3,"ABDULLAH KAYA"],
+["AYBUKET","A","D",40,3,"ŞENAY ÇAKIR"],
+["AYDIN DAYI","A","E",44,3,"GÜLİZAR YANIK"],
+["AZMİ SOYU","A","E",40,3,"MAHMUT ZAMAN"],
+["AZİZ DOSTUM","A","E",65,3,"MEHMET BULANIK"],
+["BABA KUNTER","A","E",33,3,"ERKAN BAL"],
+["BABA RIDVAN","A","E",40,3,"MEHMET DİRİK"],
+["BABA ZAMAN","A","E",60,7,"MÜSLÜM ŞEKER"],
+["BABY ARYA","A","D",61,4,"TUNCER GÖKÇE"],
+["BALDER","A","E",66,4,"CÜNEYT ÇALICIOĞLU"],
+["BANDIDITA","İ","D",40,2,"İSHAK ŞAHİN"],
+["BATTERINI","İ","D",40,2,"CEM NARİN"],
+["BAY AHMET","A","E",46,3,"SALİH YILDIZER"],
+["BAY ARAZ","A","E",41,4,"CUMHUR BALKAROĞLU"],
+["BAŞ FIRTINA","A","E",40,3,"NEJDET SELÇUKOĞLU"],
+["BAŞ YARGIÇ","A","E",40,3,"YAVUZ KANDIRAN"],
+["BE RIGHT BACK","İ","D",26,3,"ANNA KÖSEALİ"],
+["BEBEĞİM OLDUN","İ","D",35,4,"TUĞÇE GÖÇEN"],
+["BELIEVER","İ","D",40,2,"SERDAL ADALI"],
+["BENG SALLY","İ","E",40,2,"SERTAÇ KILIÇ"],
+["BERAYZADE","A","D",40,3,"BÜLENT TOYDEMİR"],
+["BERHUDAR","İ","E",59,4,"MELİH KAHRAMAN"],
+["BERNAHANIM","A","D",38,4,"NİMET ARİF KURTEL"],
+["BERRYWING","İ","D",40,3,"AHMET İSTANBULLU"],
+["BERİD","İ","E",70,5,"ZAFER GEZİCİ"],
+["BIG RUGGED","İ","D",35,3,"MAHMUT YALÇIN"],
+["BIGBOYCAPRICE","İ","E",55,3,"ERKAN SÜSLÜ"],
+["BIÇKIDERELİ EGE","İ","E",61,4,"EROL ÇOKLAR"],
+["BLACK SOVERIGN","İ","E",40,2,"MUSTAFA ÜLKAN DELİKAN"],
+["BODRUM İNCİSİ","A","D",40,3,"AYTEKİN ŞEN"],
+["BOLD STEPS","İ","D",39,3,"ALTAR AKSELİ"],
+["BOLGA","A","D",40,4,"V.HAKAN KELEŞ"],
+["BORAN","İ","E",40,3,"MEHMET Ş. DİNÇ"],
+["BOYALIK","İ","D",40,3,"M.ÖMÜR SEZERMAN"],
+["BOZKIR YİĞİDİ","A","E",51,3,"BEŞİR KAYA"],
+["BRAVE KAAN","İ","D",46,3,"HAKAN SANER"],
+["BÖRÜTAY","A","E",64,4,"MUZBAH YARDIMCI"],
+["BİBİDİ BABİDİ BUU","İ","D",40,3,"ÇAĞDAŞ ÖZ"],
+["BİLDEN HANIM","A","D",40,3,"HACIM KANDEMİR"],
+["BİLGÜCÜ","İ","D",40,2,"MURAT ÇELİK"],
+["BİRSENSİN SULTAN","A","D",54,5,"AHMET CAN KARABULUT"],
+["CABALLO","A","E",40,3,"SELİN DİKENCİK"],
+["CAN YAREN","İ","D",40,2,"RAMAZAN BAĞ"],
+["CASH FOR YOU","İ","E",39,3,"SERDAL ADALI"],
+["CASHOUT","İ","D",34,3,"MEHMET MELİH GÖÇER"],
+["CEDİDE","A","D",40,3,"MEHMET BAYDAN"],
+["CETRION","İ","D",40,2,"NURİ BURAK DİKENCİK"],
+["CEZZAR BEY","A","E",54,4,"MAHMUT ÇADIRCI"],
+["CHARLIE THE FIRST","İ","D",40,3,"MURAT KADAİFÇİOĞLU"],
+["CHESTA HEDRON","İ","E",26,3,"ERDAL ÖZTÜRK"],
+["CHILEAN BRIDE","İ","D",31,3,"MEHMET GÜNGÖR"],
+["CLEMENZA","İ","E",61,3,"YÜKSEL GÖKTÜRK"],
+["CRAZY DILDAR","İ","E",46,3,"CEMAL YILDIZ"],
+["CREATIVE","İ","E",20,3,"REŞAT KAPLAN"],
+["CRIMSON POWER","İ","E",42,2,"DOĞANER İÇÖZ"],
+["CRY OF VICTORY","İ","E",40,3,"ERHAN ALKAN"],
+["CİHANERK","A","E",46,3,"EBRU KARGIN"],
+["CİMİRİNGO","A","E",53,4,"SERPİL AKAN"],
+["DAISY DUKE","İ","D",40,3,"TANER TURGU"],
+["DARK MONEY","İ","E",48,4,"ERKUL ÖCAL"],
+["DARK REIGN","İ","E",29,3,"SALİHA ULUIRMAKLI"],
+["DARK RİSHA","İ","D",24,3,"SALİHA ULUIRMAKLI"],
+["DARK SOUL","İ","E",41,4,"YUSUF KERESTECİ"],
+["DAVUTPAŞA","A","E",40,3,"YÜKSEL GÖKTÜRK"],
+["DAYANA","A","D",40,3,"AHMET KAYA"],
+["DAYWATCH","İ","D",57,5,"ERSEN BÜYÜKTÜRKLER"],
+["DAĞLIOĞLU","A","E",40,4,"HAMZA ÖZEN"],
+["DEAR BRIANA","İ","D",36,4,"ERALP TURHAN"],
+["DEDEMHAMZAREİS","A","E",63,3,"MAHMUT TURAN"],
+["DEMİRHÜMA","A","D",20,4,"AYSUN ESEN"],
+["DEMİRLİHAN","A","E",40,3,"MEHMET SALİH APAYDIN"],
+["DEMİRYÜZ","A","E",40,3,"İSMET TURAN"],
+["DEMİRİN KILICI","A","D",40,3,"LEVENT DEMİR"],
+["DENİZ İNCİSİ","A","D",30,4,"HASAN AKBULUT"],
+["DERENİMO","A","D",36,4,"GÜNER AVCI"],
+["DERTSAÇANKIZ","A","D",40,3,"HÜSEYİN ÇELİK"],
+["DEVİNAY","A","D",40,3,"BÜLENT BENZER"],
+["DIVINE GIFT","İ","D",34,3,"BİHTERCAN ATAÇ"],
+["DORUKLAR BEYİ","İ","E",56,3,"İSA ÖZKAN"],
+["DREAM CHASER","İ","D",34,3,"MESUT SAYAR"],
+["DREAM START","İ","E",45,2,"İLKER GÖZÜTOK"],
+["DUBLIN DREAM","İ","D",23,3,"FERİDUN AKYAVUZ"],
+["DUYARLI","İ","D",61,4,"MELİH KAHRAMAN"],
+["DÜZGÖRÜN OĞLU","A","E",40,3,"MEHMET ÇEÇAN"],
+["DİLARASULTANIM","A","D",63,5,"SERPİL AKAN"],
+["DİLBERAN","A","D",63,6,"CEM NARİN"],
+["DİLHUN","A","D",56,5,"CUMALİ ALPARSLAN"],
+["DİPLOMAT ZAFER","İ","E",46,3,"SABRİ ALTIN"],
+["EARTHQUAKE","İ","E",34,3,"MAHMUT SEVİM"],
+["EFE KAPTAN","A","E",40,3,"TAMER KOLDAŞ"],
+["EFSANEVİTAY","A","D",20,3,"AZİZE KAYA"],
+["EGEM","İ","E",20,3,"GÖZDE ECE DAĞTEKİN"],
+["EKİNEZYA","A","D",35,4,"BURHAN ATAY"],
+["EL QUİMİCO","İ","E",51,3,"İSHAK ŞAHİN"],
+["ELITE TOUCH","İ","D",40,2,"KEMAL KURT"],
+["ELMAPINAR","A","D",34,4,"YANAL ASLAN"],
+["ELMAS GÖZLÜM","A","D",20,3,"EMRE YAVUZ"],
+["ELSENORDELOSCIELOS","İ","E",41,2,"İSHAK ŞAHİN"],
+["ERDUMAN","İ","E",62,4,"BARIŞ ERDUMAN"],
+["ERENDİZ","A","D",40,3,"MURAT AYDIN"],
+["ERSELAY","A","E",54,5,"ERDEM BEKMEZCİ"],
+["ERVANUR","A","D",69,5,"ÜMİT ÖZSARI"],
+["ERÇETİN","A","E",41,3,"BİRKAN BORA AKARSU"],
+["ESENYIL","A","D",52,4,"CEMİLE AYDIN"],
+["ETERNAL STORM","İ","D",25,3,"M.MEHMET İLHAN"],
+["EVERY LITTLE KISS","İ","D",20,3,"GÜLŞEN DÜLGER"],
+["EYLÜL MASALI","İ","D",40,2,"İLKE BETİR AKBAŞ"],
+["EŞAY","A","D",47,5,"KADİR İPEK"],
+["FATMA ZERYAM","İ","D",62,3,"REMZİ AYYILDIZ"],
+["FATİH ŞAH","A","E",55,4,"MEHMET ARSLAN"],
+["FEEL THE BATTLE","İ","D",40,3,"DENİZ KURTEL"],
+["FEMALE WARRIOR","İ","D",35,3,"DOĞAN IRMAK"],
+["FENER ALAYI","A","D",32,4,"BARIŞ ŞİMŞEK"],
+["FERAT","A","E",41,4,"FİDAN GÜVEN"],
+["FERATUN","A","D",20,3,"MEHMET DOĞAN"],
+["FESTIVAL BOUND","İ","D",38,3,"İSLİM TURAN"],
+["FEYZANUR","A","D",40,3,"YUSUF ÇETİN"],
+["FIGHT FOR ME","A","D",30,4,"S.SÜLEYMAN YILMAZ"],
+["FILIUS VENTUS","İ","E",47,5,"MEHMET MURAT UĞURLU"],
+["FIREBLADE","İ","D",40,3,"A.HAŞİM AGAR"],
+["FLOKI","İ","E",40,2,"YÜKSEL GÖKTÜRK"],
+["FLOWING FLOOD","İ","D",39,3,"ÖMER ŞEKER"],
+["FLYING DRAGON","İ","E",40,3,"ENGİN ATEŞLER"],
+["FOR FREEDOM","İ","E",49,3,"MEHMET OZAN ANAÇ"],
+["FORTHCOMING QUEEN","İ","D",61,3,"TAYRAL TUTUMLU"],
+["FORTUNELLO","İ","E",55,7,"SELİN DİKENCİK"],
+["FREYDIS","İ","D",38,3,"GÜLNUR GÜLERCE"],
+["GALİP BEY","A","E",40,3,"OSMAN Z. TEKİNALP"],
+["GANADORES","İ","E",40,2,"MERAL ÖZKAN"],
+["GAZNELİ","A","E",38,4,"SAMİ DOĞAN"],
+["GECE GÜZELİ","A","D",56,4,"M.ROHAT YILDIZ"],
+["GELİDONYA","A","E",40,4,"CÜNEYT ÇALICIOĞLU"],
+["GELİLEO","A","E",40,4,"CÜNEYT ÇALICIOĞLU"],
+["GIVE ME A SECOND","İ","E",40,3,"SERDAL ADALI"],
+["GLONASS","İ","E",37,3,"ENDER COŞGUNSU"],
+["GO BEAUTY","İ","D",49,5,"GAZANFER YAVUZ"],
+["GOLDEN BEE","İ","E",44,3,"EMRE AKIN"],
+["GOLDEN CANTADO","İ","E",42,3,"İBRAHİM HALİL ARSLAN"],
+["GOLDEN CHAMPION","İ","E",40,2,"RECEP BATUHAN KELEŞ"],
+["GOLDMAN","İ","E",52,3,"H.HÜSEYİN TEMEL"],
+["GRAVITY OF LOVE","İ","D",57,5,"MAHMUT GÜLGÜL"],
+["GREEN EYED MEMO","İ","E",34,4,"AHMET CEMİL BURHANLIOĞLU"],
+["GRENTLY WINS","İ","E",55,3,"SEMRA AKSU"],
+["GÖHERBEYİ","A","E",40,3,"ABDULKADİR ELĞAÇ"],
+["GÖK MİLA","A","D",37,4,"MEHMET NAİM"],
+["GÖKÇEKRALİÇE","A","D",37,4,"ŞEREF ATLI"],
+["GÖNÜL SARAYI","A","E",29,3,"CEMİLE AYDIN"],
+["GÖZÜDELİ","A","E",40,3,"MEHMET KORKMAZ"],
+["GÜLFEM HATUN","İ","D",20,3,"DEMET ÇİFTÇİ"],
+["GÜLÜMSE BİRAZ","A","D",47,4,"İBRAHİM KAYA"],
+["GÜMÜŞ KILIÇ","A","E",40,3,"GÜROL ULUDAĞ"],
+["GÜNDOĞMUŞ","A","E",40,3,"MURAT SUCU"],
+["GÜR SERİN SU","A","D",40,4,"MELİZ YAZICI"],
+["GÜRDALHAN","A","E",40,3,"BERRİN DOĞAN"],
+["GÜRSELHAN","A","E",56,6,"DEMET ÇİFTÇİ"],
+["GÜZEL DEFNE","A","D",26,3,"AZİZ KULAK"],
+["GÜZELÇAMLI","A","D",40,3,"YURDAL KARGIN"],
+["HALAY","A","E",70,8,"ZAFER COŞGUN"],
+["HAMA DESTINATION","İ","D",61,3,"SOLAIMAN IRHAIM"],
+["HANKUŞ","A","E",41,3,"CELAL DOĞAN"],
+["HARD LION","İ","E",52,4,"ADİL AKYAVUZ"],
+["HAS GAMZEM","İ","D",40,2,"YALÇIN TÜRE"],
+["HASNENNİ","A","E",58,3,"BAKİ BAKIR BOYRAZ"],
+["HAVASUPAI","İ","E",44,2,"GÜLİZAR YANIK"],
+["HAWORTH","İ","E",68,4,"AHMET BARMAN"],
+["HAYRETBİŞEY","İ","E",49,2,"FEDAİ KAHRAMAN"],
+["HEP İLERİ","İ","D",40,2,"BEŞİR KAYA"],
+["HEVENK","A","E",40,3,"SEVİM KARACA"],
+["HIGH HILLS","İ","D",41,3,"C.TAHİR BURHANLIOĞLU"],
+["HILL OF ANGELS","İ","D",42,2,"BARIŞ ERDUMAN"],
+["HIRÇIN DADAŞ","A","E",23,3,"MELAHAT BAGUÇ"],
+["HIZLI İBRAHİM","A","E",70,4,"SEDAT SUBAY"],
+["HOLD FAST","İ","D",70,3,"MELİS KURTEL EMİN"],
+["HOŞ ESİNTİ","A","D",38,4,"MUSTAFA BAYDAN"],
+["HÜKÜMBEY","A","E",40,3,"MEHMET YILDIZ"],
+["HÜKÜMLÜ","A","E",58,3,"SELAMİ KIZILKAYA"],
+["HÜRTAYFA","A","E",61,3,"ADİL YILDIZ"],
+["HİFANINOĞLU","A","E",35,3,"KEMAL UÇAK"],
+["INDIANA JONES","İ","E",20,2,"DUYGU FATURA"],
+["IRON LION","İ","E",68,4,"CEMİL ÇİZİK"],
+["IĞDIR KIZI","A","D",62,6,"OKAN KOÇHİSARLI"],
+["IŞILS A MELİNA","İ","D",67,3,"KEMAL KURT"],
+["JANN POLL","İ","E",50,3,"MELTEM AKTÜRK"],
+["KALENDER TAY","A","E",59,4,"SEVİM KARACA"],
+["KALİ STRATA","İ","E",45,3,"NEDİM KİSBU"],
+["KANATLANAN","A","D",33,4,"SOLAIMAN IRHAIM"],
+["KAPTANPAŞALI","A","E",66,4,"MUZAFFER TENEKECİ"],
+["KARABAYRAK","İ","E",20,3,"EMİR KAVÇIN"],
+["KARAKTERLİ","A","E",53,4,"MÜSLÜM FİDAN"],
+["KARANLIK","A","E",40,3,"METE ÇELİK"],
+["KARBİR","A","D",35,4,"MUSTAFA KAPLAN"],
+["KARDAHA","İ","D",56,3,"TEKİN AKYAVUZ"],
+["KARLOVASİ","İ","D",36,3,"A.SEDA ÖZBELGE"],
+["KAROZBEY","İ","E",48,4,"M.TEVFİK DEVRİMCİ"],
+["KARSAVURANLI","A","E",64,4,"VEHBİ ATEŞ"],
+["KATIKIZI","A","D",40,3,"MÜSLÜM KATI"],
+["KAYANİLİM","A","D",20,3,"SELİM KAYA"],
+["KAYAŞAH","A","E",46,4,"KAYA KAYA"],
+["KETHÜDA","A","E",61,4,"MEHMET YILDIZ"],
+["KING ALİ","İ","E",40,3,"MUHAMMED ALİ PEHLİVAN"],
+["KING GÖKÇE","A","E",55,4,"TUNCER GÖKÇE"],
+["KING OF TIME","İ","E",40,3,"DURALİ SAVCI"],
+["KIR PAPATYASI","A","D",68,4,"MEHMET KAYA"],
+["KIZILKULE","A","D",32,3,"İREM NUR KAYA"],
+["KIZIM ATİK","A","D",37,4,"MEHMET EMİN DEMİRKAPU"],
+["KIZIM BERİL","İ","D",65,4,"MEHMET SARP"],
+["KOŞUCU KIZ","A","D",46,5,"HASAN ŞER"],
+["KRAL ALİÇO","İ","E",40,2,"KADİR EREKE"],
+["KRAL KARACA","A","D",40,3,"ŞAHNUR KARACA"],
+["KRAL OSIMHEN","İ","E",57,3,"TAHİR ÇELİK"],
+["KRALÇINAR","A","E",40,3,"SALİH DURMAZ"],
+["KURUÇAY","A","D",44,5,"SUAT BAYBURAN"],
+["KUTSELİ","A","D",20,3,"NURİ KAYA"],
+["KUZEYİN POYRAZI","A","E",40,3,"NEJDET SELÇUKOĞLU"],
+["KYLIE VOM ELBE","İ","D",61,4,"Y.ERKUT ERSEVER"],
+["KÜREN","İ","D",40,3,"SABA ÇİL"],
+["LA COPA","İ","D",61,3,"AVNİ GÖKKAN"],
+["LA JOYA","İ","D",40,2,"İSHAK ŞAHİN"],
+["LA MUNECA","İ","D",40,2,"MEHMET ALİ KATI"],
+["LA PUERTA","İ","E",31,3,"ERKAN BAL"],
+["LADY ATAŞ","İ","D",34,3,"ÖZGÜR ATAŞ"],
+["LAGARİ","İ","E",26,3,"İSA YÜKSEL"],
+["LAGUNA SUNSET","İ","D",49,3,"ENİS EMRE GELGİN"],
+["LAL KIZIM","İ","D",40,2,"ASLAN SAVAŞAN"],
+["LAS WEGAS","İ","E",40,2,"M.ROHAT YILDIZ"],
+["LAST FORCE","İ","D",57,3,"ORHAN KİBAR"],
+["LAVİN FIRTINASI","A","D",67,5,"FERAT ÖZKAN"],
+["LEADER TULIP","İ","D",42,3,"YILMAZ ARİ"],
+["LION ICARDI","İ","E",52,3,"MEHMET KORKMAZ"],
+["LITTLE GIANT","İ","E",20,3,"M.ÖMER NAUSHAD MA"],
+["LITTLE JOE","İ","E",59,4,"SELİM KAYA"],
+["LIVE YOUR FREEDOM","İ","E",66,3,"LALE M. ATMAN"],
+["LOKUM HÜMA","A","D",40,3,"İBRAHİM ATAK"],
+["LOVE SEA","İ","D",69,4,"BEKİR AKYAVUZ"],
+["LUPELIUS","İ","E",51,3,"CİHAT GÜROĞLU"],
+["LİNA VİYAN","A","D",20,3,"HALİL FELHAN"],
+["LİSBOA","A","E",43,3,"KAAN GİRAY"],
+["MAGGIE","İ","D",30,3,"GÖKHAN ALVEROĞLU"],
+["MAGIC BANK","İ","D",60,3,"TUFAN ÇELİK"],
+["MAGIC MEMORY","İ","D",40,2,"FERHAN GÖKTÜRK"],
+["MAGICAL FLOWER","İ","D",53,3,"SEMA ULAŞ"],
+["MAGNIFICANT BLOOD","İ","D",20,3,"GÖKHAN ERDOĞAN"],
+["MAJESTIC CHAMPION","İ","E",20,3,"MEHMET NAİM"],
+["MAJESTIC ENDEAVOUR","İ","E",54,5,"Y.ERKUT ERSEVER"],
+["MAJESTUOSA","İ","D",40,2,"İSHAK ŞAHİN"],
+["MAKE FUN OF","İ","E",51,3,"EMRE AKIN"],
+["MALESOR","A","E",40,3,"AVNİ GÜRBÜZ"],
+["MAMBERAMO","İ","D",40,3,"BORA GÖVEREN"],
+["MAMDANI","İ","E",40,3,"İ.HALİL DEMİR"],
+["MANDACAN","İ","E",60,7,"METE AYSEL"],
+["MANEKİ NEKO","İ","D",25,3,"SELMA EREN"],
+["MANIAC","İ","D",40,2,"GÜLİZAR YANIK"],
+["MAVİ LADİN","A","D",52,4,"SARP ERTÜRK"],
+["MAVİŞİN KIZI","A","D",64,6,"YASİN YILDIZ"],
+["MAXIMAND","İ","D",20,3,"M.GARİP ELĞAÇ"],
+["MEDGIDIA","İ","D",33,4,"MEHMET DEMİR"],
+["MENDERES KIZI","A","D",39,4,"MEHMET DOĞAN"],
+["MENESSAL","A","D",40,3,"HASAN ARSLAN"],
+["MERCİA","İ","E",47,4,"MEHMET SALİH APAYDIN"],
+["MERT EFENDİ","İ","E",62,4,"İREM METİNER"],
+["METALIVE","İ","D",20,3,"AHMET GÜZELOCAK"],
+["MILLENNIUM FALCON","İ","E",50,3,"HAKAN KEFOĞLU"],
+["MISFIT","İ","D",61,3,"FERHAN GÖKTÜRK"],
+["MISTER GOLD","İ","E",53,3,"HAYREDDİN BİNGÜL"],
+["MISTER MIN JOU","İ","E",62,3,"AYHAN AHRASOĞLU"],
+["MIZMIZ MYRTLE","İ","D",40,3,"ALİ RIZA KÖSEALİ"],
+["MODİGLİANİ","İ","E",50,4,"OKAN ÇELİK"],
+["MONIQUE","İ","D",40,2,"CELAL DOĞAN"],
+["MONUMENTAL","İ","E",55,4,"RECEP AVŞAR"],
+["MOON ASH","İ","D",40,2,"HALİL TURAN"],
+["MR ALAÇAT","A","E",40,3,"ALİ ATAŞ"],
+["MRS NİLŞAH","İ","D",30,3,"ALPER KARA"],
+["MS EVDOXIA","İ","D",40,3,"BAHRİ ÇABUK"],
+["MUKATOVİÇ","A","E",40,3,"AKIN UYSAL"],
+["MY BOY GÖKSU","İ","E",49,3,"M.ALİ GÖKSU"],
+["MY CHAKRA","İ","D",51,3,"MAHMUT YALÇIN"],
+["MY DEAR DREAM","İ","D",50,3,"M.EŞREF GÜVEN"],
+["MY DREAM HORSE","İ","D",28,3,"ÖMERCAN EROĞLU"],
+["MY EAGLE","A","E",53,3,"MÜSLÜM ŞİMŞEK"],
+["MY JET","İ","E",28,4,"GÖKHAN ALKAN"],
+["MY ZEKO","İ","E",40,2,"SUAT YILDIZ"],
+["MYSARIA","İ","D",40,2,"ŞEYDA ERCAN"],
+["MYSTIC STRIKE","İ","D",38,3,"BANU HÜNER"],
+["MİHRALİ","A","E",40,3,"HIDIR KILINÇ"],
+["MİR EMRE","İ","E",59,3,"SONEL TAŞAN"],
+["NART THE WOLF","İ","E",62,3,"ONUR DİLBAZ"],
+["NATALMA","İ","D",40,3,"ERHAN KAVÇİN"],
+["NAZUŞUM","İ","D",67,3,"YUSUF SERFİCELİ"],
+["NEJDET BAŞKAN","İ","E",58,3,"NEJDET SUMEL"],
+["NEW ARTİST","İ","D",33,3,"ÖMER YABAR"],
+["NEZENGÜL","A","D",69,6,"CEMİLE AYDIN"],
+["NIGHT JAWEL","İ","D",67,4,"SALİH PALAZ"],
+["NIGHT RUNNER","İ","E",22,3,"UĞUR ALTUNBAŞ"],
+["NO MORE SORROW","İ","D",36,3,"İLHAN KAPUSIZ"],
+["NOBLE STRENGTH","İ","E",53,3,"LALE M. ATMAN"],
+["NOOR IRON","İ","D",29,3,"SUAT EROL"],
+["NORTH DANCER","İ","E",40,3,"BORA GÖVEREN"],
+["NURBADEM","İ","D",41,3,"NURBİYE GÜLERCE"],
+["NUSRET OĞLU","A","E",66,4,"MEHMET DOĞAN"],
+["NİMET ABLAM","İ","D",40,3,"METİN BİNGÖL"],
+["O PAPATYA","İ","D",20,3,"SABAHADDİN ASLAN"],
+["OCAKOĞLUŞAH","İ","D",51,3,"FUAT OCAKOĞLU"],
+["OJO TURCO","İ","D",20,3,"NUSRET ÖZBAĞ"],
+["ON GÖZLÜ","A","E",35,4,"ZAFER COŞGUN"],
+["ORION BELT","İ","E",21,3,"AHMET ALABAY"],
+["ORION SKY","İ","E",20,3,"ASLAN TEPELİ"],
+["ORMELLO","İ","E",40,3,"TRACY KAYAHAN"],
+["ORİANNA","İ","D",40,3,"M.LEVENT TOPSAKAL"],
+["PALAÇİNKA","İ","E",21,3,"HAKAN DİNKÇİOĞLU"],
+["PALURİ MAN","İ","E",47,4,"ALİ SAÇAN"],
+["PARMIGIANO","İ","D",33,3,"FATMA AYHAN"],
+["PARSIBEY","A","E",40,3,"ÜMİT ARSLAN"],
+["PASSACAGLIA","İ","D",40,2,"ÖMER HALİM AYDIN"],
+["PAVLA","A","D",40,3,"RİTA KUYUMCİYAN"],
+["PELİTSIRTI","A","D",52,5,"İSMAİL CANPOLAT"],
+["PERA CORDELIA","İ","D",20,3,"SERCAN KAVUŞAN"],
+["PERHAPS","İ","D",40,2,"ERAY HAZAR"],
+["PERSONA NON GRATA","İ","E",37,3,"RECEP AVŞAR"],
+["PEVRUL","İ","E",36,3,"GÜN E. İÇER"],
+["PINAR ÇİÇEK","A","D",40,3,"KEMAL DURMAZ"],
+["PINK FLOWER","İ","D",40,3,"ERTUĞRUL KARAASLAN"],
+["PLIOSAUR","İ","D",20,3,"H.TARIK DİKENCİK"],
+["PONÇİKTAY","A","D",49,6,"KAYA KAYA"],
+["POTANIN PADİŞAHI","A","E",40,3,"MEHMET YILDIZ"],
+["POTOCHNITSA","İ","D",40,2,"FEDAİ KAHRAMAN"],
+["PRENS EGE","İ","E",44,3,"AYDIN ÜSTÜNDAĞ"],
+["PRENSES BERRİN","A","D",29,3,"MEHMET SALİH APAYDIN"],
+["PRENSES MEHLİKA","A","D",60,4,"YÜKSEL CELİM"],
+["PRINCE OF DELMAR","A","E",43,3,"RAMAZAN KAN"],
+["PROBALA","İ","E",66,3,"FERİT SARAK"],
+["QOUNTM CAT","İ","D",40,2,"SABRİ ALTIN"],
+["QUEEN OF HAPPINESS","İ","D",49,5,"İLHAN SÖNMEZ"],
+["QUEEN TUANA","İ","D",38,3,"ÇAĞDAŞ ÖZ"],
+["RACING RAPTURE","İ","E",59,4,"ÜMİT BARLIK"],
+["RAINBOW GLOW","İ","D",40,3,"HASAN YEŞİLÇÖLLÜ"],
+["RATTLESNAKE","İ","E",54,2,"SEMİH KATI"],
+["RED VICTORY","İ","E",40,2,"REZZAN ÇELİK"],
+["REYHAN GELİN","A","D",70,5,"ABDULLAH KAYA"],
+["RICARDO","İ","E",55,4,"EREN KARGACI"],
+["ROMANTIC PARADISE","İ","D",62,3,"V.İBRAHİM ARACI"],
+["ROSİLDA","İ","D",41,3,"A.EFE KANMAN"],
+["RUN MY RED","İ","D",34,3,"ADİL AKYAVUZ"],
+["RÜTBESİZ","İ","E",38,7,"ONUR TÜRKER"],
+["RÜZGAR NUR","A","D",57,4,"DENİZ AYNISOY"],
+["RÜZGAR VEYSEL","A","E",29,3,"EMİNE ALTIN"],
+["RÜZGARIN ŞAHI","A","E",38,4,"EMRE KOÇ"],
+["RİBARO","A","E",45,4,"MÜSLÜM KATI"],
+["SABIRLI TINAS","İ","D",40,2,"HALİT DAĞTEKİN"],
+["SABRİNİN RÜZGARI","A","D",40,3,"MÜSLÜM KATI"],
+["SAKIZ ADASI","A","D",64,4,"ERSİN ERDEM"],
+["SAMER BEY","A","E",40,3,"SİNAN ÇİFTÇİ"],
+["SANDOKAN","İ","E",40,2,"DUYGU FATURA"],
+["SARMAT","İ","E",59,4,"MEHMET EMİN DEMİRKAPU"],
+["SECRET OF DRAGON","İ","D",31,2,"ENGİN ATEŞLER"],
+["SELMİNKIZ","A","D",40,3,"HAÇIM TURAN"],
+["SELÇUKZADE","A","E",40,3,"MUNİR GÖKÇE"],
+["SELİM TALHA","A","E",40,3,"ALİ KAYA"],
+["SEMRAKAYA","A","D",67,4,"AHMET KAYA"],
+["SENGÜLDE","İ","D",32,3,"YAVUZ YILMAZ"],
+["SENKRON","İ","E",46,5,"OKAN BEKTAŞ"],
+["SENSEİ BAHA","İ","E",31,3,"BANU EKER"],
+["SERAHİRA","İ","D",70,3,"HALUK CANÇEKER"],
+["SERVER BEYİM","A","E",42,3,"ÖMER ALAK"],
+["SEVDA MEVSİMİ","A","D",45,4,"BEŞİR KAYA"],
+["SEYDİHAN","A","E",40,3,"SAHDUN KAYA"],
+["SHAREHOLDER","İ","E",32,3,"SELİM KAYA"],
+["SHIMMER","İ","D",40,2,"ALİ RIZA ÇELİKOĞLU"],
+["SHINING LIFE","İ","D",44,3,"SÜLEYMAN BAŞYİĞİT"],
+["SILKY PEARL","İ","D",40,3,"AKIN ÖZTÜRK"],
+["SILVER RISING","İ","D",20,2,"ÖZGÜR KÜÇÜKERMAN"],
+["SINGLE GUN","İ","E",39,3,"ŞÜKRÜ GÜRER"],
+["SIRIUS VEGA","İ","E",54,4,"MELİH KAHRAMAN"],
+["SKORPERİ","İ","D",40,3,"AYTEKİN ŞEN"],
+["SMOOTH CRIMINAL","İ","D",38,3,"HAKAN YENİDOĞAN"],
+["SMYRNA POWER","İ","D",50,3,"HÜSEYİN YILDIZ"],
+["SNOWDRIFT","İ","D",40,2,"FARUK CANÇEKER"],
+["SOME JEWEL","İ","D",40,2,"NİMET ARİF KURTEL"],
+["SOMEBODY LOVES YOU","İ","D",40,2,"NİMET ARİF KURTEL"],
+["SON OF YAŞAR","İ","E",20,3,"GÜLPINAR AYVAZ"],
+["SOSAN YILDIZI","A","D",60,4,"MUSA SOSAN"],
+["SOĞUKDAĞ","A","E",57,4,"FUAT ÇETİN"],
+["SPECIAL BEAUTY","İ","D",29,3,"KADİR ONUR KILIÇ"],
+["SPEEDY WINNER","İ","E",29,3,"EROL GÜZELKARDEŞLER"],
+["START UP","İ","E",67,4,"ÜMİT DURUCAN"],
+["STORM BELLE","İ","D",40,3,"EDA KAMBER"],
+["STRONG HEARD","İ","D",39,3,"ALİ RIZA KÖSEALİ"],
+["SUBE LA MAREA","İ","D",40,2,"NİMET ARİF KURTEL"],
+["SUDEM","İ","D",25,3,"ÖMER USLU"],
+["SULTAN İLHAN","A","D",40,3,"MURAT AKÇA"],
+["SULTANA","İ","D",41,3,"KERİM YILDIRIM"],
+["SUN GODDESS","İ","D",34,4,"HÜLYA GÖDEK"],
+["SUPER BERK","İ","E",70,4,"A.CEYDA FEYZULLAH"],
+["SYRENA","İ","D",42,3,"S.KIVANÇ ÖNDER"],
+["SİGUEME","İ","E",57,3,"GÜLİZAR YANIK"],
+["SİSU","İ","E",59,3,"SELMAN ERDEMİRCİ"],
+["TAHAYYÜL","A","E",55,5,"MURAT AKTAŞ"],
+["TANERDEN","A","E",40,3,"BURCU TEMELKURAN"],
+["TANGÜL HANIM","İ","D",69,7,"ZEKİ UYGUR"],
+["TAŞPINAR","A","D",45,7,"ENVER TOYDEMİR"],
+["TAŞUCU","A","E",66,6,"NAMIK TURAN"],
+["TEBLİGAT","İ","D",38,3,"AZAD KIZILCA"],
+["TEKFORD ACL","A","E",25,4,"TEYFİK ORAN"],
+["TESCİL","İ","E",49,3,"FEDAİ KAHRAMAN"],
+["THE ANATOLIAN","İ","D",48,3,"TUĞBA BABACAN"],
+["THE FUTURE","İ","D",40,2,"KEMAL KURT"],
+["TI VOGLIO BENE","İ","D",47,3,"DUYGU FATURA"],
+["TINAS GIRL","A","D",40,4,"YILDIRIM ŞEN"],
+["TINASEFE","A","E",40,3,"NİHAT DERİN"],
+["TODAY IS A GIFT","İ","D",40,2,"MEHMET BAKIR"],
+["TOGARMA","İ","E",61,3,"FEVZİ ERGÜN"],
+["TOM RAIDER","İ","D",43,2,"RESUL ÜNLÜ"],
+["TOUCH THE CLOUD","İ","E",63,4,"AHMET KURT"],
+["TOULAYNA","İ","E",64,4,"NURİ BURAK DİKENCİK"],
+["TRABLUS","A","D",40,3,"GÜVEN ŞAHLI"],
+["TRACE KIZI","A","D",40,3,"NUSRET DOĞAN"],
+["TUMBUL MÜZEYYEN","A","D",54,4,"REŞİT TUMBUL"],
+["TUVA","İ","E",54,3,"EMRAH KİSBU"],
+["TÜRKAN HANIM","A","D",69,5,"ALİ KÖŞGER"],
+["TİRİLYELİ","A","E",40,3,"BERKCAN KESTEL"],
+["ULU CİHAN","A","D",30,3,"ÜMİT UZUNOĞLU"],
+["ULUBEY","İ","E",52,6,"MEHMET SARP"],
+["UNREAL ENGINE","İ","E",57,4,"UMUT COŞAR"],
+["UZBOYLU","A","E",40,3,"ŞEYDA ERCAN"],
+["VAHŞİ BAWIKAL","İ","E",51,4,"MAHMUT CANLIKA"],
+["VARDAKOSTA","A","D",40,3,"GÜRHAN Ş. ÖZBELGE"],
+["VETCİHAN","A","E",36,4,"D.DENİZ KANAR"],
+["VICTORIFLY","İ","D",40,3,"IŞIL GÜNEŞ"],
+["VICTORY GIRL","İ","D",44,3,"ENİS EMRE GELGİN"],
+["VISERRA","İ","D",49,3,"FATMA DEMİRBAŞ"],
+["VURGUNHAN","A","E",40,3,"AZİZ KULAK"],
+["WAITING A SUNNYDAY","İ","D",51,4,"ESRA ATMAN"],
+["WALTZ WITH DREAMS","İ","E",61,3,"SAVAŞ TOSUN"],
+["WAR PRINCE","İ","E",40,3,"SİNAN BİLİK"],
+["WE ARE THE BEST","İ","E",58,4,"CUMA KUTLU"],
+["WINDS SOUND","İ","D",40,2,"İBRAHİM KIZILDAĞ"],
+["WINGED HUSSAR","İ","E",40,3,"HASAN BURNAZ"],
+["WISH YOU WERE HERE","İ","D",22,2,"SEMİH KATI"],
+["WOLF WOMEN","İ","D",40,2,"KEMAL KURT"],
+["WOLF ŞAHİN","İ","E",46,3,"MEHMET EMRE HADİOĞLU"],
+["YALIKIZI","A","D",52,4,"ŞAHNUR KARACA"],
+["YAMANBERK","A","E",34,3,"GÜLİZAR YANIK"],
+["YARGIÇ","İ","E",61,5,"ALİ SELİMOĞLU"],
+["YASİN AĞA","A","E",33,3,"CUMA TUMBUL"],
+["YAZIRBEYİ","A","E",40,3,"NURİ KAYA"],
+["YAĞIZ BİKE","İ","D",41,3,"BATURHAN ŞOLPAN"],
+["YAĞIZATEŞ","A","E",63,4,"SALİH TEKİNALP"],
+["YEKEBALA","İ","E",39,3,"FERİT SARAK"],
+["YETİMABLA","A","D",32,4,"ALİ GÜLLÜ"],
+["YEŞİL İNCİ","İ","D",41,3,"M SALİH KAÇMAZ"],
+["YEŞİLKAYA","A","D",58,4,"AHMET KAYA"],
+["YILKAR","A","D",40,3,"BAYRAM KARA"],
+["YILMAKIZIM","A","D",63,5,"GÖKHAN GÜLLÜ"],
+["YONAGUNI","İ","E",32,2,"İSHAK ŞAHİN"],
+["YOSEMITE GIRL","İ","D",40,2,"UMUR ÖZARAR"],
+["YOU ARE BIG","İ","E",22,3,"ÖNDER PAPAĞAN"],
+["YÜCEALP","A","E",39,3,"SEMİH KATI"],
+["YİĞİT NUR","A","D",40,3,"FUNDA GÜRSOY"],
+["ZAFER YAĞMURU","A","E",39,4,"MEHMET RESUL KARA"],
+["ZAFER YILDIZI","A","D",40,3,"ÖMER ALTIN"],
+["ZAGANOS","İ","E",63,4,"FEDAİ KAHRAMAN"],
+["ZAMAN HARİKA","A","D",47,4,"SERKAN DURAL"],
+["ZAZA ENES","A","E",27,3,"HÜSEYİN BAŞIBÜYÜK"],
+["ZEHİRBİKE","A","D",62,5,"FAZIL ŞOLPAN"],
+["ZEYTİN GÜLÜ","A","D",40,3,"METİN ALTIN"],
+["ZIPKIN OSMAN","A","E",37,5,"OLGU ÇETİNKAYA"],
+["ZİDAN","A","E",61,4,"DOĞAN IRMAK"],
+["ZİNAMIN","A","D",54,4,"M.SABAHATTİN MALKOÇ"],
+["ÇAKIR ASLANI","İ","E",62,3,"MEHMET BOZKAYA"],
+["ÇAL BABA","A","E",36,4,"SERKAN DURAL"],
+["ÇAL BEYİ","A","E",33,4,"NECDET TURAN"],
+["ÇALIŞTAY","A","E",49,5,"ABDULLAH BALKU"],
+["ÇAPGUR","İ","E",54,3,"SEMİH DİLBER"],
+["ÇAVDARLI","İ","E",54,6,"ALİ OSMAN ARSLAN"],
+["ÇELİK ABİ","A","E",48,4,"ORHAN BAŞPINAR"],
+["ÇERKES ENVER","A","E",40,3,"AYHAN AKTAŞ"],
+["ÇİFTE YÜREKLİ","İ","E",35,3,"SIDIKA MÜDERRİSOĞLU"],
+["ÇİFTÇİ STELLA","İ","D",33,3,"İSMET ÇİFTÇİ"],
+["ÇİLDUTAY","A","D",33,3,"MÜSLÜM ŞEKER"],
+["ÖZBEYİN RÜZGARI","A","D",41,3,"YUNUS KARAKOÇ"],
+["ÖZGÜNSULTAN","A","D",55,5,"CAN ERBAK"],
+["ÖZGÜR ABİ","İ","E",42,4,"SÜLEYMAN AKGÜMÜŞ"],
+["ÜSTÜNSOY","A","E",46,3,"TAYYAR AKBULUT"],
+["İKLİMECE","A","D",29,3,"RAMAZAN ÇELİK"],
+["İLDA SULTAN","A","D",38,3,"MUHİTTİN ACAR"],
+["İLKEJDER","A","E",25,3,"MUHİTTİN İNCESU"],
+["İMGE TAY","A","D",67,5,"MEHMET NUR BECENE"],
+["İNAN OTUZYEDİ","A","E",34,3,"KEMAL UÇAK"],
+["İNZİBAT","A","E",48,4,"NECATİ DEMİRKOL"],
+["ŞAFAKATEŞ","İ","E",66,3,"ABDULKADİR CAYMAZ"],
+["ŞAHLANTAY","A","E",48,4,"ADNAN KESKİN"],
+["ŞAHİN MELTEM","A","D",33,3,"SELİM KAYA"],
+["ŞAHİNYÜREKLİ","A","E",42,3,"KADRİYE KAYA"],
+["ŞANKUT HATUN","A","D",66,4,"GÜLRU TURCAN"],
+["ŞANSLI ADAM","A","E",40,3,"ENGİN YILDIZ"],
+["ŞARK AYAZI","A","E",47,3,"ERKAN DOĞAN"],
+["ŞEHNAZ LONGA","A","D",61,6,"GÜVEN ŞAHLI"],
+/* 🏁 1000. ATA TAMAMLAYAN GERÇEK SAFKANLAR — Gazi haftası (26-28 Haziran 2026) sonuçlarından */
+["NART ATEŞİ","İ","E",94,4,"ONUR DİLBAZ"],
+["İLAYTAY","A","E",93,6,"ERKUL ÖCAL"],
+["MUĞLALI ADNAN","İ","E",89,5,"BUSE ŞAMLI"],
+["YELBOZAN","A","E",88,4,"MEHMET GÜNEŞ"],
+["ŞEKER HALHAL","A","D",86,5,"REYHAN ŞEKER"],
+["FAST PILOT","İ","E",86,5,"SAİT ÖZTÜRK"],
+["BUCALI BERAT","İ","E",85,4,"YALÇIN TÜRE"],
+["COPPER SON","İ","E",84,4,"UMUT KARABULUT"],
+["TYWIN LANNISTER","İ","E",83,4,"BERKAY UĞUR ÇETİNEL"],
+["GÜLERYÜZ","A","D",82,4,"TUFAN ÇELİK"],
+["TAHSİN SEFA","A","E",82,4,"FARUK ATEŞ"],
+["BLACK GALAXY","İ","E",81,4,"BARIŞ ERDUMAN"],
+["TURBO KING","A","E",80,5,"CAN ERBAK"],
+["ILDIRLI","A","E",80,10,"HATİCE KÖK"],
+["MUCHACHO","İ","E",80,4,"GÜRHAN Ş. ÖZBELGE"],
+["GÜROBASI","A","E",78,7,"SUAT BAYBURAN"],
+["KERPETEN YALÇIN","A","E",78,4,"ATİLLA SERİNER"],
+["PAKELİF","A","D",76,5,"CEMİL AKDÖNER"],
+["BARBUDA","A","E",76,5,"H.TARIK DİKENCİK"],
+["HOPDEDİK","A","E",76,4,"TAYRAL TUTUMLU"],
+["CRAZY TİZ","İ","D",74,4,"MEHMET ERCÜMENT ULAŞ"],
+["NİRENGİ","A","D",73,6,"HÜSEYİN ÖZKAYAGAN"],
+["SHINING FORCE","İ","D",73,4,"HAKAN MERDER"],
+["DIRAXTER","A","E",70,5,"EMİN ÇELİK"],
+["HUMAY KIZIM","A","D",69,6,"TANER B. BAYRAK"],
+["TABİP BEY","A","E",69,4,"SEMİH KATI"],
+["HUSREV","A","E",69,6,"MAHMUT KARAKEÇİ"],
+["SÜSLÜCAN","İ","D",68,4,"ÇAĞLAR ŞAHİN AKBABA"],
+["KIZIM ÇINAR","İ","D",67,6,"MEHMET ÖKSÜZ"],
+["BOARDING PASS","İ","E",67,5,"METİN ÇETİNKAYA"],
+["HAYALİNOĞLU","A","E",66,5,"AYSEL BAYDAN"],
+["NALDÖKEN PRENSİ","A","E",66,4,"BEKİR CANPOLAT"],
+["AYDINEFESİ","A","E",65,6,"SELİN DİKENCİK"],
+["İLTERSOYLU","A","D",64,5,"HALİT DAĞTEKİN"],
+["MON BİJOU","İ","D",64,4,"A.CAVAT HEPER"],
+["CANYAMAN","A","E",63,4,"ALİCAN BAYRAM"],
+["ŞANSIBOLBEY","A","E",63,4,"MAHMUT AKPOLAT"],
+["OĞUL ÇINAR","A","E",63,4,"BARIŞ KARAGÖZ"],
+["KAPTAN ARAS","A","E",63,4,"İSMET TURAN"],
+["ŞİFNE EFESİ","A","E",63,10,"İRFAN BERBEROĞLU"],
+["SÜKANBEY","A","E",63,4,"NURCAN ŞİMŞEK"],
+["YİĞENİM NEHİR","İ","D",62,3,"ALİ ÇELİK"],
+["EASTERN EXPRESS","İ","D",62,4,"İLKER İYİKOL"],
+["ÇEPNİ","İ","E",61,3,"NURİ KAYA"],
+["ULU YAŞAR","A","E",61,4,"BAHADIR YEŞİL"],
+["RÜZGAR LİDER","İ","E",61,3,"TURGAY AKARCA"],
+["KARA THRACE","İ","D",59,3,"ELVAN KORKMAZ"],
+["LOVELY LISA","İ","D",59,5,"FAHRİ TAŞDEMİR"],
+["CHEROKEE","İ","E",54,3,"ÖZGÜR ÇİÇEK"],
+["BAHİSÇİ","İ","E",54,4,"ŞEHABETTİN DOYAN"],
+["MORIARTY","İ","E",54,3,"ENGİN ATEŞLER"],
+["SPEED QUEEN","İ","D",53,2,"GÜLİZAR YANIK"],
+["ROXELENA","İ","D",52,4,"METİN ÇETİNKAYA"],
+["RÜZGAR AKARCA","İ","D",51,4,"TURGAY AKARCA"],
+["TAŞDEMİR HAN","İ","E",51,3,"BEKİR CANPOLAT"],
+["TIMELESS","İ","D",50,5,"LEVENT DEMİR"],
+["PANCHO","İ","E",50,3,"GÜLİZAR YANIK"],
+["BİR EDA","A","D",50,3,"MEHMET FELHAN"],
+["TEYAR","A","E",49,4,"FİDAN GÜVEN"],
+["BAŞ SÜVARİ","A","D",48,5,"YUNUS KÜLAHCIOĞLU"],
+["MY BLUE HEAVEN","İ","D",48,4,"AYŞEGÜL KURTEL"],
+["MERKÜT","A","D",47,3,"MAHMUT TURAN"],
+["GÜMBÜR BABA","A","E",45,3,"ÖMER FARUK ALTIN"],
+["MEGAFAUNA","A","E",45,4,"H.TARIK DİKENCİK"],
+["AYTEKİNBEY","A","E",45,4,"AHMET KAYA"],
+["PATPAT","İ","E",43,3,"YALÇIN TÜRE"]
 ];
 /* 2026 sezonunda AKTİF jokeyler — [isim, 1.%, 2.%, 3.%, prestij(0-100)]
    Prestij = kariyer galibiyet sayısı × galibiyet yüzdesinden hesaplanır (tjk.org).
@@ -979,6 +1801,7 @@ function rebuildExtras(){
   (G.extra||[]).forEach(e=>{
     if(HORSES.some(h=>h[0]===e.n))return;
     if(e.k==="s")HORSES.push([e.n,e.irk,"E",e.hp,12-(G.year-(G.y0||2026)),"Damızlık Deposu",null,null]);
+    else if(e.k==="y")HORSES.push([e.n,e.irk,e.c,e.hp,e.ba,e.own||"-",e.cred||null]); /* yeni nesil AI tayları */
     else HORSES.push([e.n,e.irk,e.c,e.hp,e.ba,G.stable,null,e.sire]);
   });
 }
@@ -1034,12 +1857,14 @@ function genProgram(){
     kvI?{breed:"A",lo:0,hi:44,ad:"Arap Maiden/Şartlı",purse:Math.round(420000*PS),t:0}
        :{breed:"A",lo:40,hi:59,ad:"Arap Şartlı-3",purse:Math.round(600000*PS),t:0},
     {breed:"A",lo:45,hi:74,ad:"Arap Handikap 16",purse:Math.round(800000*PS),t:0},
+    {breed:"İ",lo:25,hi:54,ad:"İngiliz Şartlı-2",purse:Math.round(720000*PS),t:0},
     kvI?{breed:"İ",lo:70,hi:200,ad:"İngiliz Açık (KV-6)",purse:Math.round(1800000*PS),t:0}
        :{breed:"İ",lo:55,hi:84,ad:"İngiliz Handikap 17",purse:Math.round(1200000*PS),t:0},
     /* 2. hipodrom */
     kvI?{breed:"İ",lo:40,hi:59,ad:"İngiliz Şartlı-3",purse:Math.round(680000*PS),t:1}
        :{breed:"İ",lo:0,hi:44,ad:"İngiliz Maiden/Şartlı",purse:Math.round(540000*PS),t:1},
     {breed:"İ",lo:45,hi:74,ad:"İngiliz Handikap 15",purse:Math.round(1000000*PS),t:1},
+    {breed:"A",lo:25,hi:54,ad:"Arap Şartlı-2",purse:Math.round(620000*PS),t:1},
     kvI?{breed:"A",lo:55,hi:84,ad:"Arap Handikap 17",purse:Math.round(1000000*PS),t:1}
        :{breed:"A",lo:70,hi:200,ad:"Arap Açık (KV-6)",purse:Math.round(1500000*PS),t:1}
   ];
@@ -1065,11 +1890,11 @@ function genProgram(){
     let pool=HORSES.map((h,i)=>i).filter(i=>eligible(i,r)&&!(OLEX?OLEX[i]!==undefined:G.owned.includes(i)));
     if(!r.named){
       const fresh=pool.filter(rested);
-      if(fresh.length>=7)pool=fresh; /* yeterli dinlenmiş at varsa yorgunlar koşmaz */
+      if(fresh.length>=10)pool=fresh; /* yeterli dinlenmiş at varsa yorgunlar koşmaz */
       else{
         /* az at varsa: en uzun süredir dinlenenler öncelikli havuz */
         const lastD=i=>{const L=(G.hlog||{})[i];return L&&L.length&&L[L.length-1].y===G.year?L[L.length-1].d:-99;};
-        pool=pool.slice().sort((a,b)=>lastD(a)-lastD(b)).slice(0,Math.max(10,fresh.length));
+        pool=pool.slice().sort((a,b)=>lastD(a)-lastD(b)).slice(0,Math.max(13,fresh.length));
       }
     }
     /* isimli koşularda katılım şartı: kalifiye atlar önce; kadro dolmazsa en iyiler tamamlar */
@@ -1077,8 +1902,8 @@ function genProgram(){
       const q=pool.filter(i=>qualifies(i,r));
       const rest=pool.filter(i=>!q.includes(i)).sort((a,b)=>hpOf(b)-hpOf(a));
       pool=q.concat(rest);
-      pool=pool.slice(0,Math.max(7,q.length>=7?q.length:7));
-      if(q.length>=7)pool=q;
+      pool=pool.slice(0,Math.max(14,q.length>=14?q.length:14));
+      if(q.length>=14)pool=q;
     }
     pool.sort((a,b)=>(hashStr(HORSES[a][0]+"#"+G.day+"_"+r.id)%997)-(hashStr(HORSES[b][0]+"#"+G.day+"_"+r.id)%997));
     if(r.named){
@@ -1086,9 +1911,9 @@ function genProgram(){
          grup koşusu kazanmak ŞL kazanmak gibi zor olmalı */
       pool.sort((a,b)=>((qualifies(b,r)?1:0)-(qualifies(a,r)?1:0))||(hpOf(b)-hpOf(a)));
     }
-    /* her jokey koşuda TEK ata biner: çakışırsa sıradaki boş jokeye kay */
+    /* her jokey koşuda TEK ata biner — 🏟 GERÇEKÇİ KALABALIK: sıradan 10, kupalı 14 at */
     const usedJ={};
-    r.decl=pool.slice(0,7).map(h=>{
+    r.decl=pool.slice(0,r.named?14:10).map(h=>{
       let k=hashStr(HORSES[h][0]+"J"+G.day)%topJ.length,guard=0;
       while(usedJ[topJ[k]]&&guard++<topJ.length)k=(k+1)%topJ.length;
       usedJ[topJ[k]]=1;
@@ -1177,7 +2002,10 @@ function eligible(hIdx,r){
   if(ageOf(hIdx)>=10)return false; /* emekli */
   if(isStud(hIdx))return false; /* damızlık koşamaz */
   if(r.breed!=="*"&&h[1]!==r.breed)return false;
-  if(hpOf(hIdx)<r.lo||hpOf(hIdx)>r.hi)return false;
+  if(hpOf(hIdx)<r.lo||hpOf(hIdx)>r.hi){
+    /* 🎫 kalifiye at güç şartından muaftır (18 puana kadar): Tay Deneme'yi kazanan Gazi'ye girer */
+    if(!(r.named&&hpOf(hIdx)>=r.lo-18&&hpOf(hIdx)<=r.hi&&qualifies(hIdx,r)))return false;
+  }
   /* 🏁 MAIDEN KURALI: koşu kazanmış at bir daha maiden koşamaz (gerçek TJK kuralı) */
   if(/Maiden/.test(r.name)&&((G.hlog||{})[hIdx]||[]).some(e=>e.p===1))return false;
   /* 🎂 GERÇEK YAŞ/CİNSİYET ŞARTLARI (TJK kuralları) */
@@ -1257,10 +2085,35 @@ const styleName=i=>{const s=styleOf(i);return (s<0.33?"öne kaçar":s<0.67?"deng
 /* ============ MENÜ / SEKMELER ============ */
 function showTab(n){
   G.tab=n;
-  for(let i=0;i<14;i++)document.getElementById("tab"+i).classList.toggle("on",i===n);
+  for(let i=0;i<15;i++)document.getElementById("tab"+i).classList.toggle("on",i===n);
   const el=document.getElementById("tabContent");
-  const views=[viewHome,viewStable,viewTraining,viewMarket,viewTransfers,viewProgram,viewStaff,viewStandings,viewAch,viewJockeys,viewInbox,viewCalendar,viewCareer,viewQualPath];
+  const views=[viewHome,viewStable,viewTraining,viewMarket,viewTransfers,viewProgram,viewStaff,viewStandings,viewAch,viewJockeys,viewInbox,viewCalendar,viewCareer,viewQualPath,viewAltiLog];
   el.innerHTML=views[n]();
+}
+/* ============ 🎰 ALTILI SONUÇLARI (gerçekteki gibi tevzi arşivi) ============ */
+function viewAltiLog(){
+  const log=G.altiLog||[];
+  let html='<div class="card"><h3>🎰 Altılı Ganyan Sonuçları</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">Her günün altılısında kazanan 6 at, ganyanları ve tevzi (₺1.000 birim kupona ödenen). Yüksek ganyanlı sürprizler tevziyi uçurur!</p>';
+  if((G.altiCarry||0)>0)html+='<p style="font-weight:700;color:#b03a2e;margin:4px 0">🔄 DEVREDEN HAVUZ: '+fmt(G.altiCarry)+' — bugünkü altılıda dev ödül var!</p>';
+  if(!log.length)html+='<p class="muted" style="margin:8px 0">Henüz sonuçlanmış altılı yok — ilk günün koşuları bitince burada birikecek.</p>';
+  else{
+    html+='<table><tr><th>Gün</th><th>Kazananlar (ganyan)</th><th style="text-align:right">Havuz</th><th style="text-align:right">Bilen</th><th style="text-align:right">Tevzi</th></tr>'
+      +log.map(e=>{
+        return '<tr><td style="white-space:nowrap"><b>'+e.d+'</b>'+(e.y!==G.year?'<span class="muted">/'+e.y+'</span>':'')+'</td>'
+          +'<td style="font-size:10px">'+e.legs.map(l=>l.n+' <b style="color:#8a6d1d">('+(l.g?l.g.toFixed(2):'—')+')</b>').join(' · ')+'</td>'
+          +'<td style="text-align:right" class="muted">'+fmt(e.pool||0)+'</td>'
+          +'<td style="text-align:right">'+(e.rolled?'—':(e.winners||0))+'</td>'
+          +'<td style="text-align:right;font-weight:700;'+(e.rolled?'color:#b03a2e':'color:#2e7d32')+'">'+(e.rolled?'DÖNDÜ 🔄':fmt(e.div))+'</td></tr>';
+      }).join('')+'</table>';
+    const paid=log.filter(e=>!e.rolled&&e.div);
+    if(paid.length){
+      const mx=paid.reduce((m,e)=>e.div>m.div?e:m,paid[0]);
+      html+='<p class="muted" style="margin-top:8px">📈 Kayıtlardaki rekor tevzi: <b>'+fmt(mx.div)+'</b> ('+mx.d+'. gün, '+mx.winners+' kişi bildi)</p>';
+    }
+  }
+  html+='</div>';
+  return html;
 }
 /* 🎫 BÜYÜK KOŞU YOLU sekmesi: tüm sezonun isimli koşuları + atlarının hak durumu */
 function viewQualPath(){
@@ -1744,7 +2597,11 @@ function sellHorse(i){
 function viewProgram(){
   const P=G.program;
   let html='<div class="card"><h3>'+dateStr(G.day)+' — Yarış Günü</h3><p class="muted" style="margin-top:4px">Bugün koşular <b>'+TRACKS[P.pair[0]]+'</b> ve <b>'+TRACKS[P.pair[1]]+'</b> hipodromlarında. Kayıt: ikramiyenin %2\'si (isimli koşuda %3) + jokey ücreti + at nakliyesi. İkramiye dağılımı: %60 / %20 / %10 / %6 / %4</p>'
-  +'<div style="text-align:right;margin-top:6px">'+(G.online
+  +'<div style="text-align:right;margin-top:6px">'
+    +((G.alti&&G.alti.day===G.day)
+      ?'<span style="font-size:11px;font-weight:700;color:#8a6d1d">🎫 Altılı kuponun oynandı ('+fmt(G.alti.amt)+') </span>'
+      :'<button class="sec" onclick="openAlti()">🎫 Altılı Ganyan Oyna</button> ')
+    +(G.online
     ?'<b style="color:#8a6d1d">🌐 Deklareler kapanışta kilitlenir, koşular otomatik koşulur</b>'
     :'<button onclick="simDay()">⏩ Günün Kalan Koşularını Simüle Et</button>')+'</div></div>';
   /* 📺 online lig: koşulan günlerin tekrarları */
@@ -1854,9 +2711,12 @@ function openBet(rid){
     +"<p style='margin:8px 0 4px'>Bahis türü:</p><select id='betT' style='width:100%' onchange='updBet()'>"
     +"<option value='G'>GANYAN — atın 1. gelir (ganyan × tutar)</option>"
     +"<option value='P'>PLASE — atın ilk 2'ye girer (daha garantili, düşük öder)</option>"
-    +"<option value='S'>SIRALI İKİLİ — 1. ve 2.'yi SIRASIYLA bil (büyük öder!)</option></select>"
+    +"<option value='S'>SIRALI İKİLİ — 1. ve 2.'yi SIRASIYLA bil (büyük öder!)</option>"
+    +"<option value='T'>İLK ÜÇ — 3 atın herhangi sırayla ilk 3'ü oluşturur</option>"
+    +"<option value='U'>SIRALI ÜÇLÜ — 1-2-3'ü SIRASIYLA bil (DEV öder!)</option></select>"
     +"<p style='margin:8px 0 4px'>1. at:</p><select id='betH1' style='width:100%' onchange='updBet()'>"+opts+"</select>"
     +"<p style='margin:8px 0 4px' id='betH2L'>2. at:</p><select id='betH2' style='width:100%' onchange='updBet()'>"+opts+"</select>"
+    +"<p style='margin:8px 0 4px' id='betH3L'>3. at:</p><select id='betH3' style='width:100%' onchange='updBet()'>"+opts+"</select>"
     +"<p style='margin:8px 0 4px'>Tutar (₺1.000 – "+fmt(cap)+"):</p><input id='betA' type='number' min='1000' max='"+cap+"' step='1000' value='"+Math.min(10000,cap)+"' style='width:100%' oninput='updBet()'>"
     +"<p id='betPay' style='margin:10px 0;font-weight:700;color:#2e7d32'></p>"
     +"<div class='flexrow' style='justify-content:flex-end'><button class='sec' onclick='closeModal()'>Vazgeç</button><button onclick='confirmBet("+rid+","+cap+")'>Kuponu Bas</button></div>";
@@ -1865,31 +2725,167 @@ function openBet(rid){
 }
 function updBet(){
   const t=document.getElementById("betT").value;
-  const h1=+document.getElementById("betH1").value,h2=+document.getElementById("betH2").value;
+  const h1=+document.getElementById("betH1").value,h2=+document.getElementById("betH2").value,h3=+document.getElementById("betH3").value;
   const amt=+document.getElementById("betA").value||0;
-  const s2=t==="S";
-  document.getElementById("betH2").style.display=s2?"":"none";
-  document.getElementById("betH2L").style.display=s2?"":"none";
-  const o1=window._betOdds[h1]||2,o2=window._betOdds[h2]||2;
+  const use2=(t==="S"||t==="T"||t==="U"),use3=(t==="T"||t==="U");
+  document.getElementById("betH2").style.display=use2?"":"none";
+  document.getElementById("betH2L").style.display=use2?"":"none";
+  document.getElementById("betH3").style.display=use3?"":"none";
+  document.getElementById("betH3L").style.display=use3?"":"none";
+  const o1=window._betOdds[h1]||2,o2=window._betOdds[h2]||2,o3=window._betOdds[h3]||2;
   let pay=0;
   if(t==="G")pay=amt*o1;
   else if(t==="P")pay=amt*Math.max(1.15,o1*0.35);
-  else pay=amt*Math.min(400,o1*o2*0.75);
-  document.getElementById("betPay").textContent="Tutarsa kazanç: "+fmt(Math.round(pay))+(s2&&h1===h2?" — ⚠ iki farklı at seçmelisin!":"");
+  else if(t==="S")pay=amt*Math.min(400,o1*o2*0.75);
+  else if(t==="T")pay=amt*Math.min(600,o1*o2*o3*0.12);
+  else pay=amt*Math.min(1500,o1*o2*o3*0.5);
+  const dupWarn=(use2&&h1===h2)||(use3&&(h1===h3||h2===h3));
+  document.getElementById("betPay").textContent="Tutarsa kazanç: "+fmt(Math.round(pay))+(dupWarn?" — ⚠ FARKLI atlar seçmelisin!":"");
 }
 function confirmBet(rid,cap){
   const t=document.getElementById("betT").value;
   const h1=+document.getElementById("betH1").value;
-  const h2=t==="S"?+document.getElementById("betH2").value:null;
+  const use2=(t==="S"||t==="T"||t==="U"),use3=(t==="T"||t==="U");
+  const h2=use2?+document.getElementById("betH2").value:null;
+  const h3=use3?+document.getElementById("betH3").value:null;
   const amt=Math.floor((+document.getElementById("betA").value||0)/1000)*1000;
   if(amt<1000||amt>cap)return toast("Tutar ₺1.000 ile "+fmt(cap)+" arasında olmalı.");
-  if(t==="S"&&h1===h2)return toast("Sıralı ikilide iki FARKLI at seçmelisin.");
+  if(use2&&h1===h2)return toast("Farklı atlar seçmelisin.");
+  if(use3&&(h1===h3||h2===h3))return toast("Üç FARKLI at seçmelisin.");
   if(G.money<amt)return toast("Kasan yetmiyor.");
   G.money-=amt;
-  G.bets["d"+G.day+"_"+rid]={t,amt,h1,h2,o1:window._betOdds[h1]||2,o2:h2!=null?(window._betOdds[h2]||2):0};
+  G.bets["d"+G.day+"_"+rid]={t,amt,h1,h2,h3,
+    o1:window._betOdds[h1]||2,o2:h2!=null?(window._betOdds[h2]||2):0,o3:h3!=null?(window._betOdds[h3]||2):0};
   addExp("bahis",amt);
   closeModal();save();refreshTop();showTab(5);
   toast("🎰 Kupon basıldı: "+fmt(amt)+" — sonuç koşudan sonra!");
+}
+/* ============ 🎫 ALTILI GANYAN — GERÇEK TJK SİSTEMİ ============
+   Havuz (parimutüel): oynanan toplam para → %50 bilenlere dağıtılır.
+   Bilen sayısı halkın AGF dağılımından hesaplanır; kimse bilemezse DÖNER (jackpot büyür).
+   Çoklu at işaretlenebilir: kombinasyon arttıkça kupon bedeli katlanır. */
+function altiLegs(){return G.program.races.filter(r=>!r.named).slice(2,8);}
+const ALTI_BIRIM=1000; /* birim kupon bedeli */
+function altiPool(){ /* günün havuzu: taban + devir (deterministik) */
+  return 25000000+(hashStr("alti"+G.day+"_"+G.year+(G.online?G.online.lid:""))%20000001)+(G.altiCarry||0);
+}
+function openAlti(){
+  const legs=altiLegs();
+  if(legs.length<6)return toast("Bugün altılı oynanacak 6 ayak yok.");
+  if(legs.some(r=>r.done))return toast("⏳ Ayaklardan biri koşuldu — altılı kuponu için geç kaldın!");
+  if(G.alti&&G.alti.day===G.day)return toast("Bugünün altılı kuponunu zaten bastın.");
+  const cap=Math.min(250000,Math.floor(G.money*0.15/1000)*1000);
+  if(cap<ALTI_BIRIM)return toast("Altılı için yeterli paran yok.");
+  window._altiOdds={};
+  let html="<h3>🎫 Altılı Ganyan — "+dateStr(G.day)+"</h3>"
+    +"<p class='muted' style='margin:6px 0'>Günün son 6 koşusu. Her ayakta İSTEDİĞİN KADAR at işaretle — kombinasyon arttıkça kupon bedeli katlanır (birim "+fmt(ALTI_BIRIM)+"). Bugünkü havuz: <b>"+fmt(altiPool())+"</b>"+((G.altiCarry||0)>0?" <b style='color:#b03a2e'>(devreden dahil! 🔥)</b>":"")+"</p>";
+  legs.forEach((r,k)=>{
+    const o=raceOdds(r);
+    window._altiOdds[r.id]={};o.forEach(p=>window._altiOdds[r.id][p.h]=p.gny);
+    html+="<p style='margin:8px 0 2px'><b>"+(k+1)+". ayak:</b> "+r.name+" ("+r.dist+"m)</p><div data-leg='"+k+"' data-rid='"+r.id+"'>"
+      +o.map(p=>"<label style='display:inline-block;margin:1px 8px 1px 0;font-size:11px;white-space:nowrap'><input type='checkbox' class='altc"+k+"' value='"+p.h+"' onchange='updAlti()'> "+HORSES[p.h][0]+" <span style='color:#8a6d1d'>("+p.gny.toFixed(2)+")</span></label>").join("")+"</div>";
+  });
+  html+="<p id='altiPay' style='margin:12px 0;font-weight:700;color:#2e7d32'></p>"
+    +"<div class='flexrow' style='justify-content:flex-end'><button class='sec' onclick='closeModal()'>Vazgeç</button><button id='altiBtn' onclick='confirmAlti("+cap+")'>Kuponu Bas</button></div>";
+  document.getElementById("modalBox").innerHTML=html;
+  document.getElementById("modalBg").classList.add("show");
+  updAlti();
+}
+function altiCombos(){
+  let combos=1,okAll=true;
+  for(let k=0;k<6;k++){
+    const n=document.querySelectorAll(".altc"+k+":checked").length;
+    if(n===0)okAll=false;
+    combos*=Math.max(1,n);
+  }
+  return {combos,okAll};
+}
+function updAlti(){
+  const el=document.getElementById("altiPay");if(!el)return;
+  const {combos,okAll}=altiCombos();
+  const cost=combos*ALTI_BIRIM;
+  const cap=Math.min(250000,Math.floor(G.money*0.15/1000)*1000);
+  let txt=combos+" kombinasyon × "+fmt(ALTI_BIRIM)+" = <b>"+fmt(cost)+"</b>";
+  if(!okAll)txt+=" — ⚠ her ayakta en az 1 at işaretle!";
+  else if(cost>cap)txt+=" — ⚠ limit "+fmt(cap)+", at azalt!";
+  else txt+=" · Bilen sayısına göre havuz bölüşülür — tek bilen SENSEN havuzun yarısı senin! 💰";
+  el.innerHTML=txt;
+  const btn=document.getElementById("altiBtn");
+  if(btn)btn.disabled=!okAll||cost>cap||cost>G.money;
+}
+function confirmAlti(cap){
+  const {combos,okAll}=altiCombos();
+  const cost=combos*ALTI_BIRIM;
+  if(!okAll)return toast("Her ayakta en az 1 at işaretlemelisin.");
+  if(cost>cap)return toast("Kupon bedeli limiti aşıyor: "+fmt(cost)+" > "+fmt(cap));
+  if(G.money<cost)return toast("Kasan yetmiyor.");
+  const picks={};
+  document.querySelectorAll("[data-leg]").forEach(divEl=>{
+    const k=divEl.dataset.leg,rid=+divEl.dataset.rid;
+    picks[rid]=[...document.querySelectorAll(".altc"+k+":checked")].map(c=>+c.value);
+  });
+  G.money-=cost;addExp("bahis",cost);
+  G.alti={day:G.day,cost,combos,picks};
+  closeModal();save();refreshTop();showTab(5);
+  toast("🎫 Altılı kuponu basıldı: "+combos+" kombinasyon, "+fmt(cost)+" — 6 ayak seni bekliyor!");
+}
+/* 💰 GÜN SONU: havuz → bilen sayısı → tevzi (kimse bilemezse DÖNER) */
+function recordAlti(){
+  const legs=altiLegs();
+  if(legs.length<6||legs.some(r=>!r.done||!r.result||!r.result[0]))return null;
+  G.altiLog=G.altiLog||[];
+  let rec=G.altiLog.find(e=>e.d===G.day&&e.y===G.year);
+  if(rec)return rec;
+  const pool=altiPool();
+  const net=Math.round(pool*0.5);
+  /* halkın isabet olasılığı: her ayakta kazananın AGF payı (ganyanın tersi) */
+  let prod=1;
+  legs.forEach(r=>{const g=r.result[0].g||3;prod*=Math.min(0.6,Math.max(0.005,0.9/g));});
+  /* bilen sayısı: kupon adedi × isabet olasılığı × kombine kapsama çarpanı
+     (halk çoklu at oynar — gerçekte döndü nadirdir, sürpriz günlerde olur) */
+  const winners=Math.floor((pool/ALTI_BIRIM)*prod*25);
+  rec={d:G.day,y:G.year,legs:legs.map(r=>({n:r.result[0].name,g:r.result[0].g||0})),
+    pool,winners,div:winners>0?Math.round(net/winners):0,rolled:winners<1};
+  G.altiLog.unshift(rec);
+  if(G.altiLog.length>21)G.altiLog.pop();
+  if(rec.rolled){
+    G.altiCarry=(G.altiCarry||0)+net; /* 🔄 DÖNDÜ — havuz yarına devreder */
+    pushNews("🎫","ALTILI DÖNDÜ! 🔄","Kimse 6'yı bilemedi! "+fmt(net)+" yarının havuzuna devretti. Kazananlar: "+rec.legs.map(l=>l.n+" ("+(l.g?l.g.toFixed(2):"—")+")").join(" · "));
+  }else{
+    G.altiCarry=0;
+    pushNews("🎫","Altılı "+fmt(rec.div)+" verdi","Havuz "+fmt(pool)+" → "+rec.winners+" kişi bildi. Kazananlar: "+rec.legs.map(l=>l.n+" ("+(l.g?l.g.toFixed(2):"—")+")").join(" · "));
+  }
+  return rec;
+}
+function resolveAlti(){
+  if(!G.alti||G.alti.day!==G.day)return;
+  const rec=recordAlti();
+  if(!rec)return;
+  const A=G.alti;G.alti=null;
+  let hit=0,detail=[];
+  const legs=altiLegs();
+  legs.forEach(r=>{
+    const winName=r.result[0].name;
+    const sel=A.picks[r.id]||[];
+    const ok=sel.some(h=>HORSES[h][0]===winName);
+    if(ok)hit++;
+    detail.push((ok?"✅":"❌")+winName);
+  });
+  if(hit===6){
+    let pay;
+    if(rec.rolled){ /* halktan kimse bilememişti — TEK BİLEN SENSİN: net havuz senin! */
+      pay=Math.round(rec.pool*0.5);
+      G.altiCarry=0;rec.rolled=false;rec.winners=1;rec.div=pay;
+      pushNews("🎫","JACKPOT!!! ALTILIYI TEK BİLEN SENSİN! 🎉🎉🎉","Havuz "+fmt(rec.pool)+" → net "+fmt(pay)+" TAMAMEN SENİN! "+detail.join(" · "));
+    }else{
+      pay=rec.div; /* bilenlerden birisin: tevzi payını alırsın */
+      pushNews("🎫","ALTILI TUTTU! 🎉","6/6! "+rec.winners+" kişiyle paylaştın — tevzi "+fmt(pay)+". Kupon "+fmt(A.cost)+" → net "+fmt(pay-A.cost)+".");
+    }
+    G.money+=pay;
+    setTimeout(()=>toast("🎫🎉 ALTILI TUTTU! +"+fmt(pay)),1000);
+  }else{
+    pushNews("🎫","Altılı tutmadı ("+hit+"/6)",detail.join(" · ")+" — "+fmt(A.cost)+" yandı."+(rec.rolled?" Üstelik altılı DÖNDÜ — yarın dev havuz var! 🔄":" Bugünkü tevzi: "+fmt(rec.div)+"."));
+  }
 }
 function updTacHint(){
   const el=document.getElementById("tacHint"),sel=document.getElementById("selH");
@@ -2145,6 +3141,8 @@ function nextDay(silent){
 }
 /* günlük bakım/antrenman/haber döngüsü (koşular hariç) */
 function dayTick(silent){
+  recordAlti();  /* 🎫 günün altılı tevzisi kaydedilir (kupon olmasa bile) */
+  resolveAlti(); /* varsa kupon çözülür */
   let cost=G.owned.length*UPKEEP;
   /* 🌾 premium yem programı */
   if(G.feed&&G.owned.length){const fc=G.owned.length*15000;cost+=fc;addExp("yem",fc);}
@@ -2325,6 +3323,15 @@ function genFoal(stud){
   let name,guard=0;
   do{name=pick(ON)+" "+pick(SON);guard++;}while(guard<60&&HORSES.some(h=>h[0]===name));
   if(HORSES.some(h=>h[0]===name))name+=" "+(G.year%100);
+  /* ✏️ TAYINA SEN İSİM VER */
+  try{
+    let custom=(window.prompt("🍼 "+sire[0]+"'nın tayı doğdu!\nTayına isim ver (boş bırakırsan: "+name+")","")||"").trim().toUpperCase();
+    if(custom){
+      custom=custom.replace(/[^A-ZÇĞİÖŞÜÂ0-9 ]/g,"").replace(/\s+/g," ").slice(0,18).trim();
+      if(custom.length>=3&&!HORSES.some(h=>h[0]===custom))name=custom;
+      else toast("İsim uygun değildi (3-18 karakter, benzersiz olmalı) — tay '"+name+"' olarak tescillendi.");
+    }
+  }catch(e){}
   const gem=Math.random()<0.12; /* istisnai tay şansı */
   const hp=Math.max(20,Math.min(95,Math.round(hpOf(stud.h)*0.5+rnd(12,32)+(gem?12:0))));
   const cins=Math.random()<0.5?"E":"D";
@@ -2356,6 +3363,27 @@ function newSeason(){
   pushNews("🎉","Yeni sezon başladı",G.year+" sezonu açıldı. Kış müzayedesi seni bekliyor — bol şans!");
   /* 🍼 damızlıklardan taylar doğar */
   (G.studs||[]).forEach(s=>genFoal(s));
+  /* 🌟 YENİ NESİL: her kış ülke çapında yeni 2 yaşlılar tescillenir —
+     dünya yaşlanmaz, gelecek sezonların Gazi adayları hep doğar */
+  {
+    const ON2=["ŞAH","BOZ","GÖK","DEMİR","ATEŞ","YILDIRIM","TAN","KIR","ALTIN","POYRAZ","TUFAN","SARP","KAĞAN","TOROS"];
+    const SON2=["BATUR","KANAT","YELİ","HAN","FIRTINASI","IŞIĞI","RÜZGARI","YILDIZI","PENÇESİ","AKINI"];
+    const owners=[...new Set(HORSES.map(h=>h[5]).filter(o=>o&&o!=="-"&&o!==G.stable&&o!=="Damızlık Deposu"))];
+    for(let k=0;k<12;k++){
+      const irk=k<8?"İ":"A";
+      let nm,g=0;
+      do{nm=pick(ON2)+" "+pick(SON2);g++;}while(g<80&&HORSES.some(h=>h[0]===nm));
+      if(HORSES.some(h=>h[0]===nm))nm+=" "+(G.year%100);
+      const hp=Math.round(55+rnd(0,25)+((k===0||k===8)?rnd(8,18):0)); /* her nesilde 1-2 yıldız adayı */
+      const cins=Math.random()<0.6?"E":"D";
+      const ba=2-(G.year-(G.y0||2026));
+      const own=owners.length?pick(owners):"-";
+      const cred="🌟 yeni nesil 2 yaşlı (temsili isim, "+G.year+" doğumlu)";
+      (G.extra=G.extra||[]).push({k:"y",n:nm,irk,c:cins,hp,ba,own,cred});
+      HORSES.push([nm,irk,cins,hp,ba,own,cred]);
+    }
+    pushNews("🌟","Yeni nesil piste iniyor","Bu yılın 2 yaşlıları tescillendi — 12 yeni tay At Pazarı'nda. İçlerinden geleceğin Gazi şampiyonu çıkabilir!");
+  }
   Object.keys(G.stats).forEach(k=>G.stats[k]={runs:0,w:0,p:0,earn:0});
   genProgram();save();refreshTop();
   /* kış müzayedesi: 6 rastgele at %30 indirimli */
@@ -3778,7 +4806,7 @@ function finishRace(){
       }
       G.history.push({d:G.day,r:r.name,h:h[0],p:i+1,pr:prize});
     }
-    res.push({name:h[0],owner});
+    res.push({name:h[0],owner,g:gnyMap[u.h]||0});
     /* her atın oyun içi koşu geçmişi (sahibinden bağımsız) */
     if(!G.hlog)G.hlog={};
     (G.hlog[u.h]=G.hlog[u.h]||[]).push({d:G.day,y:G.year,r:r.name,p:i+1,pr:prize,j:JOCKEYS[u.j][0],g:gnyMap[u.h],rt:u.rt});
@@ -3806,12 +4834,14 @@ function finishRace(){
     if(bet){
       delete G.bets[bk];
       const posOf=hh=>order.findIndex(u=>u.h===hh);
-      const p1=posOf(bet.h1),p2=bet.h2!=null?posOf(bet.h2):-1;
+      const p1=posOf(bet.h1),p2=bet.h2!=null?posOf(bet.h2):-1,p3=bet.h3!=null?posOf(bet.h3):-1;
       let winAmt=0,txt="";
-      if(p1<0||(bet.h2!=null&&p2<0)){winAmt=bet.amt;txt="at koşmadı — kupon iade";}
+      if(p1<0||(bet.h2!=null&&p2<0)||(bet.h3!=null&&p3<0)){winAmt=bet.amt;txt="at koşmadı — kupon iade";}
       else if(bet.t==="G"&&p1===0){winAmt=Math.round(bet.amt*bet.o1);txt="GANYAN TUTTU!";}
       else if(bet.t==="P"&&p1<=1){winAmt=Math.round(bet.amt*Math.max(1.15,bet.o1*0.35));txt="PLASE TUTTU!";}
       else if(bet.t==="S"&&p1===0&&p2===1){winAmt=Math.round(bet.amt*Math.min(400,bet.o1*bet.o2*0.75));txt="SIRALI İKİLİ TUTTU! 🎉";}
+      else if(bet.t==="T"&&p1<=2&&p2<=2&&p3<=2){winAmt=Math.round(bet.amt*Math.min(600,bet.o1*bet.o2*bet.o3*0.12));txt="İLK ÜÇ TUTTU! 🎉";}
+      else if(bet.t==="U"&&p1===0&&p2===1&&p3===2){winAmt=Math.round(bet.amt*Math.min(1500,bet.o1*bet.o2*bet.o3*0.5));txt="SIRALI ÜÇLÜ TUTTU!!! 🎉🎉";}
       if(winAmt>0){
         G.money+=winAmt;
         pushNews("🎰","Kupon: "+txt,r.name+" — yatırılan "+fmt(bet.amt)+", ödeme "+fmt(winAmt)+".");
@@ -3822,6 +4852,8 @@ function finishRace(){
       }
     }
   }
+  /* 🎫 altılının son ayağı da koştuysa tevzi açıklanır, kupon çözülür */
+  if(altiLegs().length===6&&altiLegs().every(x=>x.done)){recordAlti();resolveAlti();}
   checkAchBasics();
   /* TJK TV usulü: sonuç panosu yarış ekranının ÜZERİNDE açılır */
   const resHtml='<h3 style="color:#e8c96a;margin-bottom:2px">🏁 RESMİ SONUÇ'+(R.photo?' 📸':'')+'</h3>'

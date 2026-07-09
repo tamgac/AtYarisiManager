@@ -213,7 +213,8 @@ canvas{width:100%;display:block;border-radius:4px;}
       <button id="tab12" class="mi" onclick="showTab(12)">Kariyerim & Rekorlar</button>
       <button id="tab8" class="mi" onclick="showTab(8)">Başarılar</button>
       <div class="spacer"></div>
-      <button class="mi" onclick="toMenu()" style="color:#aab6cc">💾 Kariyer Değiştir</button>
+      <button class="mi" onclick="manualSave()" style="color:#8fd694">💾 Oyunu Kaydet</button>
+      <button class="mi" onclick="toMenu()" style="color:#aab6cc">📂 Kariyer Değiştir</button>
       <button id="btnNext" onclick="nextDay()">Günü Bitir ▸</button>
     </div>
     <div id="content"><div id="tabContent"></div></div>
@@ -849,6 +850,14 @@ function renderSaves(){
     +'<button class="warn" onclick="event.stopPropagation();delSlot(\''+s.id+'\')" title="Kariyeri sil">🗑</button></span></div>').join("");
 }
 function toMenu(){save();G=null;renderSaves();show("scrSaves");}
+function manualSave(){
+  if(!G)return;
+  save();
+  toast("💾 Kaydedildi: "+G.stable+" — "+G.year+" · Gün "+G.day);
+}
+/* güvence: sekme kapanırken / arka plana alınırken otomatik kaydet */
+window.addEventListener("beforeunload",()=>{if(G)save();});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&G)save();});
 function playSlot(id){
   if(load(id)){if(!G.program)genProgram();show("scrGame");refreshTop();showTab(G.tab||0);}
   else toast("Kayıt okunamadı!");
@@ -1631,8 +1640,8 @@ function showHorse(i){
     Object.keys(GEAR).forEach(k=>{
       const g=GEAR[k],on=gr.includes(k);
       html+='<div class="attrRow"><span><b>'+g.ad+'</b><br><span class="muted">'+g.desc+'</span></span>'
-        +'<span>'+(on?'<button class="warn trainBtn" onclick="removeGear('+i+',\"'+k+'\")">Çıkar</button>'
-          :'<button class="trainBtn" '+(gr.length>=2||G.money<g.fiyat?'disabled':'')+' onclick="buyGear('+i+',\"'+k+'\")">Tak '+fmt(g.fiyat)+'</button>')+'</span></div>';
+        +'<span>'+(on?'<button class="warn trainBtn" onclick="removeGear('+i+',\''+k+'\')">Çıkar</button>'
+          :'<button class="trainBtn" '+(gr.length>=2||G.money<g.fiyat?'disabled':'')+' onclick="buyGear('+i+',\''+k+'\')">Tak '+fmt(g.fiyat)+'</button>')+'</span></div>';
     });
     html+='<p class="muted" style="margin-top:6px">Takı bir kez alınır, o ata takılı kalır. Çıkarılan takı iade edilmez.</p></div>';
   }

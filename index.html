@@ -19,8 +19,11 @@ input,select{background:#fff;border:1px solid var(--line);color:var(--ink);borde
 .screen{display:none;}
 .screen.active{display:block;}
 /* Başlangıç ekranları */
-#scrYear,#scrSetup{max-width:1100px;margin:0 auto;padding:16px;text-align:center;color:var(--white);}
-#scrYear{padding-top:8vh;}
+#scrYear,#scrSetup,#scrSaves{max-width:1100px;margin:0 auto;padding:16px;text-align:center;color:var(--white);}
+#scrYear,#scrSaves{padding-top:8vh;}
+#scrSaves h1{font-size:32px;color:var(--gold);margin-bottom:6px;letter-spacing:1px;}
+.saveCard{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--navy);border:2px solid var(--navyL);border-radius:4px;padding:12px 16px;margin:8px auto;max-width:520px;cursor:pointer;transition:.15s;}
+.saveCard:hover{border-color:var(--gold);}
 #scrYear h1{font-size:32px;color:var(--gold);margin-bottom:6px;letter-spacing:1px;}
 #scrYear .sub{color:#aab6cc;margin-bottom:36px;}
 .yearBtns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
@@ -115,16 +118,27 @@ canvas{width:100%;display:block;border-radius:4px;}
 #fabNext.show{display:block;}
 #content{padding-bottom:78px;}
 #preOdds{inset:4% 3% !important;}
-#scrRace{padding:8px;}
+#scrRace{padding:8px;padding-bottom:80px;}
+#btnBack{position:fixed;left:10px;right:10px;bottom:10px;z-index:45;padding:15px;font-size:17px;font-weight:700;background:linear-gradient(#e8c96a,#c8a23c);border:1px solid #8a6d1d;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.4);}
 </style>
 </head>
 <body>
 
+<!-- KAYITLI KARİYERLER -->
+<div id="scrSaves" class="screen active">
+  <h1>🏇 AT SAHİBİ MENAJERİ</h1>
+  <div class="sub" style="color:#aab6cc;margin-bottom:30px">Kariyerini seç veya yeni bir kariyer başlat.</div>
+  <h2 style="margin-bottom:14px">Kayıtlı Kariyerler</h2>
+  <div id="saveList"></div>
+  <button onclick="show('scrYear')" style="margin-top:18px;padding:12px 30px;font-size:14px">➕ Yeni Kariyer Başlat</button>
+</div>
+
 <!-- SEZON SEÇİMİ -->
-<div id="scrYear" class="screen active">
+<div id="scrYear" class="screen">
   <h1>🏇 AT SAHİBİ MENAJERİ</h1>
   <div class="sub">Türkiye'nin gerçek atları ve jokeyleriyle ahırını kur, şampiyon yetiştir.<br>Veriler: TJK gerçek handikap puanları ve jokey istatistikleri.</div>
   <h2 style="margin-bottom:18px">Sezon Seç</h2>
+  <p style="margin-bottom:14px"><button class="sec" onclick="renderSaves();show('scrSaves')">◂ Kayıtlı Kariyerlere Dön</button></p>
   <div class="yearBtns">
     <div class="yearCard locked">1996<small>yakında</small></div>
     <div class="yearCard" onclick="pickYear(2008)">2008<small>Pan River, Kafkaslı, Turbo — 110+ gerçek at</small></div>
@@ -195,6 +209,7 @@ canvas{width:100%;display:block;border-radius:4px;}
       <button id="tab12" class="mi" onclick="showTab(12)">Kariyerim & Rekorlar</button>
       <button id="tab8" class="mi" onclick="showTab(8)">Başarılar</button>
       <div class="spacer"></div>
+      <button class="mi" onclick="toMenu()" style="color:#aab6cc">💾 Kariyer Değiştir</button>
       <button id="btnNext" onclick="nextDay()">Günü Bitir ▸</button>
     </div>
     <div id="content"><div id="tabContent"></div></div>
@@ -800,17 +815,63 @@ function startGame(){
   const n=document.getElementById("inpStable").value.trim()||"Tamgaç Ekürisi";
   applyYear(PICKYEAR);
   G=newGame(n);G.year=PICKYEAR;G.y0=PICKYEAR;G.silk1=PICK1;G.silk2=PICK2;
+  G.slot="s"+Date.now().toString(36); /* yeni kariyer = yeni kayıt dosyası */
   G.money=DIFFS[PICKDIFF][1];G.diff=DIFFS[PICKDIFF][0];
   genProgram();save();show("scrGame");refreshTop();showTab(3);
   toast("Hoş geldin! Önce At Pazarı'ndan kendine at al.");
 }
-function save(){try{localStorage.setItem("atmenajer",JSON.stringify(G));}catch(e){}}
-function load(){try{const d=localStorage.getItem("atmenajer");if(d){const g=JSON.parse(d);
+/* ===== ÇOKLU KAYIT SİSTEMİ (FM tarzı kariyer slotları) ===== */
+function slots(){try{return JSON.parse(localStorage.getItem("atmSlots")||"[]");}catch(e){return [];}}
+function setSlots(a){try{localStorage.setItem("atmSlots",JSON.stringify(a));}catch(e){}}
+function migrateLegacy(){ /* tek kayıtlı eski sürümden geçiş */
+  try{
+    const old=localStorage.getItem("atmenajer");
+    if(!old)return;
+    const g=JSON.parse(old);if(!g||!g.v)return;
+    const id="s"+Date.now().toString(36);
+    localStorage.setItem("atmenajer_"+id,old);
+    const a=slots();a.push({id,stable:g.stable||"Eküri",year:g.year||2026,y0:g.y0||2026,day:g.day||1,ts:Date.now()});
+    setSlots(a);localStorage.removeItem("atmenajer");
+  }catch(e){}
+}
+function renderSaves(){
+  const el=document.getElementById("saveList");if(!el)return;
+  const a=slots().sort((x,y)=>(y.ts||0)-(x.ts||0));
+  if(!a.length){el.innerHTML='<p style="color:#aab6cc;margin:16px 0">Henüz kayıtlı kariyer yok — aşağıdan yeni bir kariyer başlat.</p>';return;}
+  el.innerHTML=a.map(s=>'<div class="saveCard" onclick="playSlot(\''+s.id+'\')">'
+    +'<div style="text-align:left"><b style="font-size:15px;color:#e8c96a">🏇 '+s.stable+'</b>'
+    +'<div style="color:#aab6cc;font-size:11px;margin-top:3px">'+(s.y0||s.year)+' kariyeri · '+s.year+' sezonu · Gün '+s.day+'/'+SEASON_DAYS+'</div></div>'
+    +'<span style="white-space:nowrap"><button class="sec" onclick="event.stopPropagation();playSlot(\''+s.id+'\')">Oyna ▸</button> '
+    +'<button class="warn" onclick="event.stopPropagation();delSlot(\''+s.id+'\')" title="Kariyeri sil">🗑</button></span></div>').join("");
+}
+function toMenu(){save();G=null;renderSaves();show("scrSaves");}
+function playSlot(id){
+  if(load(id)){if(!G.program)genProgram();show("scrGame");refreshTop();showTab(G.tab||0);}
+  else toast("Kayıt okunamadı!");
+}
+function delSlot(id){
+  if(!confirm("Bu kariyer kalıcı olarak silinsin mi?"))return;
+  setSlots(slots().filter(s=>s.id!==id));
+  try{localStorage.removeItem("atmenajer_"+id);}catch(e){}
+  renderSaves();
+}
+function save(){
+  if(!G)return;
+  if(!G.slot)G.slot="s"+Date.now().toString(36);
+  try{
+    localStorage.setItem("atmenajer_"+G.slot,JSON.stringify(G));
+    const a=slots(),k=a.findIndex(s=>s.id===G.slot);
+    const meta={id:G.slot,stable:G.stable,year:G.year,y0:G.y0||2026,day:G.day,ts:Date.now()};
+    if(k>=0)a[k]=meta;else a.push(meta);
+    setSlots(a);
+  }catch(e){}
+}
+function load(id){try{const d=localStorage.getItem("atmenajer_"+id);if(d){const g=JSON.parse(d);
   if(g&&(g.v===3||g.v===4)){ /* eski kayıt taşınır: jokey kadrosu değişti */
     g.v=5;if(!g.exp)g.exp={};g.cJockey=-1;g.entries={};g.jockeyWins={};
-    applyYear(g.y0||2026);G=g;return true;}
+    g.slot=id;applyYear(g.y0||2026);G=g;return true;}
   if(g&&g.v===5){g.silk1=g.silk1||"#d21f26";g.silk2=g.silk2||"#f5f5f5";
-    applyYear(g.y0||2026);
+    g.slot=id;applyYear(g.y0||2026);
     g.studs=g.studs||[];g.foals=g.foals||[];g.sty=g.sty||{};g.sires=g.sires||[];
     /* eski kayıt göçü: extra listesi yoksa oluştur */
     if(!g.extra)g.extra=[...(g.sires||[]).map(s=>({k:"s",n:s.n,irk:s.irk,hp:s.hp})),
@@ -3242,7 +3303,19 @@ function finishRace(){
   if(win.mine)G.seasonCups=(G.seasonCups||0)+(r.named?1:0);
   {const R_=G.rec=G.rec||{};if(!R_.big||winPrize>R_.big.v)R_.big={n:winName,v:winPrize,y:G.year};}
   checkAchBasics();
-  document.getElementById("raceResult").innerHTML="<div class='card'><h3 style='margin-bottom:8px'>Resmi Sonuç"+(R.margin!==undefined?" — kazanma farkı: "+marginName(R.margin)+(R.photo?" 📸":""):"")+"</h3><table><tr><th>#</th><th>At</th><th>Jokey</th><th>Sahip</th><th>Gny</th><th title='Performans notu (10 üzerinden)'>Not</th><th>İkramiye</th></tr>"+rows+"</table></div>";
+  /* TJK TV usulü: sonuç panosu yarış ekranının ÜZERİNDE açılır */
+  const resHtml='<h3 style="color:#e8c96a;margin-bottom:2px">🏁 RESMİ SONUÇ'+(R.photo?' 📸':'')+'</h3>'
+    +'<p style="color:#aab6cc;font-size:11px;margin-bottom:8px">'+r.name+(R.margin!==undefined?' · kazanma farkı: <b style="color:#fff">'+marginName(R.margin)+'</b>':'')+'</p>'
+    +"<table><tr><th>#</th><th>At</th><th>Jokey</th><th>Sahip</th><th>Gny</th><th title='Performans notu (10 üzerinden)'>Not</th><th>İkramiye</th></tr>"+rows+"</table>";
+  document.getElementById("raceResult").innerHTML="";
+  if(!quiet){
+    clearTimeout(window._resT);
+    window._resT=setTimeout(()=>{
+      if(!R||!R.finished)return;
+      const po=document.getElementById("preOdds");
+      po.innerHTML=resHtml;po.style.display="block";
+    },2300);
+  }
   document.getElementById("btnBack").style.display="inline-block";
   save();refreshTop();
 }
@@ -3280,10 +3353,8 @@ function simDay(){
 /* ============ BAŞLAT ============ */
 window.addEventListener("load",()=>{
   initSilkPicker();
-  if(load()){
-    if(!G.program)genProgram();
-    show("scrGame");refreshTop();showTab(G.tab||0);
-  }
+  migrateLegacy();   /* eski tek kayıt varsa slota dönüştür */
+  renderSaves();     /* açılış: kayıtlı kariyerler ekranı */
 });
 function resetGame(){if(confirm("Tüm ilerleme silinsin mi?")){try{localStorage.removeItem("atmenajer");}catch(e){}location.reload();}}
 /* SPACE = devam et (FM'in space tuşu gibi) */

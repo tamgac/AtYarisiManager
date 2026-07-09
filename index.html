@@ -138,9 +138,9 @@ canvas{width:100%;display:block;border-radius:4px;}
     <h2 style="color:var(--gold)">Ahırını Kur</h2>
     <p class="muted" style="margin-top:8px" id="setupYearLbl">2026 sezonu · 84 yarış günü</p>
     <div style="display:flex;gap:8px;margin:12px 0;justify-content:center">
-      <button class="sec" id="diff0" onclick="pickDiff(0)" style="flex:1">Kolay<br><small>₺12M</small></button>
-      <button class="sec" id="diff1" onclick="pickDiff(1)" style="flex:1">Normal<br><small>₺8M</small></button>
-      <button class="sec" id="diff2" onclick="pickDiff(2)" style="flex:1">Zor<br><small>₺5M</small></button>
+      <button class="sec" id="diff0" onclick="pickDiff(0)" style="flex:1">Kolay<br><small id="diffLbl0">₺6M</small></button>
+      <button class="sec" id="diff1" onclick="pickDiff(1)" style="flex:1">Normal<br><small id="diffLbl1">₺4M</small></button>
+      <button class="sec" id="diff2" onclick="pickDiff(2)" style="flex:1">Zor<br><small id="diffLbl2">₺2,5M</small></button>
     </div>
     <input id="inpStable" maxlength="24" placeholder="Ahır / eküri adı (örn. Tamgaç Ekürisi)">
     <div style="text-align:left;margin:6px 0 14px">
@@ -471,7 +471,7 @@ const NAMED=[
 [75,"Çaldıran Koşusu","İ",75,2400,3000000,3],
 [82,"GAZİ KOŞUSU","İ",80,2400,7500000,0]
 ];
-const SEASON_DAYS=84, START_MONEY=8000000, UPKEEP=2500, KIRA=25000, SEYIS=4000;
+const SEASON_DAYS=84, START_MONEY=4000000, UPKEEP=2500, KIRA=25000, SEYIS=4000;
 /* at nakliye ücreti (eküri merkezi İstanbul varsayılır) — pist sırasına göre */
 const NAKLIYE=[5000,18000,16000,26000,10000,32000,30000,8000,22000,36000];
 const EXP_ADLARI={bakim:"Yem & Bakım",kira:"Ahır Kirası",seyis:"Seyis Maaşları",kayit:"Koşu Kayıtları",jokey:"Jokey Ücretleri",nakliye:"At Nakliyesi",vet:"Veteriner",antrenor:"Antrenör",anlasma:"Jokey Anlaşması",taki:"Takılar",damizlik:"Damızlık Bakımı"};
@@ -661,14 +661,15 @@ const TRAINERS_2008=[
 ["İZZET UÇAR",13],["ÜMİT BEKMEZCİ",27]
 ];
 /* 2008 isimli koşuları — gerçek adlar/mesafeler (ikramiye günümüz ölçeğinde) */
+/* ikramiyeler GERÇEK 2008 değerleri (YTL ölçeğinde gösterilir: iç değer ×10) */
 const NAMED_2008=[
 [12,"Şanlıurfa Kupası","A",60,1900,1750000,5],
 [24,"TBMM Kupası","A",70,2100,2500000,1],
-[36,"Kısrak Koşusu","İ",65,2400,2000000,0],
-[48,"Erkek Tay Deneme","İ",70,1600,2250000,0],
-[57,"Cumhuriyet Koşusu","A",75,1600,3500000,1],
-[66,"Kraliçe II.Elizabeth K.","İ",70,1400,2750000,0],
-[75,"Çaldıran Koşusu","İ",75,1600,3000000,3],
+[36,"Kısrak Koşusu","İ",65,2400,3000000,0],
+[48,"Erkek Tay Deneme","İ",70,1600,1800000,0],
+[57,"Cumhuriyet Koşusu","A",75,1600,6000000,1],
+[66,"Kraliçe II.Elizabeth K.","İ",70,1400,1800000,0],
+[75,"Çaldıran Koşusu","İ",75,1600,2500000,3],
 [82,"GAZİ KOŞUSU","İ",80,2400,7500000,0]
 ];
 /* 2008 dönemi aygır pazarı — gerçek pedigriler */
@@ -692,6 +693,7 @@ function applyYear(y){
   TRAINERS.length=0;TRAINERS.push(...d.T);
   NAMED.length=0;NAMED.push(...d.N);
   SIREMARKET.length=0;SIREMARKET.push(...d.S);
+  MSCALE=(y===2008)?0.1:1; /* 2008: YTL dönemi ölçeği */
 }
 const WEATHERS=["☀️ Güneşli","⛅ Parçalı Bulutlu","🌧 Yağmurlu"];
 const weatherOf=d=>{const x=(d*37+11)%10;return x<5?0:(x<8?1:2);};
@@ -709,12 +711,15 @@ const ACHS=[
 ["isimli","Büyük Sahne","Bir isimli koşu kazan"],
 ["gazi","GAZİ ŞAMPİYONU","Gazi Koşusu'nu kazan"],
 ["surpriz","Sürpriz Yaptık","Gücü 60'ın altında bir atla koşu kazan"],
-["kazanc25","İkramiye Kralı","Tek sezonda ₺25M ikramiye kazan"],
-["milyoner","Para Babası","Kasanda ₺20M biriktir"],
+["kazanc25","İkramiye Kralı","Tek sezonda dev ikramiye topla"],
+["milyoner","Para Babası","Kasanda büyük servet biriktir"],
 ["sampiyon","Sezon Şampiyonu","Sezonu sahipler sıralamasında 1. bitir"]
 ];
 const ageOf=i=>HORSES[i][4]+(G?G.year-(G.y0||2026):0);
-const fmt=n=>"₺"+Math.round(n).toLocaleString("tr-TR");
+/* para ölçeği: 2008'de tüm tutarlar YTL döneminin 1/10 ölçeğinde gösterilir */
+let MSCALE=1;
+const fmt=n=>{const v=Math.round(n*MSCALE).toLocaleString("tr-TR");return MSCALE===1?"₺"+v:v+" YTL";};
+const fmtShort=n=>{const x=n*MSCALE;const s=x>=1000000?(Math.round(x/100000)/10).toLocaleString("tr-TR")+"M":Math.round(x/1000)+"B";return MSCALE===1?"₺"+s:s+" YTL";};
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 /* isimden deterministik mesafe tercihi (1200-2400 arası ideal mesafe) */
@@ -750,7 +755,8 @@ function show(id){
   if(fab)fab.classList.toggle("show",id==="scrGame");
 }
 /* zorluk seçimi: SADECE başlangıç bütçesini değiştirir */
-const DIFFS=[["Kolay",12000000],["Normal",8000000],["Zor",5000000]];
+/* daha zorlu başlangıç: Kolay'da bile Gazi şampiyonu alınamaz (elit at ~₺7M) */
+const DIFFS=[["Kolay",6000000],["Normal",4000000],["Zor",2500000]];
 let PICKDIFF=1;
 function pickDiff(n){
   PICKDIFF=n;
@@ -779,6 +785,15 @@ function pickYear(y){
   PICKYEAR=y||2026;
   const l=document.getElementById("setupYearLbl");
   if(l)l.textContent=PICKYEAR+" sezonu · 84 yarış günü";
+  /* bütçe etiketleri yılın para birimine göre (2008 = YTL) */
+  const sc=(PICKYEAR===2008)?0.1:1;
+  DIFFS.forEach((df,i)=>{
+    const b=document.getElementById("diffLbl"+i);
+    if(!b)return;
+    const x=df[1]*sc;
+    const s=x>=1000000?(Math.round(x/100000)/10).toLocaleString("tr-TR")+"M":Math.round(x/1000)+"B";
+    b.textContent=(sc===1?"₺"+s:s+" YTL");
+  });
   show("scrSetup");initSilkPicker();pickDiff(PICKDIFF);
 }
 function startGame(){

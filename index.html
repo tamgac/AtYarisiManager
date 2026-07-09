@@ -72,6 +72,10 @@ tr:hover td{background:#d6e0c9;}
 .named{color:#8a6d1d;}
 .gTxt{color:var(--green);font-weight:700;}
 .rTxt{color:var(--red);font-weight:700;}
+/* "uygun atın var" vurgusu */
+.cardElig{border:2px solid #2e7d32 !important;background:#e7f0e0 !important;box-shadow:0 0 0 1px #2e7d3233,1px 2px 4px rgba(46,125,50,.25) !important;}
+.eligBadge{display:inline-block;background:#2e7d32;color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:3px;margin-left:6px;vertical-align:middle;animation:eligPulse 1.5s ease-in-out infinite;cursor:pointer;border:1px solid #1e5424;}
+@keyframes eligPulse{0%,100%{box-shadow:0 0 0 0 rgba(46,125,50,.55);}50%{box-shadow:0 0 0 6px rgba(46,125,50,0);}}
 /* Yarış ekranı (koyu kalır — pist atmosferi) */
 #scrRace{max-width:1100px;margin:0 auto;padding:14px;color:var(--white);}
 #trackWrap{background:#123018;border:2px solid #2e5238;border-radius:6px;padding:8px;margin:10px 0;}
@@ -1442,8 +1446,9 @@ function viewProgram(){
     const myEntries=(G.entries[r.id]||[]);
     const myTxt=myEntries.map(e=>"<b>"+HORSES[e.h][0]+"</b> ("+JOCKEYS[e.j][0]+")").join(", ");
     const elig=myEligible(r).length;
-    return '<div class="card"'+(myEntries.length?' style="border:2px solid #c8a23c"':'')+'><div class="raceHead"><h3 class="'+(r.named?"named":"")+'">'+(r.named?"⭐ ":"")+r.name
-    +(elig&&!r.done?' <span class="badge" style="background:#2e6b3a;color:#e8f5e8">✔ '+elig+' uygun atın var</span>':'')
+    const hot=elig&&!r.done&&!myEntries.length;
+    return '<div class="card'+(hot?' cardElig':'')+'"'+(myEntries.length?' style="border:2px solid #c8a23c"':'')+'><div class="raceHead"><h3 class="'+(r.named?"named":"")+'">'+(r.named?"⭐ ":"")+r.name
+    +(hot?' <span class="eligBadge" onclick="openEntry('+r.id+')">🐎 '+elig+' UYGUN ATIN VAR — KAYDET ▸</span>':'')
     +'</h3><span class="muted">'+(showTrack?'📍'+TRACKS[r.track]+' · ':'')+r.dist+'m · '+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+' · '+(r.breed==="*"?"Açık":r.breed==="A"?"Arap":"İngiliz")+' · Güç '+r.lo+(r.hi>100?"+":"-"+r.hi)+'</span></div>'
     +(qualText(r)?'<div style="font-size:11px;color:#b03a2e;font-weight:700;margin:2px 0">'+qualText(r)+'</div>':'')
     +'<div class="flexrow"><span>İkramiye: <b style="color:var(--gold)">'+fmt(r.purse)+'</b></span>'
@@ -1465,7 +1470,9 @@ function viewProgram(){
   P.races.filter(r=>!mineRaces.includes(r)).forEach(r=>{(byTrack[r.track]=byTrack[r.track]||[]).push(r);});
   Object.keys(byTrack).forEach(t=>{
     html+='<h3 style="color:var(--gold);margin:14px 0 8px">📍 '+TRACKS[t]+'</h3>';
-    byTrack[t].forEach(r=>html+=raceCard(r,false));
+    /* uygun atın olan koşular pistin en üstünde */
+    byTrack[t].slice().sort((a,b)=>((myEligible(b).length&&!b.done)?1:0)-((myEligible(a).length&&!a.done)?1:0))
+      .forEach(r=>html+=raceCard(r,false));
   });
   return html;
 }

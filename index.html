@@ -1027,14 +1027,17 @@ function genProgram(){
   const PS=((G.y0===2008)?0.25:1)*P_INF();
   /* günde TEK açık (KV) koşu — ırklar günaşırı dönüşümlü, diğer slot orta kademe handikap */
   const kvI=(G.day%2===1);
+  /* günde TEK maiden (ırklar dönüşümlü) — alt kümede at az, havuz kurumasın */
   const bands=[
     /* 1. hipodrom */
-    {breed:"A",lo:0,hi:44,ad:"Arap Maiden/Şartlı",purse:Math.round(700000*PS),t:0},
+    kvI?{breed:"A",lo:0,hi:44,ad:"Arap Maiden/Şartlı",purse:Math.round(700000*PS),t:0}
+       :{breed:"A",lo:40,hi:59,ad:"Arap Şartlı-3",purse:Math.round(1000000*PS),t:0},
     {breed:"A",lo:45,hi:74,ad:"Arap Handikap 16",purse:Math.round(1300000*PS),t:0},
     kvI?{breed:"İ",lo:70,hi:200,ad:"İngiliz Açık (KV-6)",purse:Math.round(2800000*PS),t:0}
        :{breed:"İ",lo:55,hi:84,ad:"İngiliz Handikap 17",purse:Math.round(1900000*PS),t:0},
     /* 2. hipodrom */
-    {breed:"İ",lo:0,hi:44,ad:"İngiliz Maiden/Şartlı",purse:Math.round(900000*PS),t:1},
+    kvI?{breed:"İ",lo:40,hi:59,ad:"İngiliz Şartlı-3",purse:Math.round(1100000*PS),t:1}
+       :{breed:"İ",lo:0,hi:44,ad:"İngiliz Maiden/Şartlı",purse:Math.round(900000*PS),t:1},
     {breed:"İ",lo:45,hi:74,ad:"İngiliz Handikap 15",purse:Math.round(1600000*PS),t:1},
     kvI?{breed:"A",lo:55,hi:84,ad:"Arap Handikap 17",purse:Math.round(1600000*PS),t:1}
        :{breed:"A",lo:70,hi:200,ad:"Arap Açık (KV-6)",purse:Math.round(2300000*PS),t:1}
@@ -1050,7 +1053,24 @@ function genProgram(){
   /* DEKLARE: her koşunun AI katılımcıları önceden bellidir (gün bazlı sabit) */
   const topJ=JOCKEYS.map((j,k)=>k).sort((a,b)=>jSkill(b)-jSkill(a)).slice(0,28);
   races.forEach(r=>{
+    /* 🔄 ROTASYON: dünkü/önceki gün koşan AI atları bugün dinlenir (isimli koşular hariç) —
+       böylece hep aynı atlar koşmaz, kadro çeşitlenir */
+    const rested=i=>{
+      const L=(G.hlog||{})[i];
+      if(!L||!L.length)return true;
+      const e=L[L.length-1];
+      return !(e.y===G.year&&G.day-e.d<3);
+    };
     let pool=HORSES.map((h,i)=>i).filter(i=>eligible(i,r)&&!(OLEX?OLEX[i]!==undefined:G.owned.includes(i)));
+    if(!r.named){
+      const fresh=pool.filter(rested);
+      if(fresh.length>=7)pool=fresh; /* yeterli dinlenmiş at varsa yorgunlar koşmaz */
+      else{
+        /* az at varsa: en uzun süredir dinlenenler öncelikli havuz */
+        const lastD=i=>{const L=(G.hlog||{})[i];return L&&L.length&&L[L.length-1].y===G.year?L[L.length-1].d:-99;};
+        pool=pool.slice().sort((a,b)=>lastD(a)-lastD(b)).slice(0,Math.max(10,fresh.length));
+      }
+    }
     /* isimli koşularda katılım şartı: kalifiye atlar önce; kadro dolmazsa en iyiler tamamlar */
     if(r.named){
       const q=pool.filter(i=>qualifies(i,r));
@@ -1064,7 +1084,14 @@ function genProgram(){
       /* kalifiyeler önde kalsın: önce kalifiye sırala */
       pool.sort((a,b)=>(qualifies(b,r)?1:0)-(qualifies(a,r)?1:0));
     }
-    r.decl=pool.slice(0,7).map(h=>({h,j:topJ[hashStr(HORSES[h][0]+"J"+G.day)%topJ.length]}));
+    /* her jokey koşuda TEK ata biner: çakışırsa sıradaki boş jokeye kay */
+    const usedJ={};
+    r.decl=pool.slice(0,7).map(h=>{
+      let k=hashStr(HORSES[h][0]+"J"+G.day)%topJ.length,guard=0;
+      while(usedJ[topJ[k]]&&guard++<topJ.length)k=(k+1)%topJ.length;
+      usedJ[topJ[k]]=1;
+      return {h,j:topJ[k]};
+    });
   });
   G.program={pair,races};
   G.entries={};
@@ -1072,8 +1099,8 @@ function genProgram(){
 /* koşu katılımcılarını kur (deklare + oyuncu kayıtları) ve performansları hesapla */
 function buildRunners(r,olEnt){
   const runners=[];
-  if(olEnt){ /* ONLINE LİG: tüm üyelerin deklareleri (deklare anındaki fotoğrafla) */
-    olEnt.filter(e=>e.race_no===r.id).forEach(e=>{
+  if(olEnt){ /* ONLINE LİG: tüm üyelerin deklareleri — determinizm için at numarasına göre sırala */
+    olEnt.filter(e=>e.race_no===r.id).sort((a,b)=>a.horse_idx-b.horse_idx).forEach(e=>{
       const m=(OL&&OL.mems||[]).find(x=>x.id===e.member_id)||{};
       runners.push({h:e.horse_idx,j:e.jockey,mine:OL&&e.member_id===OL.mid,
         stable:m.stable||"?",snap:e.perf||{},tac:(e.perf||{}).t||null,mSilk1:m.silk1,mSilk2:m.silk2});
@@ -1083,6 +1110,21 @@ function buildRunners(r,olEnt){
   }
   (r.decl||[]).forEach(d=>runners.push({h:d.h,j:d.j,mine:false}));
   if(runners.length<2)return runners;
+  /* jokey çakışması: oyuncu atları öncelikli, çakışan AI jokeyi boştaki en iyi jokeye kayar */
+  {
+    const usedJ={};
+    runners.forEach(u=>{if(u.mine||u.stable)usedJ[u.j]=1;});
+    const rank=JOCKEYS.map((x,k)=>k).sort((a,b)=>jSkill(b)-jSkill(a));
+    runners.forEach(u=>{
+      if(u.mine||u.stable)return;
+      if(usedJ[u.j]){
+        let k=Math.max(0,rank.indexOf(u.j)),g=0;
+        while(usedJ[rank[k]]&&g++<rank.length)k=(k+1)%rank.length;
+        u.j=rank[k];
+      }
+      usedJ[u.j]=1;
+    });
+  }
   const HPu=u=>(u.snap&&u.snap.hp)?u.snap.hp:hpOf(u.h);
   const avgHP=runners.reduce((s,u)=>s+HPu(u),0)/runners.length;
   const wthr=weatherOf(G.day),srfIdx=r.srf==="Kum"?1:0;
@@ -1134,6 +1176,8 @@ function eligible(hIdx,r){
   if(isStud(hIdx))return false; /* damızlık koşamaz */
   if(r.breed!=="*"&&h[1]!==r.breed)return false;
   if(hpOf(hIdx)<r.lo||hpOf(hIdx)>r.hi)return false;
+  /* 🏁 MAIDEN KURALI: koşu kazanmış at bir daha maiden koşamaz (gerçek TJK kuralı) */
+  if(/Maiden/.test(r.name)&&((G.hlog||{})[hIdx]||[]).some(e=>e.p===1))return false;
   /* 🎂 GERÇEK YAŞ/CİNSİYET ŞARTLARI (TJK kuralları) */
   if(r.named){
     const a=ageOf(hIdx);
@@ -1449,11 +1493,11 @@ function viewTraining(){
     const fizC=physioCost(i);
     const fizOk=(G.physio||{})[i]===undefined||G.day-G.physio[i]>=5;
     const fiz=(!G.inj[i]&&s.cond<95)
-      ?"<button class='trainBtn' "+((!fizOk||G.money<fizC)?"disabled":"")+" onclick='physio("+i+")' title='Kondisyon +12 — at başına 5 günde 1'>💆 Fizyo "+(fizOk?fmt(fizC):(5-(G.day-G.physio[i]))+"g sonra")+"</button>":"";
+      ?"<button class='trainBtn' "+((!fizOk||G.money<fizC)?"disabled":"")+" onclick='physio("+i+")' title='Kondisyon +9 — at başına 5 günde 1'>💆 Fizyo "+(fizOk?fmt(fizC):(5-(G.day-G.physio[i]))+"g sonra")+"</button>":"";
     return "<tr><td><b>"+h[0]+"</b> "+inj+"</td><td>%"+s.cond+"</td><td>"+(s.form>=0?"+":"")+s.form+"</td><td>"+btns+" "+fiz+"</td></tr>";
   }).join("");
   return '<div class="card"><h3>Günlük Antrenman Programı</h3><table><tr><th>At</th><th>Kondisyon</th><th>Form</th><th>Program</th></tr>'+rows+'</table>'
-    +'<p class="muted" style="margin-top:8px">😴 Dinlenme: kondisyon +6 · 💪 Kondisyon: +4 kond, hafif form · ⚡ Sprint: form +2, kond -3, sakatlık riski %2.5 · 🏃 Mesafe: form +1, kond +1.5, risk %1.2 · 💆 Fizyoterapi: anında +12 kond (günde 1)'
+    +'<p class="muted" style="margin-top:8px">😴 Dinlenme: kondisyon +3 · 💪 Kondisyon: +2 kond, hafif form · ⚡ Sprint: form +2, kond -3, sakatlık riski %2.5 · 🏃 Mesafe: form +1, kond +1, risk %1.2 · 💆 Fizyoterapi: anında +9 kond (5 günde 1)'
     +(tb?' — Antrenörün ('+TRAINERS[G.trainer][0]+') kazanımları artırıyor, riski azaltıyor.':' — Antrenör tutarsan kazanımlar artar, sakatlık riski düşer.')
     +'<br>⚠ Kondisyonu %55 altında at koşturmak sakatlık riskini ciddi artırır!</p></div>';
 }
@@ -1465,7 +1509,7 @@ function physio(i){
   if(G.money<c)return toast("Bütçe yetersiz!");
   G.money-=c;addExp("fizyo",c);
   G.physio[i]=G.day;
-  G.cond[i]=Math.min(100,(G.cond[i]||80)+12);
+  G.cond[i]=Math.min(100,(G.cond[i]||80)+9);
   save();refreshTop();showTab(2);
   toast("💆 "+HORSES[i][0]+" masaj ve fizyoterapi aldı — kondisyon %"+G.cond[i]);
 }
@@ -1645,13 +1689,22 @@ function viewStable(){
   html+=studFarmHtml();
   return html;
 }
+let MKT_SORT={k:"hp",d:-1}; /* pazar sıralaması: sütuna tıkla, tekrar tıkla yön değişsin */
+function mktSort(k){
+  if(MKT_SORT.k===k)MKT_SORT.d=-MKT_SORT.d;
+  else MKT_SORT={k,d:(k==="ad"?1:-1)};
+  showTab(3);
+}
 function viewMarket(){
-  const list=HORSES.map((h,i)=>i).filter(i=>!G.owned.includes(i)&&!isStud(i)&&ageOf(i)<10).sort((a,b)=>hpOf(b)-hpOf(a));
+  const key={ad:i=>HORSES[i][0],hp:i=>hpOf(i),yas:i=>ageOf(i),fiyat:i=>horsePrice(i)}[MKT_SORT.k]||(i=>hpOf(i));
+  const list=HORSES.map((h,i)=>i).filter(i=>!G.owned.includes(i)&&!isStud(i)&&ageOf(i)<10)
+    .sort((a,b)=>{const x=key(a),y=key(b);return (x<y?-1:x>y?1:0)*MKT_SORT.d;});
   let rows=list.map(i=>{
     const h=HORSES[i],p=horsePrice(i);
     return "<tr><td>"+hLink(i)+(h[6]?"<br><span style='color:#8a6d1d;font-size:10px'>🏆 "+h[6]+"</span>":"")+"</td><td>"+breedBadge(h[1])+"</td><td>"+h[2]+"</td><td>"+ageOf(i)+"</td><td>"+hpBar(hpOf(i))+((G.dev&&G.dev[i]>0)?" <span class='gTxt'>▲"+G.dev[i]+"</span>":"")+"</td><td class='muted'>"+h[5]+"</td><td><b>"+fmt(p)+"</b></td><td><button "+(G.money<p?"disabled":"")+" onclick='buyHorse("+i+")'>Satın Al</button></td></tr>";
   }).join("");
-  return '<div class="card"><h3 style="margin-bottom:8px">At Pazarı — '+list.length+' gerçek safkan (güce göre sıralı)</h3><p class="muted" style="margin-bottom:8px">🏆 rozeti, atın gerçek hayatta kazandığı önemli koşu derecesini gösterir. Güç puanları gerçek TJK handikap puanı ve kariyer kazancından hesaplanmıştır.</p><table><tr><th>At</th><th>Irk</th><th>C</th><th>Yaş</th><th>Güç</th><th>Gerçek Sahibi</th><th>Fiyat</th><th></th></tr>'+rows+'</table></div>';
+  const th=(k,ad)=>'<th style="cursor:pointer" onclick="mktSort(\''+k+'\')" title="Sıralamak için tıkla">'+ad+(MKT_SORT.k===k?(MKT_SORT.d===1?" ▲":" ▼"):"")+'</th>';
+  return '<div class="card"><h3 style="margin-bottom:8px">At Pazarı — '+list.length+' gerçek safkan</h3><p class="muted" style="margin-bottom:8px">🏆 rozeti, atın gerçek hayatta kazandığı önemli koşu derecesini gösterir. Sütun başlıklarına tıklayarak sıralayabilirsin.</p><table><tr>'+th("ad","At")+'<th>Irk</th><th>C</th>'+th("yas","Yaş")+th("hp","Güç")+'<th>Gerçek Sahibi</th>'+th("fiyat","Fiyat")+'<th></th></tr>'+rows+'</table></div>';
 }
 function buyHorse(i){
   const p=horsePrice(i);
@@ -1755,8 +1808,10 @@ function openEntry(rid,preH){
     const sp=srfPref(i),sFit=sp===2?"":(sp===(r.srf==="Kum"?1:0)?" · pist ✓":" · pist ✗");
     return "<option value='"+i+"'>"+HORSES[i][0]+" — form "+formStr(i)+" (Güç "+hpOf(i)+", kond %"+horseState(i).cond+dFit+sFit+")</option>";
   }).join("");
+  /* bu koşuda zaten binen jokeyler (senin diğer atların) seçilemez */
+  const takenJ={};(G.entries[rid]||[]).forEach(e=>takenJ[e.j]=1);
   let jOpts=JOCKEYS.map((j,k)=>({k})).sort((a,b)=>(b.k===G.cJockey)-(a.k===G.cJockey)||effJFee(b.k)-effJFee(a.k))
-    .map(o=>"<option value='"+o.k+"'>"+(o.k===G.cJockey?"⭐ ":"")+(JOCKEYS[o.k][5]==="AP"?"🎓 ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+(JOCKEYS[o.k][5]==="AP"?" · APRANTİ: kilo avantajı, tecrübesiz":"")+"</option>").join("");
+    .map(o=>"<option value='"+o.k+"'"+(takenJ[o.k]?" disabled":"")+">"+(o.k===G.cJockey?"⭐ ":"")+(JOCKEYS[o.k][5]==="AP"?"🎓 ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+(JOCKEYS[o.k][5]==="AP"?" · APRANTİ: kilo avantajı, tecrübesiz":"")+(takenJ[o.k]?" — BU KOŞUDA BİNİYOR":"")+"</option>").join("");
   document.getElementById("modalBox").innerHTML=
     "<h3>"+r.name+" — Kayıt</h3>"
     +"<table style='margin:10px 0'><tr><th colspan=2>Masraf Dökümü</th></tr>"
@@ -1929,6 +1984,7 @@ function attr(ad,barHtml,val,note){
 }
 function showHorse(i){
   if(window.CMP!=null&&window.CMP!==i)return showCompare(window.CMP,i);
+  window._backScroll=window.scrollY||0; /* geri dönünce listede aynı yere in */
   const h=HORSES[i],owned=G.owned.includes(i);
   const s=owned?horseState(i):null;
   const sp=srfPref(i),sty=styleOf(i);
@@ -2013,7 +2069,7 @@ function showHorse(i){
       +"<td style='font-weight:700;color:"+(e.rt>=8.5?"#8a6d1d":e.rt>=7.5?"#2e7d32":e.rt>=6.5?"#1c1c1c":"#b03a2e")+"'>"+(e.rt?e.rt.toFixed(1).replace(".",","):"—")+"</td>"
       +"<td>"+(e.pr?fmt(e.pr):"—")+"</td></tr>").join("")+'</table>';
   html+='</div></div></div>';
-  html+='<div style="margin-top:4px"><button class="sec" onclick="showTab(G.tab)">◂ Geri</button></div></div>';
+  html+='<div style="margin-top:4px"><button class="sec" onclick="showTab(G.tab);window.scrollTo(0,window._backScroll||0)">◂ Geri</button></div></div>';
   document.getElementById("tabContent").innerHTML=html;
 }
 const hLink=i=>"<a href='#' onclick='showHorse("+i+");return false' style='color:inherit;text-decoration:underline dotted'><b>"+HORSES[i][0]+"</b></a>";
@@ -2024,6 +2080,7 @@ function confirmEntry(rid,fee){
   const nak=NAKLIYE[r.track];
   const total=fee+nak+effJFee(j);
   if(G.money<total)return toast("Yetersiz bütçe! Gerekli: "+fmt(total));
+  if((G.entries[rid]||[]).some(e=>e.j===j))return toast("Bu jokey bu koşuda zaten başka atına biniyor!");
   const tac=(document.getElementById("selT")||{}).value||null;
   if(G.online){ /* deklare sunucuya yazılır — kapanış kilidi veritabanında */
     const s=horseState(h);
@@ -2106,14 +2163,14 @@ function dayTick(silent){
   G.owned.forEach(i=>{
     horseState(i);
     /* sakatlık iyileşmesi */
-    if(G.inj[i]>0){G.inj[i]--;if(G.inj[i]===0){toast(HORSES[i][0]+" iyileşti, tekrar koşabilir! 🎉");pushNews("✅","İyileşti: "+HORSES[i][0],"Tedavisi tamamlandı, koşulara dönmeye hazır.");}G.cond[i]=Math.min(100,G.cond[i]+4);return;}
-    /* antrenman uygula — kondisyon GERÇEKÇİ hızda dolar (koşu sonrası 4-6 gün toparlanma) */
+    if(G.inj[i]>0){G.inj[i]--;if(G.inj[i]===0){toast(HORSES[i][0]+" iyileşti, tekrar koşabilir! 🎉");pushNews("✅","İyileşti: "+HORSES[i][0],"Tedavisi tamamlandı, koşulara dönmeye hazır.");}G.cond[i]=Math.min(100,G.cond[i]+2);return;}
+    /* antrenman uygula — kondisyon YAVAŞ dolar: koşu sonrası ~8-10 gün toparlanma */
     const t=G.train[i]||"R";let risk=0;
-    if(t==="R"){G.cond[i]=Math.min(100,G.cond[i]+6);}
-    else if(t==="K"){G.cond[i]=Math.min(100,G.cond[i]+Math.round(4*gainBoost));if(Math.random()<0.35)G.form[i]=Math.min(15,G.form[i]+1);risk=0.008;}
+    if(t==="R"){G.cond[i]=Math.min(100,G.cond[i]+3);}
+    else if(t==="K"){G.cond[i]=Math.min(100,G.cond[i]+Math.round(2*gainBoost));if(Math.random()<0.35)G.form[i]=Math.min(15,G.form[i]+1);risk=0.008;}
     else if(t==="S"){G.form[i]=Math.min(15,G.form[i]+Math.round(2*gainBoost));G.cond[i]=Math.max(30,G.cond[i]-3);risk=0.025;}
-    else if(t==="M"){G.form[i]=Math.min(15,G.form[i]+1);G.cond[i]=Math.min(100,G.cond[i]+Math.round(1.5*gainBoost));risk=0.012;}
-    if(G.feed)G.cond[i]=Math.min(100,G.cond[i]+2); /* premium yem bonusu */
+    else if(t==="M"){G.form[i]=Math.min(15,G.form[i]+1);G.cond[i]=Math.min(100,G.cond[i]+Math.round(1*gainBoost));risk=0.012;}
+    if(G.feed)G.cond[i]=Math.min(100,G.cond[i]+1); /* premium yem bonusu */
     /* 👨‍🌾 iyi seyis atın formunu diri tutar */
     if(GROOMS[G.groom||0][2]&&Math.random()<GROOMS[G.groom||0][2])G.form[i]=Math.min(15,G.form[i]+1);
     if(risk&&Math.random()<risk*riskCut){

@@ -1598,8 +1598,11 @@ function showHorse(i){
   /* sonuçlar */
   html+='<div class="card"><h3>Oyun İçi Koşu Sonuçları</h3>';
   if(!log.length)html+='<p class="muted" style="margin:6px 0">Bu at oyun başladığından beri henüz koşmadı.</p>';
-  else html+='<table style="margin-top:4px"><tr><th>Gün</th><th>Koşu</th><th>Jokey</th><th>Snç</th><th>İkramiye</th></tr>'
-    +log.map(e=>"<tr><td>"+e.d+"/"+e.y+"</td><td>"+e.r+"</td><td class='muted'>"+e.j+"</td><td class='"+(e.p===1?"pos1":"")+"'><b>"+e.p+".</b></td><td>"+(e.pr?fmt(e.pr):"—")+"</td></tr>").join("")+'</table>';
+  else html+='<table style="margin-top:4px"><tr><th>Gün</th><th>Koşu</th><th>Jokey</th><th>Snç</th><th>Gny</th><th>Not</th><th>İkramiye</th></tr>'
+    +log.map(e=>"<tr><td>"+e.d+"/"+e.y+"</td><td>"+e.r+"</td><td class='muted'>"+e.j+"</td><td class='"+(e.p===1?"pos1":"")+"'><b>"+e.p+".</b></td>"
+      +"<td class='muted'>"+(e.g?e.g.toFixed(2).replace(".",","):"—")+"</td>"
+      +"<td style='font-weight:700;color:"+(e.rt>=8.5?"#8a6d1d":e.rt>=7.5?"#2e7d32":e.rt>=6.5?"#1c1c1c":"#b03a2e")+"'>"+(e.rt?e.rt.toFixed(1).replace(".",","):"—")+"</td>"
+      +"<td>"+(e.pr?fmt(e.pr):"—")+"</td></tr>").join("")+'</table>';
   html+='</div></div></div>';
   html+='<div style="margin-top:4px"><button class="sec" onclick="showTab(G.tab)">◂ Geri</button></div></div>';
   document.getElementById("tabContent").innerHTML=html;
@@ -3158,6 +3161,20 @@ function finishRace(){
   const farkTxt=R.margin!==undefined?" Fark: <b>"+marginName(R.margin)+"</b>!":"";
   if(!quiet)setComment("🏆 "+foto+"kazanan: <b>"+HORSES[win.h][0]+"</b> — jokeyi "+JOCKEYS[win.j][0]+"!"+farkTxt+(win.mine?" <b>SENİN ATIN!</b> 🎉":""));
   const split=[0.6,0.2,0.1,0.06,0.04];
+  /* TJK TV usulü ganyanlar + FM usulü performans notları */
+  const gnyMap={},expRank={};
+  raceOdds(r).forEach((o,k)=>{gnyMap[o.h]=o.gny;expRank[o.h]=k;});
+  const nRun=order.length;
+  order.forEach((u,i)=>{
+    let rt=5.8+(nRun>1?(nRun-1-i)/(nRun-1):1)*2.4;   /* bitiş sırası temel notu */
+    rt+=(((u.h in expRank)?expRank[u.h]:i)-i)*0.15;   /* beklentiyi aşma / hayal kırıklığı */
+    if(i===0){rt+=0.5;if(R.margin!==undefined&&R.margin>0.026)rt+=0.3;}
+    if(R.photo&&i===1)rt+=0.2;                        /* foto finişte kıl payı kaybeden */
+    if(u.hurt)rt=Math.min(rt,5.9)-0.4;
+    u.rt=Math.max(4,Math.min(10,Math.round(rt*10)/10));
+  });
+  const rtCell=v=>{const c=v>=8.5?"#ffd75e":v>=7.5?"#8fd694":v>=6.5?"#e9e5d9":"#e88";
+    return "<td style='color:"+c+";font-weight:700'>"+v.toFixed(1).replace(".",",")+"</td>";};
   let rows="",res=[];
   order.forEach((u,i)=>{
     const h=HORSES[u.h];
@@ -3205,9 +3222,12 @@ function finishRace(){
     res.push({name:h[0],owner});
     /* her atın oyun içi koşu geçmişi (sahibinden bağımsız) */
     if(!G.hlog)G.hlog={};
-    (G.hlog[u.h]=G.hlog[u.h]||[]).push({d:G.day,y:G.year,r:r.name,p:i+1,pr:prize,j:JOCKEYS[u.j][0]});
+    (G.hlog[u.h]=G.hlog[u.h]||[]).push({d:G.day,y:G.year,r:r.name,p:i+1,pr:prize,j:JOCKEYS[u.j][0],g:gnyMap[u.h],rt:u.rt});
     if(G.hlog[u.h].length>25)G.hlog[u.h].shift();
-    rows+="<tr"+(u.mine?" style='color:#e8c96a'":"")+"><td class='"+(i===0?"pos1":"")+"'>"+(i+1)+".</td><td>"+HORSES[u.h][0]+(u.mine?" ★":"")+(u.hurt?" <span style='color:#e88'>❗sakatlandı</span>":"")+"</td><td>"+JOCKEYS[u.j][0]+"</td><td class='muted'>"+owner+"</td><td>"+(prize?fmt(prize):"—")+"</td></tr>";
+    rows+="<tr"+(u.mine?" style='color:#e8c96a'":"")+"><td class='"+(i===0?"pos1":"")+"'>"+(i+1)+".</td><td>"+HORSES[u.h][0]+(u.mine?" ★":"")+(u.hurt?" <span style='color:#e88'>❗sakatlandı</span>":"")+"</td><td>"+JOCKEYS[u.j][0]+"</td><td class='muted'>"+owner+"</td>"
+      +"<td>"+(gnyMap[u.h]?gnyMap[u.h].toFixed(2).replace(".",","):"—")+"</td>"
+      +rtCell(u.rt)
+      +"<td>"+(prize?fmt(prize):"—")+"</td></tr>";
   });
   r.done=true;r.result=res;
   delete G.entries[r.id];
@@ -3222,7 +3242,7 @@ function finishRace(){
   if(win.mine)G.seasonCups=(G.seasonCups||0)+(r.named?1:0);
   {const R_=G.rec=G.rec||{};if(!R_.big||winPrize>R_.big.v)R_.big={n:winName,v:winPrize,y:G.year};}
   checkAchBasics();
-  document.getElementById("raceResult").innerHTML="<div class='card'><h3 style='margin-bottom:8px'>Resmi Sonuç"+(R.margin!==undefined?" — kazanma farkı: "+marginName(R.margin)+(R.photo?" 📸":""):"")+"</h3><table><tr><th>#</th><th>At</th><th>Jokey</th><th>Sahip</th><th>İkramiye</th></tr>"+rows+"</table></div>";
+  document.getElementById("raceResult").innerHTML="<div class='card'><h3 style='margin-bottom:8px'>Resmi Sonuç"+(R.margin!==undefined?" — kazanma farkı: "+marginName(R.margin)+(R.photo?" 📸":""):"")+"</h3><table><tr><th>#</th><th>At</th><th>Jokey</th><th>Sahip</th><th>Gny</th><th title='Performans notu (10 üzerinden)'>Not</th><th>İkramiye</th></tr>"+rows+"</table></div>";
   document.getElementById("btnBack").style.display="inline-block";
   save();refreshTop();
 }

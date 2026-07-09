@@ -1,0 +1,3278 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>At Sahibi Menajeri — Mobil</title>
+<style>
+/* ===== Championship Manager 03/04 teması ===== */
+:root{--navy:#28395a;--navy2:#1e2c47;--navyL:#3a4f78;--cream:#e9e5d9;--cream2:#f2efe6;--row:#e2ddcd;--line:#b8b2a0;--ink:#1c1c1c;--dim:#6b6558;--gold:#c8a23c;--green:#2e7d32;--red:#b03a2e;--white:#f5f3ec;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Verdana,'Segoe UI',sans-serif;}
+body{background:var(--navy2);color:var(--ink);min-height:100vh;font-size:12px;}
+h1,h2,h3{font-weight:700;}
+button{cursor:pointer;border:1px solid #8d8878;border-radius:2px;padding:5px 12px;font-size:12px;background:linear-gradient(#f5f3ec,#d9d4c3);color:var(--ink);font-weight:700;font-family:inherit;}
+button:hover{background:linear-gradient(#fff,#e6e1d0);}
+button:disabled{opacity:.45;cursor:not-allowed;}
+button.sec{background:linear-gradient(#dfe6f2,#b9c6dd);border-color:#7d8ba6;}
+button.warn{background:linear-gradient(#f2dfdf,#ddb9b9);border-color:#a67d7d;}
+input,select{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:2px;padding:5px;font-size:12px;font-family:inherit;}
+.screen{display:none;}
+.screen.active{display:block;}
+/* Başlangıç ekranları */
+#scrYear,#scrSetup{max-width:1100px;margin:0 auto;padding:16px;text-align:center;color:var(--white);}
+#scrYear{padding-top:8vh;}
+#scrYear h1{font-size:32px;color:var(--gold);margin-bottom:6px;letter-spacing:1px;}
+#scrYear .sub{color:#aab6cc;margin-bottom:36px;}
+.yearBtns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.yearCard{background:var(--navy);border:2px solid var(--navyL);border-radius:4px;padding:28px 40px;font-size:26px;font-weight:700;color:var(--white);cursor:pointer;transition:.15s;}
+.yearCard:hover{border-color:var(--gold);}
+.yearCard.locked{opacity:.35;cursor:not-allowed;}
+.yearCard small{display:block;font-size:11px;font-weight:400;color:#aab6cc;margin-top:6px;}
+#scrSetup{padding-top:10vh;}
+#scrSetup .box{background:var(--navy);border:1px solid var(--navyL);border-radius:4px;max-width:440px;margin:0 auto;padding:28px;}
+#scrSetup input{width:100%;margin:14px 0;padding:8px;}
+#scrSetup h2{color:var(--gold);}
+#scrSetup .muted{color:#aab6cc;}
+.sw{display:inline-block;width:22px;height:22px;border-radius:3px;margin:2px;cursor:pointer;border:1px solid #111;vertical-align:middle;}
+.sw:hover{transform:scale(1.15);}
+/* ===== CM düzeni: üst şerit + sol menü + içerik ===== */
+#topbar{background:var(--navy2);border-bottom:3px solid var(--gold);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:10;color:var(--white);}
+#topbar .stName{color:var(--gold);font-weight:700;font-size:15px;letter-spacing:.5px;}
+#topbar .info{display:flex;gap:16px;font-size:12px;flex-wrap:wrap;align-items:center;}
+#topbar .money{color:#8fd694;font-weight:700;}
+#cmLayout{display:flex;min-height:calc(100vh - 44px);}
+#sidebar{width:200px;background:var(--navy);border-right:2px solid var(--navy2);display:flex;flex-direction:column;flex-shrink:0;}
+#sidebar .menuTitle{background:var(--navy2);color:var(--gold);font-size:10px;letter-spacing:1px;padding:7px 12px;text-transform:uppercase;}
+#sidebar button.mi{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--navy2);color:var(--white);padding:9px 14px;font-size:12px;font-weight:400;border-radius:0;}
+#sidebar button.mi:hover{background:var(--navyL);}
+#sidebar button.mi.on{background:var(--gold);color:#1a1a1a;font-weight:700;}
+#sidebar .spacer{flex:1;}
+#sidebar #btnNext{margin:10px;padding:12px;background:linear-gradient(#e8c96a,#c8a23c);border:1px solid #8a6d1d;font-size:13px;font-weight:700;border-radius:3px;}
+#content{flex:1;background:var(--cream);padding:14px;overflow-x:auto;}
+/* paneller & tablolar */
+table{width:100%;border-collapse:collapse;font-size:11px;background:var(--cream2);}
+th{background:var(--navy);color:var(--white);text-align:left;padding:5px 7px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+td{padding:5px 7px;border-bottom:1px solid var(--line);}
+tr:nth-child(even) td{background:var(--row);}
+tr:hover td{background:#d6e0c9;}
+.card{background:var(--cream2);border:1px solid var(--line);border-radius:3px;padding:10px;margin-bottom:10px;box-shadow:1px 1px 0 rgba(0,0,0,.08);}
+.card>h3:first-child,.panelTitle{background:var(--navy);color:var(--white);margin:-10px -10px 8px;padding:6px 10px;font-size:11px;text-transform:uppercase;letter-spacing:1px;}
+.badge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;font-weight:700;}
+.badge.arap{background:#7a5c28;color:#f5e5c0;}
+.badge.ing{background:#2d5578;color:#cfe6f7;}
+.hpbar{background:#c9c3b1;border-radius:2px;height:8px;width:70px;display:inline-block;vertical-align:middle;}
+.hpbar i{display:block;height:8px;border-radius:2px;background:linear-gradient(90deg,#5d8f43,#c8a23c);}
+.muted{color:var(--dim);font-size:11px;}
+.pos1{color:#8a6d1d;font-weight:700;}
+.raceHead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.raceHead h3{font-size:13px;}
+.named{color:#8a6d1d;}
+.gTxt{color:var(--green);font-weight:700;}
+.rTxt{color:var(--red);font-weight:700;}
+/* Yarış ekranı (koyu kalır — pist atmosferi) */
+#scrRace{max-width:1100px;margin:0 auto;padding:14px;color:var(--white);}
+#trackWrap{background:#123018;border:2px solid #2e5238;border-radius:6px;padding:8px;margin:10px 0;}
+canvas{width:100%;display:block;border-radius:4px;}
+#commentary{background:var(--navy);border:1px solid var(--navyL);border-radius:3px;padding:10px 14px;min-height:42px;font-size:14px;margin-bottom:10px;color:var(--white);}
+/* canlı yayın sıralama barı (TV grafiği gibi) */
+#liveOrder{display:flex;flex-wrap:wrap;font-size:11px;margin-bottom:10px;background:linear-gradient(#16223a,#28395a);border:1px solid #3a4f78;border-radius:4px;padding:7px 10px 5px;align-items:flex-end;min-height:52px;}
+#liveOrder .pb{display:flex;flex-direction:column;align-items:center;margin-right:12px;margin-bottom:2px;}
+#liveOrder .pb small{color:#aab6cc;font-size:8px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.3px;}
+#liveOrder .pb .no{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border:1px solid #000;border-radius:2px;margin:2px 0;}
+#liveOrder .pb .pos{color:#e8c96a;font-weight:700;font-size:10px;font-style:italic;}
+#liveOrder .pb.mine small{color:#ffd75e;font-weight:700;}
+#liveOrder .pb:first-child .pos{color:#fff;background:#c8102e;padding:0 5px;border-radius:2px;font-style:normal;}
+#scrRace .card{background:var(--navy);border-color:var(--navyL);color:var(--white);}
+#scrRace .card>h3:first-child{background:var(--navy2);}
+#scrRace table{background:var(--navy);color:var(--white);}
+#scrRace td{border-color:var(--navyL);}
+#scrRace tr:nth-child(even) td{background:var(--navy2);}
+#scrRace tr:hover td{background:var(--navyL);}
+.modalBg{position:fixed;inset:0;background:rgba(10,15,25,.75);display:none;align-items:center;justify-content:center;z-index:50;}
+.modalBg.show{display:flex;}
+.modal{background:var(--cream);border:2px solid var(--navy);border-radius:4px;padding:20px;max-width:560px;width:92%;max-height:85vh;overflow:auto;}
+.modal h2,.modal h3{color:var(--navy);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);border:1px solid var(--gold);padding:9px 18px;border-radius:3px;font-weight:700;z-index:99;display:none;font-size:12px;}
+.flexrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.statbox{background:var(--navy);color:var(--white);border-radius:3px;padding:9px 16px;text-align:center;min-width:110px;}
+.statbox b{display:block;font-size:16px;color:var(--gold);}
+.trainBtn{padding:3px 8px;font-size:10px;font-weight:400;}
+.trainBtn.on{background:var(--navy);color:var(--white);font-weight:700;}
+/* FM tarzı at profili */
+.profGrid{display:grid;grid-template-columns:340px 1fr;gap:12px;}
+@media(max-width:800px){.profGrid{grid-template-columns:1fr}}
+.abar{background:#c9c3b1;border-radius:2px;height:12px;width:170px;display:inline-block;vertical-align:middle;position:relative;}
+.abar i{display:block;height:12px;border-radius:2px;background:linear-gradient(90deg,#b03a2e,#c8a23c,#2e7d32);}
+.abar em{position:absolute;top:-2px;width:3px;height:16px;background:#1c1c1c;border-radius:1px;}
+.attrRow{display:flex;justify-content:space-between;align-items:center;padding:5px 2px;border-bottom:1px solid var(--line);font-size:11px;}
+.attrRow .val{font-weight:700;margin-left:8px;min-width:30px;text-align:right;}
+.profHead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:var(--navy);color:var(--white);margin:-10px -10px 10px;padding:10px 12px;}
+.profHead h2{font-size:18px;color:var(--white);}
+.profHead .sub{color:#aab6cc;font-size:11px;}
+@media(max-width:700px){#cmLayout{flex-direction:column}#sidebar{width:100%;flex-direction:row;flex-wrap:wrap}#sidebar .spacer{display:none}#sidebar .menuTitle{display:none}#sidebar button.mi{width:auto;flex:1 1 30%}}
+/* mobil: alta sabit büyük Günü Bitir barı */
+#fabNext{display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:40;padding:15px;font-size:17px;font-weight:700;background:linear-gradient(#e8c96a,#c8a23c);border:1px solid #8a6d1d;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.4);}
+#fabNext.show{display:block;}
+#content{padding-bottom:78px;}
+#preOdds{inset:4% 3% !important;}
+#scrRace{padding:8px;}
+</style>
+</head>
+<body>
+
+<!-- SEZON SEÇİMİ -->
+<div id="scrYear" class="screen active">
+  <h1>🏇 AT SAHİBİ MENAJERİ</h1>
+  <div class="sub">Türkiye'nin gerçek atları ve jokeyleriyle ahırını kur, şampiyon yetiştir.<br>Veriler: TJK gerçek handikap puanları ve jokey istatistikleri.</div>
+  <h2 style="margin-bottom:18px">Sezon Seç</h2>
+  <div class="yearBtns">
+    <div class="yearCard locked">1996<small>yakında</small></div>
+    <div class="yearCard" onclick="pickYear(2008)">2008<small>Pan River, Kafkaslı, Turbo — 110+ gerçek at</small></div>
+    <div class="yearCard" onclick="pickYear(2026)">2026<small>Gazi Koşusu şampiyonları dahil 170+ gerçek at</small></div>
+  </div>
+</div>
+
+<!-- AHIR KURULUMU -->
+<div id="scrSetup" class="screen">
+  <div class="box">
+    <h2 style="color:var(--gold)">Ahırını Kur</h2>
+    <p class="muted" style="margin-top:8px" id="setupYearLbl">2026 sezonu · 84 yarış günü</p>
+    <div style="display:flex;gap:8px;margin:12px 0;justify-content:center">
+      <button class="sec" id="diff0" onclick="pickDiff(0)" style="flex:1">Kolay<br><small>₺12M</small></button>
+      <button class="sec" id="diff1" onclick="pickDiff(1)" style="flex:1">Normal<br><small>₺8M</small></button>
+      <button class="sec" id="diff2" onclick="pickDiff(2)" style="flex:1">Zor<br><small>₺5M</small></button>
+    </div>
+    <input id="inpStable" maxlength="24" placeholder="Ahır / eküri adı (örn. Tamgaç Ekürisi)">
+    <div style="text-align:left;margin:6px 0 14px">
+      <p style="margin-bottom:4px;color:#aab6cc;font-size:11px">EKÜRİ FORMASI — jokeylerini bu renklerle koşturacaksın</p>
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="flex:1">
+          <p style="font-size:11px;margin:4px 0">1. Renk (forma):</p>
+          <div id="silkRow1"></div>
+          <p style="font-size:11px;margin:8px 0 4px">2. Renk (kask & kollar):</p>
+          <div id="silkRow2"></div>
+        </div>
+        <div style="text-align:center">
+          <div id="prevCap" style="width:26px;height:15px;border-radius:13px 13px 3px 3px;margin:0 auto;border:1px solid #111"></div>
+          <div id="prevBody" style="width:38px;height:42px;border-radius:6px;margin:2px auto 0;border:1px solid #111"></div>
+          <p style="font-size:9px;color:#aab6cc;margin-top:3px">forman</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="startGame()" style="width:100%">Sezona Başla</button>
+  </div>
+</div>
+
+<!-- ANA OYUN — CM 03/04 düzeni -->
+<div id="scrGame" class="screen">
+  <div id="topbar">
+    <span class="stName" id="tbName"></span>
+    <div class="info">
+      <span id="tbWeek"></span>
+      <span id="tbWeather"></span>
+      <span class="money" id="tbMoney"></span>
+      <span id="tbHorses"></span>
+    </div>
+  </div>
+  <div id="cmLayout">
+    <div id="sidebar">
+      <div class="menuTitle">Eküri</div>
+      <button id="tab0" class="mi on" onclick="showTab(0)">Genel Bakış</button>
+      <button id="tab10" class="mi" onclick="showTab(10)">📥 Gelen Kutusu <span id="inbxB" style="color:#e8c96a"></span></button>
+      <button id="tab1" class="mi" onclick="showTab(1)">Ahırım</button>
+      <button id="tab2" class="mi" onclick="showTab(2)">Antrenman</button>
+      <div class="menuTitle">Piyasa</div>
+      <button id="tab3" class="mi" onclick="showTab(3)">At Pazarı</button>
+      <button id="tab4" class="mi" onclick="showTab(4)">Transfer Teklifleri</button>
+      <div class="menuTitle">Yarışlar</div>
+      <button id="tab5" class="mi" onclick="showTab(5)">Yarış Programı</button>
+      <button id="tab11" class="mi" onclick="showTab(11)">Takvim</button>
+      <button id="tab13" class="mi" onclick="showTab(13)">🎫 Büyük Koşu Yolu</button>
+      <button id="tab9" class="mi" onclick="showTab(9)">Jokeyler</button>
+      <button id="tab6" class="mi" onclick="showTab(6)">Personel</button>
+      <div class="menuTitle">Kariyer</div>
+      <button id="tab7" class="mi" onclick="showTab(7)">Sıralamalar</button>
+      <button id="tab12" class="mi" onclick="showTab(12)">Kariyerim & Rekorlar</button>
+      <button id="tab8" class="mi" onclick="showTab(8)">Başarılar</button>
+      <div class="spacer"></div>
+      <button id="btnNext" onclick="nextDay()">Günü Bitir ▸</button>
+    </div>
+    <div id="content"><div id="tabContent"></div></div>
+  </div>
+</div>
+
+<!-- YARIŞ EKRANI -->
+<div id="scrRace" class="screen">
+  <div class="raceHead" style="margin-top:10px">
+    <h2 id="raceTitle" style="color:var(--gold)"></h2>
+    <span class="muted" id="raceMeta" style="color:#aab6cc"></span>
+    <span>
+      <button class="sec" id="btnView" onclick="toggleView()" style="display:none">🎥</button>
+      <button class="sec" id="btnRot" onclick="rotModel()" style="display:none">🔄</button>
+      <button class="sec" id="btnMute" onclick="toggleMute()" style="padding:3px 10px">🔊</button>
+    </span>
+  </div>
+  <div id="commentary">Atlar starta geliyor...</div>
+  <div id="trackWrap" style="position:relative">
+    <canvas id="track" width="1060" height="460"></canvas>
+    <canvas id="track3d" width="1060" height="440" style="display:none"></canvas>
+    <div id="hud3d" style="display:none;position:absolute;top:14px;right:18px;background:rgba(0,0,0,.5);border-radius:4px;padding:6px 10px;color:#fff;font-size:11px;font-weight:700;min-width:200px">
+      <span id="hudDist">0m</span>
+      <div style="background:rgba(255,255,255,.3);height:5px;border-radius:3px;margin-top:4px"><div id="hudBar" style="background:#e8c96a;height:5px;border-radius:3px;width:0%"></div></div>
+    </div>
+    <div id="son200" style="display:none;position:absolute;top:16px;left:50%;transform:translateX(-50%);color:#ffd75e;font-size:24px;font-weight:700;text-shadow:0 0 8px #000">⚡ SON 200 METRE ⚡</div>
+    <div id="banner3d" style="display:none;position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(15,25,12,.85);border:2px solid #e8c96a;border-radius:6px;padding:14px 30px;text-align:center">
+      <div id="bannerTxt" style="color:#e8c96a;font-size:22px;font-weight:700"></div>
+      <div id="bannerSub" style="color:#fff;font-size:12px;margin-top:4px"></div>
+    </div>
+    <div id="flash3d" style="display:none;position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none"></div>
+    <div id="preOdds" style="display:none;position:absolute;inset:6% 12%;background:rgba(12,22,40,.94);border:2px solid #e8c96a;border-radius:8px;padding:18px;overflow:auto;color:#fff"></div>
+  </div>
+  <div id="liveOrder"></div>
+  <div id="raceResult"></div>
+  <div style="text-align:center;margin:14px 0">
+    <button id="btnBack" style="display:none" onclick="backFromRace()">◂ Devam Et</button>
+  </div>
+</div>
+
+<button id="fabNext" onclick="nextDay()">▸ Günü Bitir</button>
+<div class="modalBg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ================= GERÇEK TJK VERİSİ (2026) =================
+   Kaynak: tjk.org — Önemli Koşu Sonuçları (2024-2026), At Sorgulama,
+   Handikap Puanları, Jokey İstatistikleri.
+   Format: [isim, ırk(A/İ), cinsiyet(E/D), Güç, yaş, gerçek sahibi, ünvan?]
+   Elit atların gücü gerçek kariyer kazancı + koşu derecesinden hesaplanmıştır. */
+const HORSES=[
+["GRANDE FLUSSO","İ","E",103,4,"BARAN BÜYÜKDERE","2025 Ankara K. 1."],
+["TRUELY","İ","D",96,4,"DOĞAN IRMAK","2025 Ankara K. 2."],
+["ALBAYRAK","İ","E",88,4,"MEHMET ALBAYRAK","2025 Ankara K. 3."],
+["VIKING","İ","E",80,4,"EMRAH KARAMAZI","2025 Ankara K. 4."],
+["ETSUKO","İ","D",103,5,"MEHMET EMİN EKENLER","2024 Ankara K. 1."],
+["GİZ","İ","E",87,5,"SALİH KIZILKANAT","2024 Ankara K. 2."],
+["THE AUREL","İ","E",85,5,"CELAL BAĞDATOĞLU","2024 Ankara K. 3."],
+["TOR GOLD","İ","E",97,5,"NERİMAN ÇİL","2024 Ankara K. 4."],
+["AL TAN","İ","E",106,5,"NEDİM KİSBU","2025 Avrasya K. 1."],
+["RIDE THE LIGHTNING","İ","E",101,5,"SELİM KAYA","2025 Avrasya K. 2."],
+["DRAGON FLAME","İ","E",103,5,"ENGİN BEKİROĞULLARI","2025 Avrasya K. 3."],
+["BORREGO","İ","E",102,5,"HAYRULLAH DOĞAN","2025 Avrasya K. 4."],
+["SON OF COOGER","İ","E",106,5,"AYHAN AHRASOĞLU","2024 Avrasya K. 1."],
+["VINCITORE","İ","E",97,8,"NECATİ DEMİRKOL","2024 Avrasya K. 3."],
+["AGE OF FIRE","İ","E",90,7,"MAHSUM EROL","2024 Avrasya K. 4."],
+["HANDSOME KING","İ","E",103,4,"ASUMAN YENİCE","2025 Cumhurbaşkanlığı K. 2."],
+["FESTIVAL FEVER","İ","E",89,5,"MELİS KURTEL EMİN","2024 Cumhurbaşkanlığı K. 4."],
+["GÖKIRMAK","A","E",108,4,"HAKAN YÜCETÜRK","2025 Cumhuriyet K. 1."],
+["DENİZ EFE","A","E",108,7,"CEBRAİL YILDIZ","2025 Cumhuriyet K. 2."],
+["KAHRAMANOĞLU","A","E",103,5,"CEBRAİL YILDIZ","2025 Cumhuriyet K. 3."],
+["AMAN DULO","A","D",95,5,"M.GARİP ELĞAÇ","2025 Cumhuriyet K. 4."],
+["SOYLUŞAH","A","E",97,6,"MAHMUT ÇADIRCI","2024 Cumhuriyet K. 2."],
+["AK FİLOZOF","A","E",96,6,"KAMİL YURDABAK","2024 Cumhuriyet K. 4."],
+["UPAMECANO","İ","E",106,3,"TALİP ÖZTÜRK","2025 Çaldıran K. 1."],
+["LOCO SUGAR","İ","D",103,3,"KEMAL KURT","2025 Çaldıran K. 2."],
+["WHIZBANG","İ","E",95,3,"ÖZDEN AÇAR","2025 Çaldıran K. 3."],
+["MUCHO BUENO","İ","E",92,3,"AYŞEGÜL KURTEL","2025 Çaldıran K. 4."],
+["PATRICK STAR","İ","E",99,4,"SELVA SAĞUN","2024 Çaldıran K. 1."],
+["DEO VOLENTE","İ","E",97,4,"ALİ RIZA ÇELİKOĞLU","2024 Çaldıran K. 2."],
+["TULUMAR","İ","E",99,4,"YAKUP ELĞAÇ","2024 Çaldıran K. 3."],
+["BRAIN BROOSTER","İ","E",87,4,"A.MURAT ŞEN","2024 Çaldıran K. 4."],
+["GRACE OF GOD","İ","D",98,3,"ALİ RIZA ÇELİKOĞLU","2026 Dişi Tay Deneme 2."],
+["STAR RUNNER","İ","D",93,3,"TOLGA BACA","2026 Dişi Tay Deneme 3."],
+["INCOME","İ","D",85,3,"ENGİN BEKİROĞULLARI","2026 Dişi Tay Deneme 4."],
+["AMAZING TOUCH","İ","D",104,4,"KEMAL KURT","2025 Dişi Tay Deneme 1."],
+["BEAUTY OF DARKNESS","İ","D",98,4,"ERDAL ÖZTÜRK","2025 Dişi Tay Deneme 3."],
+["BOON NAM","İ","D",92,4,"ARMAĞAN ARAZ","2025 Dişi Tay Deneme 4."],
+["MANGUSTA","İ","D",97,5,"MURAT CAVCAV","2024 Dişi Tay Deneme 2."],
+["FLYING SPICE","İ","D",92,5,"EMRAH KARAMAZI","2024 Dişi Tay Deneme 3."],
+["MITROS ON FIRE","İ","D",83,5,"Y.ERKUT ERSEVER","2024 Dişi Tay Deneme 4."],
+["BALLAD KING","İ","E",89,3,"DENİZ KURTEL","2026 Erkek Tay Deneme 3."],
+["DIRE WOLF","İ","E",92,3,"KEMAL KURT","2026 Erkek Tay Deneme 4."],
+["TONBİ","İ","E",102,4,"ONUR EKİCİ","2025 Erkek Tay Deneme 1."],
+["LETS WIN TOGETHER","İ","E",83,4,"KEMAL KURT","2025 Erkek Tay Deneme 3."],
+["MADRAS","İ","E",105,5,"İHSAN ERTEN","2024 Erkek Tay Deneme 1."],
+["BLUE SUNSET","İ","E",91,5,"DENİZ KURTEL","2024 Erkek Tay Deneme 3."],
+["ZIZKA","İ","E",91,5,"SANEM KAHRAMAN","2024 Erkek Tay Deneme 4."],
+["BAY NALÇAKAN","İ","E",108,3,"EMRAH NALÇAKAN","2026 GAZİ KOŞUSU 1."],
+["RABOVO","İ","E",105,3,"FEDAİ KAHRAMAN","2026 GAZİ KOŞUSU 2."],
+["ERSELE BEYİ","İ","E",97,3,"MURAT AKTAŞ","2026 GAZİ KOŞUSU 3."],
+["BRANDO","İ","E",93,3,"İHSAN ERTEN","2026 GAZİ KOŞUSU 4."],
+["CUTHA","İ","E",108,4,"NERİMAN ÇİL","2025 GAZİ KOŞUSU 1."],
+["SPECIAL MAN","İ","E",100,4,"MELİH TEMEL","2025 GAZİ KOŞUSU 3."],
+["BELGRATHAN","İ","E",89,4,"YASEMİN KAVLAK İÇER","2025 GAZİ KOŞUSU 4."],
+["ÖZMEN BEY","A","E",105,4,"ÖMER BİLİR","2025 Hatay K. 2."],
+["BAY MIRIK","A","E",93,4,"ELİF KAYA","2025 Hatay K. 3."],
+["SERHUNEFE","A","E",88,4,"ERSEN BÜYÜKTÜRKLER","2025 Hatay K. 4."],
+["KRALKARINCA","A","E",101,5,"SEMA ULAŞ","2024 Hatay K. 1."],
+["ŞENALPTUĞ","A","E",93,5,"YÜKSEL GÖKTÜRK","2024 Hatay K. 2."],
+["GÖĞÜBELİ","A","E",93,5,"MELİS KURTEL EMİN","2024 Hatay K. 3."],
+["JÜLİDEKIZ","A","D",91,5,"METİN ÇALDIRAN","2024 Hatay K. 4."],
+["BY TÜRKOĞLU","A","E",94,4,"FATİH ÇİFTÇİ","2026 İstiklal Savaşı K. 3."],
+["ATİLLABEY","A","E",90,4,"MELİS KURTEL EMİN","2026 İstiklal Savaşı K. 4."],
+["DAŞ FATİH","A","E",97,5,"SERKAN YILDIZHAN","2025 İstiklal Savaşı K. 2."],
+["AĞA TALİP","A","E",87,5,"KADİR YILMAZOĞLU","2025 İstiklal Savaşı K. 3."],
+["BOZKIREFESİ","A","E",98,6,"FEDAİ KAHRAMAN","2024 İstiklal Savaşı K. 1."],
+["AKATAHAN","A","E",96,6,"METİN KORUCU","2024 İstiklal Savaşı K. 2."],
+["BALKI TAY","A","E",89,6,"SİNAN EVREN ÇİÇEKÇİ","2024 İstiklal Savaşı K. 3."],
+["JAFAR","A","E",90,6,"ABDİ ARSLAN","2024 İstiklal Savaşı K. 4."],
+["NEURO MATH","İ","D",92,3,"AREK GÖVER","2026 Kısrak K. 2."],
+["JAEHAERA","İ","D",89,3,"ŞEYDA ERCAN","2026 Kısrak K. 3."],
+["PETITE LOUVE","İ","D",82,4,"KEMAL KURT","2025 Kısrak K. 3."],
+["DEJAVU","İ","D",85,4,"BARIŞ GÖKTÜRK","2025 Kısrak K. 4."],
+["LOOK AT THE STAR","İ","D",88,5,"BİROL BULUT","2024 Kısrak K. 2."],
+["NYMPHADORA TONKS","İ","D",95,5,"ONUR DİLBAZ","2024 Kısrak K. 3."],
+["OHRID INCISI","İ","D",83,5,"FEDAİ KAHRAMAN","2024 Kısrak K. 4."],
+["EL GLADIADOR","İ","E",89,3,"ALİ RIZA ÇELİKOĞLU","2025 Kraliçe II.Elizabeth K. 4."],
+["KOZLUHAN","İ","E",84,4,"ALİ KAYA","2024 Kraliçe II.Elizabeth K. 3."],
+["EL VERDUGO","İ","E",88,4,"MUHAMMET FELHAN","2024 Kraliçe II.Elizabeth K. 4."],
+["GÜRBÜZ TAY","A","E",94,5,"SÜLEYMAN AKGÜMÜŞ","2026 Tarım Bakanlığı K. 4."],
+["TUNÇ SİPERİ","A","E",97,9,"MÜZEYYEN TUĞDAŞ","2025 Tarım Bakanlığı K. 3."],
+["BOĞAZ ÇOCUĞU","A","E",95,7,"MERAL ÖZKAN","2025 Tarım Bakanlığı K. 4."],
+["FUAT AGA","A","E",89,7,"ÇİSİL SİMGE DENİZ","2024 Tarım Bakanlığı K. 3."],
+["GÖZPINARI","A","D",98,7,"MELİH TEMEL","2025 TBMM K. 3."],
+["RÜZGARDAHAN","A","E",97,7,"ŞEYDA ERCAN","2024 TBMM K. 4."],
+["ASMAR DUBAI","İ","E",90,5,"ARZU ÖZDEMİR","2025 TJK K. 4."],
+["AFRİKA KIZI","A","D",57,4,"MEHMET GARİP BECENE"],
+["AFŞINTAY","A","E",66,5,"KAYA KAYA"],
+["AFTER YOU","İ","E",73,4,"YÜKSEL TEKİNALP"],
+["AGA HATUN","A","D",55,4,"KADRİ FELHAN"],
+["AĞA TURBO","A","E",91,7,"TARKAN H. ONAR"],
+["AĞIR OĞLUM","A","E",95,4,"MUHAMMET ALİM ÖKSÜZER"],
+["AĞUSTOS AHMET","İ","E",86,6,"ALİ OSMAN ARSLAN"],
+["AHUU ATA","A","D",65,5,"FARUK ATEŞ"],
+["AIMUS LIBERATUS","İ","E",89,3,"ENGİN BEKİROĞULLARI"],
+["AINT NOBODY","İ","D",79,3,"ERDEM BEKMEZCİ"],
+["AIR OF SUPREMACY","İ","E",86,5,"İLKER ÇAPOĞLU"],
+["AKBELHAN","A","E",82,5,"İBRAHİM YALÇIN"],
+["AKÇAOVA","A","D",84,6,"LEVENT YAVUZ"],
+["AKDAĞ FIRTINASI","A","E",92,7,"SITKI ŞİMŞEK"],
+["AKERBEY","A","E",58,3,"ERKAN YILDIZ"],
+["AKGOBAK","A","E",87,7,"RUHAT SOL"],
+["AKGÜN AĞA","A","E",69,4,"MERTCAN ÖZKAN"],
+["AKINLARBEYİ","İ","E",68,5,"ÖMER F. ÇEVİK"],
+["AKLIMCAN","A","E",89,5,"MUHARREM CAN"],
+["AKMERİÇ","A","E",84,5,"MEHMET YILDIZ"],
+["AKOLHAN","A","E",69,5,"SELAHATTİN AKOL"],
+["AKSÖZ","A","E",79,5,"HALE EKMEKÇİ EMRE"],
+["AKSU HAN","A","E",96,7,"AVNİ KAYA"],
+["AKTAŞKAYA","A","E",99,6,"AHMET KAYA"],
+["AL BENZE","A","D",66,4,"BEYAZ CAMUZ"],
+["AL SAROUT","İ","E",56,3,"SOLAIMAN IRHAIM"],
+["ALAKONT","İ","E",89,6,"ÜMİT DURUCAN"],
+["ALAMETİ FARİKA","İ","D",61,3,"MURAT KARA"],
+["ALANALP","İ","E",55,6,"FERDA TEZCAN"],
+["ALANYALI","A","E",57,5,"AHMET DİLMAÇ"],
+["ALATTİN","A","E",75,5,"FERİDUN GÜNDÜZ"],
+["ALÇİN SULTAN","A","D",68,5,"SUPHİ TOYDEMİR"],
+["ALDA GÖR","A","E",90,7,"SÜPHİ KORKMAZ"],
+["ALGANHAN","A","E",86,10,"HÜLYA TEMEL"],
+["ALİBEĞ","A","E",60,9,"MARGARET LOGIE SMITH BAYDAN"],
+["ALİN ECE","İ","D",56,3,"M. BURAK TINAZ"],
+["ALL OF DREAMS","İ","E",72,4,"HALİDE NUR CAN"],
+["ABADBEY","A","E",23,3,"METİN ÇALDIRAN"],
+["ABANOZ","A","D",21,3,"D.DENİZ KANAR"],
+["ABAY HANIM","A","D",45,5,"MEHMET AKTAŞ"],
+["ABBAS BEY","A","E",92,5,"ÖMER BİLİR"],
+["ABDİ BABA","A","E",76,5,"MURAT YILDIRIM"],
+["ABDÜL","İ","E",81,5,"FIRAT TEKİNALP"],
+["ABDÜL HAKEEM","İ","E",14,3,"RUKEN ATAŞ"],
+["ABEHEYRAN","A","E",49,5,"HAKAN GÜLER"],
+["ABİDE MİNE","İ","D",24,5,"SİNAN KORKMAZ"],
+["ABİDİN BEY","İ","E",39,3,"ALİ ÖZHAMURKAR"],
+["ABİMSİN","A","E",39,3,"TUNCAY PALIT"],
+["ABUDABİ GÜZELİ","A","D",24,5,"MEHMET AKGÜNLÜ"],
+["ABUZER BABA","A","E",74,4,"BARIŞ DURDAĞ"],
+["ACAR TAY","İ","E",64,6,"AHMET CAN KARABULUT"],
+["ACCOUNTANT GIRL","İ","D",32,3,"SİNAN KORKMAZ"],
+["ACEM KIZIM","A","D",27,4,"ZEKİ KILIÇ"],
+["ACEMOĞLU BİR","A","E",12,3,"METE AYSEL"],
+["ACHANAY","İ","D",15,3,"BAYRAM ALİ SEZENİŞ"],
+["ACOUSTIC SONG","İ","D",52,3,"KEMAL KURT"],
+["ACROMANTULA","İ","D",48,4,"MURAT KADAİFÇİOĞLU"],
+["ACTION WONDER","İ","D",58,3,"TALİP ÖZTÜRK"],
+["ACUN TAY","A","E",90,6,"CUMHUR BALKAROĞLU"],
+["AÇAKIZ","A","D",51,4,"İSMET UZUN"],
+["ADA LIFE","A","D",36,4,"ARMAĞAN TURHAN"],
+["ADAKALE","A","E",31,5,"HALİL YAPRAK"],
+["ADAL","İ","D",86,6,"EMRE KİSBU"],
+["ADALAR","A","D",26,3,"İLHAN TEKİNALP"],
+["ADALIBEYİ","A","E",50,7,"HALİL KAYA"],
+["ADALOF","A","E",34,4,"METE ÇELİK"],
+["ADANA BEYİ","A","E",90,4,"EROL YÜCEL"],
+["ADANALI AŞK","İ","D",34,4,"MUSTAFA KARAGÜL"],
+["ADANALI KIZ","İ","D",76,4,"ATİLLA SERİNER"],
+["ADANALI TAY","A","E",47,5,"DERYA KAYA"],
+["ADDRESS","İ","E",93,4,"FERHAN YETİŞ"],
+["ADEN KRALİÇESİ","A","D",37,4,"HALİL ASLAN"],
+["ADEN PERİSİ","A","D",83,7,"GÜNSEN SOYUPAK"],
+["ADEN PRENSİ","A","E",28,4,"İBRAHİM KAYA"],
+["ADIN PARADISE","İ","E",10,3,"TASFİYE HALİNDE"],
+["ADISOYLU","A","E",38,3,"F. NİHAT BURUK"],
+["ADİGE ABREK","İ","E",51,5,"REFİK ÇEVİK"],
+["ADİGE PERİT","İ","E",74,5,"YELDA ALKAN"],
+["ADİLE HANIM","A","D",48,4,"MEHMET UÇAR"],
+["ADİLMAN","A","E",47,5,"SAVAŞ ERCÜMENT BECENE"],
+["ADOLFO OGEL","İ","E",72,5,"HİKMET ÇELİK"],
+["AEGEAN QUEEN","İ","D",72,5,"MELİS KURTEL EMİN"],
+["AEGEAN WOLF","İ","E",68,4,"AHMET GÜZELOCAK"],
+["AEMOND","İ","E",33,3,"MEHMET ALİ BECENE"],
+["AFİŞE","A","D",31,4,"ERSAN ÜLDES"],
+["AFRAŞAH","A","E",85,6,"OKTAY OHCAK"],
+["AFRİKA ASLANI","A","E",63,5,"TARIK KAR"]
+];
+/* 2026 sezonunda AKTİF jokeyler — [isim, 1.%, 2.%, 3.%, prestij(0-100)]
+   Prestij = kariyer galibiyet sayısı × galibiyet yüzdesinden hesaplanır (tjk.org).
+   Halis Karataş 7.229 kariyer galibiyetiyle açık ara zirvede. */
+const JOCKEYS=[
+["HALİS KARATAŞ",27,19,15,100],
+["SELİM KAYA",22,17,13,53],
+["GÖKHAN KOCAKAYA",19,16,14,48],
+["AHMET ÇELİK",18,16,15,46],
+["ÖZCAN YILDIRIM",17,15,13,42],
+["MEHMET KAYA",15,14,13,41],
+["VEDAT ABİŞ",20,16,14,31],
+["MÜSLÜM ÇELİK",15,14,13,31],
+["AKIN SÖZEN",13,13,13,30],
+["MUSTAFA ÇİÇEK",15,15,14,30],
+["FERİT YARDIMCI",15,12,11,29],
+["AYHAN KURŞUN",14,12,13,28],
+["NEVZAT AVCİ",14,13,13,24],
+["HIŞMAN ÇİZİK",13,13,13,21],
+["NECMİ ALTIN",13,12,12,21],
+["MUHAMMED MİR BİLGİN",15,13,12,21],
+["İSA AKYAVUZ",15,13,11,20],
+["MEHMET SALİH ÇELİK",16,14,14,20],
+["MEHMET AKYAVUZ",12,12,12,18],
+["ERTUĞRUL CANKILIÇ",12,12,12,17],
+["ALİ YILDIZ",13,12,12,15],
+["ERCAN ÇANKAYA",12,12,11,14],
+["ERAY ÇİZİK",12,11,11,13],
+["ÖMER FARUK ÖZEN",11,12,11,13],
+["ALİ MEHDİ ALTIN",12,11,11,12],
+["BEKİR MERT MIRIK",11,11,11,12],
+["SALİH ÇELİK",12,11,10,11],
+["ONUR YILDIZ",11,11,10,11],
+["AZİZ AKDEMİR",10,11,11,10],
+["YİĞİTCAN GÖKÇE",10,10,11,10]
+];
+const TRACKS=["Veliefendi (İstanbul)","Ankara 75. Yıl","İzmir Şirinyer","Adana Yeşiloba","Bursa Osmangazi","Şanlıurfa","Elazığ","Kocaeli Kartepe","Antalya","Diyarbakır"];
+const DISTS=[1200,1400,1600,1900,2100,2400];
+/* her gün 2 hipodromda koşu — gerçek TJK düzeni gibi rotasyon */
+const TRACK_PAIRS=[[0,3],[1,5],[2,4],[0,6],[1,9],[2,7],[0,8]];
+/* İsimli büyük koşular: [gün, ad, ırk, minGüç, mesafe, ikramiye, pist] */
+const NAMED=[
+[12,"Şanlıurfa Kupası","A",60,1900,1750000,5],
+[24,"TBMM Koşusu","İ",70,2100,2500000,1],
+[36,"Kısrak Koşusu","İ",65,1600,2000000,0],
+[48,"Erkek Tay Deneme","İ",70,1600,2250000,0],
+[57,"Cumhuriyet Koşusu","A",75,2100,3500000,1],
+[66,"Kraliçe II.Elizabeth K.","İ",70,2100,2750000,0],
+[75,"Çaldıran Koşusu","İ",75,2400,3000000,3],
+[82,"GAZİ KOŞUSU","İ",80,2400,7500000,0]
+];
+const SEASON_DAYS=84, START_MONEY=8000000, UPKEEP=2500, KIRA=25000, SEYIS=4000;
+/* at nakliye ücreti (eküri merkezi İstanbul varsayılır) — pist sırasına göre */
+const NAKLIYE=[5000,18000,16000,26000,10000,32000,30000,8000,22000,36000];
+const EXP_ADLARI={bakim:"Yem & Bakım",kira:"Ahır Kirası",seyis:"Seyis Maaşları",kayit:"Koşu Kayıtları",jokey:"Jokey Ücretleri",nakliye:"At Nakliyesi",vet:"Veteriner",antrenor:"Antrenör",anlasma:"Jokey Anlaşması",taki:"Takılar",damizlik:"Damızlık Bakımı"};
+/* at takıları (gerçek TJK takı sistemi) — at başına en fazla 2 */
+const GEAR={
+KG:{ad:"Kapalı Gözlük",fiyat:25000,desc:"Öne kaçan/dengeli atların odağını artırır — finişçilere etkisiz"},
+DB:{ad:"Dil Bağı",fiyat:15000,desc:"Uzun mesafede (1900m+) nefesi rahatlatır"},
+KT:{ad:"Kulak Tıkacı",fiyat:20000,desc:"İsimli büyük koşularda tribün baskısını azaltır"},
+BS:{ad:"Burun Şeridi",fiyat:18000,desc:"Koşu sonrası kondisyon kaybını %30 azaltır"}
+};
+const gearOf=i=>(G.gear&&G.gear[i])||[];
+function addExp(cat,amt){if(!G.exp)G.exp={};G.exp[cat]=(G.exp[cat]||0)+amt;}
+const dateStr=d=>{const t=new Date((typeof G!=="undefined"&&G?G.year:2026),3,1+(d-1));return t.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"});};
+/* Gerçek TJK antrenörleri: [isim, galibiyet %] — kaynak: tjk.org antrenör istatistikleri */
+const TRAINERS=[
+["İBRAHİM BEKİROĞULLARI",20],["ŞEFİK AYDEMİR",15],["KAZIM YILDIZ",9],["SERDAR VEYSEL KAYA",10],
+["ADEM GÜVEN",11],["AHMET AKBULUT",13],["ABDULLAH TEMİZER",9],["CUMA DEMİR",14],
+["MEHMET KAYA",9],["KAMİL ARDA",15],["SABRİ ARSLAN",11],["AHMET ELÇİN KARAKURT",10],
+["HAKAN YÜZBAŞI",16],["ENVER MUTLU",9],["AHMET ÖCAL",10],["HAKAN CANSU",8],
+["CASIM KATI",10],["MURAT TÜRKOĞLU",7],["MEHMET ARSLAN",10],["ADİL YILMAZ",15],
+["CENGİZ TEKİN KÖSE",8],["RAMAZAN TAŞDELEN",13],["NURULLAH GÜVEN",9],["ÜMİT ARSLAN",12],
+["BAHATTİN DAĞ",16],["EMİN KARATAŞ",14],["ALPER CİĞER",14],["AYTEKİN COŞKAN",14],
+["FATİH EMİR AKIL",10],["HÜSEYİN KARATAŞ",12]
+];
+const tFee=t=>(20000+TRAINERS[t][1]*4000); /* haftalık ücret */
+/* ================= 2008 SEZONU — GERÇEK TJK ARŞİV VERİSİ =================
+   Kaynak: tjk.org Tüm İsimli Koşular arşivi, 29.06/18.05/28.09/01.11.2008
+   günlük yarış sonuçları, 2008 jokey & antrenör istatistikleri.
+   İkramiye/ekonomi oyun dengesi için günümüz ölçeğinde tutuldu. */
+const HORSES_2008=[
+/* — Gazi kuşağı ve klasik kazananlar (gerçek dereceler) — */
+["PAN RIVER","İ","E",109,3,"NEVZAT SEYOK","2008 GAZİ KOŞUSU 1."],
+["NİHALİM","İ","D",101,3,"NERİMAN UYGUNOĞLU","2008 GAZİ KOŞUSU 2."],
+["PONTIAC","İ","E",98,3,"N.AREK KUYUMCİYAN","2008 GAZİ KOŞUSU 3."],
+["ANOTOLIAN FIRE","İ","E",94,3,"ŞAHİN İPEK","2008 GAZİ KOŞUSU 4."],
+["MARACAIBO","İ","E",103,3,"MERAL ATMAN","2008 Erkek Tay Deneme 1."],
+["OĞLUMEMRE","İ","E",91,3,"YAVUZ YILMAZ","2008 Erkek Tay Deneme 3."],
+["PERFECTO","İ","E",88,3,"V.GARO KUYUMCİYAN","2008 Erkek Tay Deneme 4."],
+["BERRAKSU","İ","D",104,3,"NASRİ ARTAR","2008 Dişi Tay Deneme 1."],
+["MAYUŞKA","İ","D",93,3,"YILDIRIM GELGİN","2008 Dişi Tay Deneme 2."],
+["SPARKLING","İ","D",105,3,"GÜRHAN Ş. ÖZBELGE","2008 Kısrak K. 1."],
+["CITADEL","İ","D",97,3,"EMRE KUMUK","2008 Kısrak K. 2."],
+["VICTORYS DREAM","İ","D",93,3,"AHMET KILIÇCIOĞLU","2008 Kısrak K. 3."],
+["BEKMEZBEY","İ","E",106,3,"ÜMİT BEKMEZCİ","2008 Çaldıran K. + Kraliçe II.Elizabeth K. 1."],
+["NASH BISHOP","İ","E",104,3,"HAYRULLAH DOĞAN","2008 TJK Kupası 1."],
+["INSPECTOR","İ","E",107,4,"HAYRULLAH DOĞAN","2008 Boğaziçi K. 1. · 2007 GAZİ K. 1."],
+["ATEŞİN KIZI","İ","D",106,4,"S.NEZİH TONGUÇ","2008 Cumhurbaşkanlığı K. 1. · 2007 Kısrak K. 1."],
+["SENATORE","İ","E",96,3,"AYHAN GİRAY","2008 Cumhurbaşkanlığı K. 2."],
+["BORS","İ","E",95,5,"KEMAL KURT","2008 Cumhurbaşkanlığı K. 3."],
+["GILITTER","İ","E",90,3,"HACİ İPEK","2008 Cumhurbaşkanlığı K. 4."],
+["KURTINIADIS","İ","E",103,5,"KEMAL KURT","2008 Başbakanlık K. 1. · Marmara K. 1."],
+["SALVATORE","İ","E",101,4,"İ.HİLMİ NARMANLI","2008 Başbakanlık Kupası 1."],
+["GLADYATÖR","İ","E",92,6,"ALAETTİN ÇOBAN","2008 Marmara K. 2."],
+["SABIRLI","İ","E",90,7,"AYDOĞAN SAN","2008 Marmara K. 3."],
+["RIBELLA","İ","D",98,9,"S.SELMAN TAŞBEK","2008 Zübeyde Hanım K. 1. · 2005 Başbakanlık K. 1."],
+["NEVER TOUCH ME","İ","D",89,4,"SERDAL ADALI","2008 Zübeyde Hanım K. 2."],
+["THE RISING","İ","D",87,4,"AYDOĞAN SAN","2008 Zübeyde Hanım K. 3."],
+["DELFINA","İ","D",84,6,"İSMAİL TÜRÜT","2008 Zübeyde Hanım K. 4."],
+["FAIRSON","İ","E",97,5,"B.BALKAR BALKAROĞLU","2008 Kanal D Byerley Türk Kupası 1."],
+["DOĞUBEYİ","İ","E",90,3,"ŞABAN GÜL","2008 Anafartalar K. 1."],
+["NEVER WALK ALONE","İ","E",87,3,"Z.AHSEN KURUM","2008 Anafartalar K. 2."],
+["SADIKBEY","İ","E",88,5,"ŞEVKİ EREN","2008 Arjantin Jokey Kulübü K. 1."],
+/* — Arap yıldızları (gerçek dereceler) — */
+["KAFKASLI","A","E",110,6,"REMAZAN KAYA","2008 TBMM Kupası 1. · WAHO Dünya Yılın Atı"],
+["AYABAKAN","A","E",107,4,"ŞİHİS ŞİMŞEK","2008 Cumhuriyet K. 1. · 2007 Hatay K. 1."],
+["İZBATUR","A","E",105,5,"BARAN D. CEMİLOĞLU","2008 Cumhuriyet K. 3. · 1900m rekortmeni"],
+["YÜCELAY","A","D",94,4,"MELİS KURTEL EMİN","2008 Cumhuriyet K. 4."],
+["TURBO","A","E",108,3,"ERDİN DÜZARAT","2008 Hatay K. 1."],
+["ÇETİN","A","E",101,6,"MAHMUT ALPAY","2008 Ali Rıza Bey K. 2. · 2005 Cumhuriyet K. 1."],
+["KIRIMHAN","A","E",96,6,"ERSAN ÖZBELGE","2008 Ali Rıza Bey K. 3."],
+["SABURAY","A","E",95,5,"ERDOĞAN ŞENOCAKLI","2008 Barbaros Hayrettin K. 1."],
+["OYMAKBEYİ","A","E",89,6,"İBRAHİM TAMER","2008 Barbaros Hayrettin K. 2."],
+/* — 2008'de koşan diğer gerçek safkanlar (güç tahmini) — */
+["MONTE NEGRO","İ","E",89,2,"Ö.S.NECMETTİN ELİYEŞİL",null],
+["GAUDİ","İ","E",84,2,"N.AREK KUYUMCİYAN",null],
+["TEKCAN HAN","İ","E",78,2,"OĞUZ TEKCAN",null],
+["MCQUEEN","İ","E",73,2,"ADİL MERT KAYA",null],
+["ATENFLEX","İ","D",76,2,"YAŞAR KAYA",null],
+["KIZILELMA","İ","D",72,2,"MUSA DEMİRSEL",null],
+["KAYA BUSESİ","İ","D",68,2,"REMAZAN KAYA",null],
+["YARENİM","İ","D",63,2,"ABDULKADIR ÜÇEŞ",null],
+["NUHBABA","İ","E",88,7,"FİKRET KAYA",null],
+["HARPUTLU GAGGOŞ","İ","E",79,4,"F.SERPİL ATAMAN",null],
+["IMPETUS","İ","E",76,4,"CAN ŞEMENOĞLU",null],
+["ZAFER YOLU","İ","E",85,5,"TURHAN TÜRERAY",null],
+["LALUV","İ","E",82,7,"ARSLAN AYBEK",null],
+["GOLD MASTER PIECE","İ","E",79,4,"S.NEZİH TONGUÇ",null],
+["EYLÜLDE GEL","İ","E",84,3,"FETTAH ERŞAHİN",null],
+["FIRST CITIZEN","İ","E",81,3,"M.SELÇUK SAN",null],
+["TAŞKININOĞLU","İ","E",74,3,"ABDULKADIR ÜÇEŞ",null],
+["VALENTIN","İ","E",72,4,"H.TARIK DİKENCİK",null],
+["EVERY WAY CAN","İ","E",70,6,"SELÇUK TAMGAÇ",null],
+["FARAMONDO","İ","E",66,4,"MURAT BEKMEZCİ",null],
+["TOLON","İ","D",73,4,"ÖMER ALTIN",null],
+["AYBENİZ","İ","D",70,4,"FATİH ÇİFTÇİ",null],
+["MELİSİN ŞİMALİ","İ","D",66,4,"F.TÜRKAN TETİK",null],
+["KINALIKAYA","İ","D",61,4,"HALİL KAYA",null],
+["TUĞÇENAZ","İ","D",75,3,"NECDET TURAN",null],
+["ŞİMAL","İ","D",65,3,"ÖMER ALTIN",null],
+["KÖLEMEN","İ","E",77,3,"SAİT VARLI",null],
+["NEW SALVADOR","İ","E",73,3,"HACİ İPEK",null],
+["FOR MY FATHER","İ","E",68,3,"İSMAİL YÜKSEL",null],
+["BEŞİKTAŞ","İ","E",64,3,"A.MURAT ŞEN",null],
+["KURTİS","İ","D",74,4,"KEMAL KURT",null],
+["BAK","İ","D",69,4,"METİN GÜNDAY",null],
+["LATIGO BAY","İ","D",66,5,"HİLMİ BERK ÜNER",null],
+["GÜZEL GELİN","İ","D",62,6,"ALİ ŞAHİN",null],
+["FAITH OF EKINOKS","İ","E",75,3,"YASİN KADRİ EKİNCİ",null],
+["HORSE ROYAL","İ","E",71,3,"F.SERPİL ATAMAN",null],
+["SINDY GIRL","İ","D",67,3,"OKAN ERTEKİN",null],
+["KARATEHLİKE","İ","D",63,3,"ATALAY SARMIŞ",null],
+["İL SOLE","İ","E",76,4,"YAMAN ZİNGAL",null],
+/* — 2008'de koşan diğer gerçek Araplar (güç tahmini) — */
+["ŞERARE","A","D",93,4,"CİHAN ÖZGEN",null],
+["KUTNU","A","E",90,4,"SUAT DEMİRAL",null],
+["KAAN AĞA","A","E",87,4,"Ş.KAAN SEZEN",null],
+["SERDESTE","A","D",85,4,"NURBİYE GÜLERCE",null],
+["FERDİBABA","A","E",86,6,"AHMET KORKMAZ",null],
+["BEYBORA","A","E",83,6,"SAVAŞ ERGİN",null],
+["AKBAYRAM","A","E",91,4,"NECATİ DEMİRKOL",null],
+["ELMASBİKE","A","D",90,4,"ERDOĞAN ŞENOCAKLI",null],
+["GÜNOK","A","E",84,4,"HASAN GÖRGÜN",null],
+["COŞARTAY","A","E",82,4,"SEMA ULAŞ",null],
+["SÜVARİ","A","D",71,4,"FATİH ÖZGEN",null],
+["BERRİN","A","D",68,4,"HASAN TURAN",null],
+["GÖZDESOY","A","D",64,4,"MEHMET S. MELİK",null],
+["ÇALIKOĞLU","A","E",75,3,"AYHAN ÇALIKOĞLU",null],
+["KAYMET","A","E",78,3,"ARSLAN AYBEK",null],
+["HARBİYE","A","D",74,3,"CAN N. GÜVEN",null],
+["MATCHMAKER","A","E",70,3,"MERT SARICI",null],
+["WHITE WOLF","A","D",66,3,"MUSA DEMİRSEL",null],
+["TAYBARS","A","E",80,3,"REMAZAN KAYA",null],
+["RAUFBEY","A","E",77,3,"YILMAZ BECİKOĞLU",null],
+["GÜRAÇAR","A","D",71,3,"DİLAN ATİK BATMAZ",null],
+["BEDRAN","A","E",67,3,"MEVLÜT TANİYİT",null],
+["SENACAN","A","D",76,3,"N.AREK KUYUMCİYAN",null],
+["SELAHATTİN AĞA","A","E",72,3,"SÜRMELİ KARACA",null],
+["CANSEFA","A","E",68,3,"YILMAZ BECİKOĞLU",null],
+["URALTAY","A","E",64,3,"BAHADIR GÖDEK",null],
+["SADRAZAM","A","E",74,3,"FATİH ÖZGEN",null],
+["ALKAÇ KIZI","A","D",70,3,"İSMAİL TÜRÜT",null],
+["BAHARNAZ","A","D",66,3,"R.HAKAN DİLAVER",null],
+["LALA","A","E",62,3,"MUSTAFA KAYA",null],
+["ALSEVDA","A","D",72,3,"ERSAN ÜLDES",null],
+["DELİCE","A","E",69,3,"M.ENGİN SEZEN",null],
+["KESKİNKAYA","A","E",65,3,"ADİL TURAN",null]
+];
+/* 2008 jokeyleri — gerçek yüzdeler (tjk.org 2008 jokey istatistikleri) */
+const JOCKEYS_2008=[
+["HALİS KARATAŞ",29,21,16,100],
+["MEHMET KAYA",17,15,13,68],
+["NURETTİN ŞEN",14,11,11,60],
+["SELİM KAYA",27,18,11,58],
+["GÖKHAN GÖKÇE",11,11,10,46],
+["GÖKHAN KOCAKAYA",11,9,10,45],
+["AKIN SÖZEN",10,12,12,44],
+["SADETTİN BOYRAZ",12,12,13,42],
+["GÜRKAN HÜSNÜ OKER",16,14,14,38],
+["ÖMER KAYA",13,14,12,37],
+["KADİR TOKAÇOĞLU",13,11,12,33],
+["FUAT ÇAKAR",16,12,14,31],
+["İBRAHİM HALİL KETME",9,9,10,30],
+["BARIŞ KURDU",11,13,13,30],
+["SİNAN ÖZEN",11,8,11,29],
+["YALÇIN AKAĞAÇ",12,15,13,29],
+["GÖKHAN YILDIZ",8,9,10,27],
+["ALİ ALPAGUT",12,14,12,27],
+["ERHAN YAVUZ",12,12,13,27],
+["AHMET ÇELİK",10,11,13,25],
+["MURAT GÜNDÜZELİ",10,12,11,22],
+["ÖZCAN YILDIRIM",8,9,8,18],
+["YEMEN TUNÇ",8,11,12,16],
+["ETEM METİN",11,14,11,15],
+["ARSLAN BİRDAL",11,11,6,14],
+["DENİZ YILDIZ",6,6,8,13],
+["ÇETİN OK",7,7,10,12]
+];
+/* 2008 antrenörleri — gerçek galibiyet %'leri (tjk.org 2008) */
+const TRAINERS_2008=[
+["ABDULLAH TEMİZER",13],["BURAK AKYOL",8],["MAHMUT DOĞAN",9],["ALİ RIZA AYDIN",12],
+["AYHAN KASAR",10],["MEHMET YÜCEDAĞ",7],["SEMİH ÖZKAN",10],["YUNUS İŞGÜZAR",11],
+["AHMET BAŞYİĞİT",14],["ADİL YILMAZ",18],["SAİT ÇELİK",8],["OSMAN EKİNCİ",9],
+["CUMA YILDIRIM",13],["KAMİL ARDA",17],["ÜMÜT BULUT",15],["AYKUT ECEVİT BAŞ",8],
+["SABAHATTİN KONUK",6],["ŞEFİK ÖZDENİZ",8],["MEHMET SEMİR TAŞBEK",16],["MURAT TÜRKOĞLU",10],
+["FERİD YAMANOĞLU",16],["ŞEFİK AYDEMİR",13],["MUTULLAH KAYA",22],["HAKAN HARMANBAŞI",17],
+["ÜMİT ARSLAN",13],["İSMET AKGÜL",7],["CENGİZ TEKİN KÖSE",7],["SONER KOYUNCU",10],
+["İZZET UÇAR",13],["ÜMİT BEKMEZCİ",27]
+];
+/* 2008 isimli koşuları — gerçek adlar/mesafeler (ikramiye günümüz ölçeğinde) */
+const NAMED_2008=[
+[12,"Şanlıurfa Kupası","A",60,1900,1750000,5],
+[24,"TBMM Kupası","A",70,2100,2500000,1],
+[36,"Kısrak Koşusu","İ",65,2400,2000000,0],
+[48,"Erkek Tay Deneme","İ",70,1600,2250000,0],
+[57,"Cumhuriyet Koşusu","A",75,1600,3500000,1],
+[66,"Kraliçe II.Elizabeth K.","İ",70,1400,2750000,0],
+[75,"Çaldıran Koşusu","İ",75,1600,3000000,3],
+[82,"GAZİ KOŞUSU","İ",80,2400,7500000,0]
+];
+/* 2008 dönemi aygır pazarı — gerçek pedigriler */
+const SIREMARKET_2008=[
+["RED BISHOP",106,26000000,"İ"],   /* PAN RIVER ve HIZEL BEYİ'nin babası */
+["SRI PEKAN",100,18000000,"İ"],
+["BIN AJWAAD",98,16000000,"İ"],    /* INSPECTOR'un babası */
+["EAGLE EYED",94,12000000,"İ"],
+["CAŞ",103,20000000,"A"],          /* KAFKASLI'nın babası */
+["AMER",95,13000000,"A"],
+["HABERBATUR",92,10000000,"A"],    /* KIRIMHAN'ın babası */
+["ANTALYA",88,7500000,"A"]         /* ÇETİN'in babası */
+];
+/* yıl bazlı veri seti değişimi */
+let DATA_BASE=null;
+function applyYear(y){
+  if(!DATA_BASE)DATA_BASE={H:HORSES.slice(),J:JOCKEYS.slice(),T:TRAINERS.slice(),N:NAMED.slice(),S:SIREMARKET.slice()};
+  const d=(y===2008)?{H:HORSES_2008,J:JOCKEYS_2008,T:TRAINERS_2008,N:NAMED_2008,S:SIREMARKET_2008}:DATA_BASE;
+  HORSES.length=0;HORSES.push(...d.H);
+  JOCKEYS.length=0;JOCKEYS.push(...d.J);
+  TRAINERS.length=0;TRAINERS.push(...d.T);
+  NAMED.length=0;NAMED.push(...d.N);
+  SIREMARKET.length=0;SIREMARKET.push(...d.S);
+}
+const WEATHERS=["☀️ Güneşli","⛅ Parçalı Bulutlu","🌧 Yağmurlu"];
+const weatherOf=d=>{const x=(d*37+11)%10;return x<5?0:(x<8?1:2);};
+/* antrenman türleri */
+const TRAIN={R:{ad:"Dinlenme",ic:"😴"},K:{ad:"Kondisyon",ic:"💪"},S:{ad:"Sprint",ic:"⚡"},M:{ad:"Mesafe",ic:"🏃"}};
+/* başarımlar */
+const ACHS=[
+["ilkat","İlk Safkan","İlk atını satın al"],
+["ahir5","Büyük Eküri","Aynı anda 5 at sahibi ol"],
+["elit","Yıldız Avcısı","Gücü 100+ olan bir at sahibi ol"],
+["ilkgal","İlk Zafer","İlk koşunu kazan"],
+["gal5","Beş Kupa","5 galibiyet al"],
+["gal15","On Beş Kupa","15 galibiyet al"],
+["gal30","Efsane Ahır","30 galibiyet al"],
+["isimli","Büyük Sahne","Bir isimli koşu kazan"],
+["gazi","GAZİ ŞAMPİYONU","Gazi Koşusu'nu kazan"],
+["surpriz","Sürpriz Yaptık","Gücü 60'ın altında bir atla koşu kazan"],
+["kazanc25","İkramiye Kralı","Tek sezonda ₺25M ikramiye kazan"],
+["milyoner","Para Babası","Kasanda ₺20M biriktir"],
+["sampiyon","Sezon Şampiyonu","Sezonu sahipler sıralamasında 1. bitir"]
+];
+const ageOf=i=>HORSES[i][4]+(G?G.year-(G.y0||2026):0);
+const fmt=n=>"₺"+Math.round(n).toLocaleString("tr-TR");
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+/* isimden deterministik mesafe tercihi (1200-2400 arası ideal mesafe) */
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+const idealDist=i=>1200+ (hashStr(HORSES[i][0])%7)*200;
+/* etkin güç: temel güç + oyun içi gelişim (genç atlar gelişir, yaşlılar geriler) */
+const hpOf=i=>Math.max(5,Math.min(115,HORSES[i][3]+((typeof G!=="undefined"&&G&&G.dev&&G.dev[i])||0)));
+const horsePrice=i=>{const h=HORSES[i];return Math.round((hpOf(i)*hpOf(i)*600+120000)*(h[4]>=6?0.75:1)/1000)*1000;};
+const jSkill=j=>JOCKEYS[j][1]*2+JOCKEYS[j][2]+JOCKEYS[j][3]*0.5; /* binicilik yeteneği */
+/* ücret PRESTİJE göre: Halis Karataş en pahalı, yeni jokeyler ucuz */
+const jFee=j=>Math.round((12000+JOCKEYS[j][4]*1600)/500)*500;
+
+let G=null; /* oyun durumu */
+function newGame(name){
+  return {v:5,stable:name,year:2026,day:1,money:START_MONEY,
+    owned:[],cond:{},form:{},stats:{},ownerEarn:{},jockeyWins:{},
+    entries:{},program:null,tab:0,history:[],exp:{},gear:{},
+    trainer:-1,cJockey:-1,train:{},inj:{},offers:[],ach:{},seasonWins:0,champCount:0,
+    studs:[],foals:[],sty:{}};
+}
+function horseState(i){
+  if(!(i in G.cond))G.cond[i]=Math.round(rnd(70,95));
+  if(!(i in G.form))G.form[i]=Math.round(rnd(-5,5));
+  if(!(i in G.stats))G.stats[i]={runs:0,w:0,p:0,earn:0};
+  return {cond:G.cond[i],form:G.form[i],st:G.stats[i]};
+}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",2600);}
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  /* mobil yüzen buton sadece ana oyun ekranında */
+  const fab=document.getElementById("fabNext");
+  if(fab)fab.classList.toggle("show",id==="scrGame");
+}
+/* zorluk seçimi: SADECE başlangıç bütçesini değiştirir */
+const DIFFS=[["Kolay",12000000],["Normal",8000000],["Zor",5000000]];
+let PICKDIFF=1;
+function pickDiff(n){
+  PICKDIFF=n;
+  for(let i=0;i<3;i++){const b=document.getElementById("diff"+i);if(b)b.style.outline=i===n?"3px solid #e8c96a":"none";}
+}
+/* forma rengi seçimi */
+let PICK1="#d21f26",PICK2="#f5f5f5";
+const SILK_PAL=["#d21f26","#1553a4","#0a7a33","#ffd400","#f26f21","#7b3fa0","#111111","#f5f5f5","#40bfbf","#e84393","#8a5a2e","#00a651"];
+function initSilkPicker(){
+  [1,2].forEach(n=>{
+    const row=document.getElementById("silkRow"+n);
+    if(!row)return;
+    row.innerHTML=SILK_PAL.map(c=>"<span class='sw' data-c='"+c+"' style='background:"+c+"' onclick='pickSilk("+n+",\""+c+"\")'></span>").join("");
+  });
+  pickSilk(1,PICK1);pickSilk(2,PICK2);
+}
+function pickSilk(n,c){
+  if(n===1)PICK1=c;else PICK2=c;
+  document.querySelectorAll("#silkRow"+n+" .sw").forEach(s=>{s.style.outline=s.dataset.c===c?"3px solid #e8c96a":"none";});
+  const b=document.getElementById("prevBody"),k=document.getElementById("prevCap");
+  if(b)b.style.background=PICK1;
+  if(k)k.style.background=PICK2;
+}
+let PICKYEAR=2026;
+function pickYear(y){
+  PICKYEAR=y||2026;
+  const l=document.getElementById("setupYearLbl");
+  if(l)l.textContent=PICKYEAR+" sezonu · 84 yarış günü";
+  show("scrSetup");initSilkPicker();pickDiff(PICKDIFF);
+}
+function startGame(){
+  const n=document.getElementById("inpStable").value.trim()||"Tamgaç Ekürisi";
+  applyYear(PICKYEAR);
+  G=newGame(n);G.year=PICKYEAR;G.y0=PICKYEAR;G.silk1=PICK1;G.silk2=PICK2;
+  G.money=DIFFS[PICKDIFF][1];G.diff=DIFFS[PICKDIFF][0];
+  genProgram();save();show("scrGame");refreshTop();showTab(3);
+  toast("Hoş geldin! Önce At Pazarı'ndan kendine at al.");
+}
+function save(){try{localStorage.setItem("atmenajer",JSON.stringify(G));}catch(e){}}
+function load(){try{const d=localStorage.getItem("atmenajer");if(d){const g=JSON.parse(d);
+  if(g&&(g.v===3||g.v===4)){ /* eski kayıt taşınır: jokey kadrosu değişti */
+    g.v=5;if(!g.exp)g.exp={};g.cJockey=-1;g.entries={};g.jockeyWins={};
+    applyYear(g.y0||2026);G=g;return true;}
+  if(g&&g.v===5){g.silk1=g.silk1||"#d21f26";g.silk2=g.silk2||"#f5f5f5";
+    applyYear(g.y0||2026);
+    g.studs=g.studs||[];g.foals=g.foals||[];g.sty=g.sty||{};g.sires=g.sires||[];
+    /* eski kayıt göçü: extra listesi yoksa oluştur */
+    if(!g.extra)g.extra=[...(g.sires||[]).map(s=>({k:"s",n:s.n,irk:s.irk,hp:s.hp})),
+                         ...(g.foals||[]).map(f=>({k:"f",n:f.n,irk:f.irk,c:f.c,hp:f.hp,ba:f.ba,sire:f.sire}))];
+    G=g;rebuildExtras();
+    /* damızlık indekslerini isimle yeniden çöz (indeks kayması olmasın) */
+    (G.studs||[]).forEach(s=>{
+      if(s.n){const ix=HORSES.findIndex(h=>h[0]===s.n);if(ix>=0)s.h=ix;}
+      else if(HORSES[s.h])s.n=HORSES[s.h][0];
+    });
+    return true;}}}catch(e){}return false;}
+/* eklenen atları (tay + satın alınan aygır) KRONOLOJİK sırayla havuza geri ekle
+   — indeksler her açılışta birebir aynı kalır */
+function rebuildExtras(){
+  (G.extra||[]).forEach(e=>{
+    if(HORSES.some(h=>h[0]===e.n))return;
+    if(e.k==="s")HORSES.push([e.n,e.irk,"E",e.hp,12-(G.year-(G.y0||2026)),"Damızlık Deposu",null,null]);
+    else HORSES.push([e.n,e.irk,e.c,e.hp,e.ba,G.stable,null,e.sire]);
+  });
+}
+const isStud=i=>(G&&G.studs||[]).some(s=>s.h===i);
+function refreshTop(){
+  document.getElementById("tbName").textContent="🏇 "+G.stable+" · "+G.year;
+  document.getElementById("tbWeek").textContent="📅 "+dateStr(G.day)+" ("+G.day+"/"+SEASON_DAYS+")";
+  document.getElementById("tbWeather").textContent=WEATHERS[weatherOf(G.day)];
+  document.getElementById("tbMoney").textContent=fmt(G.money);
+  document.getElementById("tbHorses").textContent="🐎 "+G.owned.length+" at";
+  updInboxBadge();
+}
+function unlockAch(id){
+  if(G.ach[id])return;
+  const a=ACHS.find(x=>x[0]===id);if(!a)return;
+  G.ach[id]=G.day+"/"+G.year;
+  toast("🏅 Başarı kazanıldı: "+a[1]+"!");
+  if(typeof pushNews==="function")pushNews("🏅","Başarı: "+a[1],a[2]+" — tebrikler!");
+}
+function checkAchBasics(){
+  if(G.owned.length>=1)unlockAch("ilkat");
+  if(G.owned.length>=5)unlockAch("ahir5");
+  if(G.owned.some(i=>HORSES[i][3]>=100))unlockAch("elit");
+  if(G.money>=20000000)unlockAch("milyoner");
+  const tw=Object.values(G.stats).reduce((s,x)=>s+(x.w||0),0);
+  if(tw>=1)unlockAch("ilkgal");if(tw>=5)unlockAch("gal5");
+  if(tw>=15)unlockAch("gal15");if(tw>=30)unlockAch("gal30");
+  if((G.ownerEarn[G.stable]||0)>=25000000)unlockAch("kazanc25");
+}
+/* ============ GÜNLÜK YARIŞ PROGRAMI (2 hipodrom) ============ */
+function genProgram(){
+  const pair=TRACK_PAIRS[(G.day-1)%TRACK_PAIRS.length];
+  const races=[];
+  const bands=[
+    /* 1. hipodrom */
+    {breed:"A",lo:0,hi:44,ad:"Arap Maiden/Şartlı",purse:400000,t:0},
+    {breed:"A",lo:45,hi:74,ad:"Arap Handikap 16",purse:750000,t:0},
+    {breed:"İ",lo:70,hi:200,ad:"İngiliz Açık (KV-6)",purse:1600000,t:0},
+    /* 2. hipodrom */
+    {breed:"İ",lo:0,hi:44,ad:"İngiliz Maiden/Şartlı",purse:500000,t:1},
+    {breed:"İ",lo:45,hi:74,ad:"İngiliz Handikap 15",purse:900000,t:1},
+    {breed:"A",lo:70,hi:200,ad:"Arap Açık (KV-6)",purse:1300000,t:1}
+  ];
+  bands.forEach((b,k)=>{
+    races.push({id:k,name:b.ad,breed:b.breed,lo:b.lo,hi:b.hi,
+      dist:DISTS[(G.day+k*2)%DISTS.length],purse:b.purse,named:false,track:pair[b.t],
+      srf:((G.day+k)%3===0)?"Kum":"Çim",done:false,result:null});
+  });
+  const nm=NAMED.find(n=>n[0]===G.day);
+  if(nm){races.push({id:races.length,name:nm[1],breed:nm[2],lo:nm[3],hi:200,
+    dist:nm[4],purse:nm[5],named:true,track:nm[6],srf:"Çim",done:false,result:null});}
+  /* DEKLARE: her koşunun AI katılımcıları önceden bellidir (gün bazlı sabit) */
+  const topJ=JOCKEYS.map((j,k)=>k).sort((a,b)=>jSkill(b)-jSkill(a)).slice(0,28);
+  races.forEach(r=>{
+    let pool=HORSES.map((h,i)=>i).filter(i=>eligible(i,r)&&!G.owned.includes(i));
+    /* isimli koşularda katılım şartı: kalifiye atlar önce; kadro dolmazsa en iyiler tamamlar */
+    if(r.named){
+      const q=pool.filter(i=>qualifies(i,r));
+      const rest=pool.filter(i=>!q.includes(i)).sort((a,b)=>hpOf(b)-hpOf(a));
+      pool=q.concat(rest);
+      pool=pool.slice(0,Math.max(7,q.length>=7?q.length:7));
+      if(q.length>=7)pool=q;
+    }
+    pool.sort((a,b)=>(hashStr(HORSES[a][0]+"#"+G.day+"_"+r.id)%997)-(hashStr(HORSES[b][0]+"#"+G.day+"_"+r.id)%997));
+    if(r.named){
+      /* kalifiyeler önde kalsın: önce kalifiye sırala */
+      pool.sort((a,b)=>(qualifies(b,r)?1:0)-(qualifies(a,r)?1:0));
+    }
+    r.decl=pool.slice(0,7).map(h=>({h,j:topJ[hashStr(HORSES[h][0]+"J"+G.day)%topJ.length]}));
+  });
+  G.program={pair,races};
+  G.entries={};
+}
+/* koşu katılımcılarını kur (deklare + oyuncu kayıtları) ve performansları hesapla */
+function buildRunners(r){
+  const mine=(G.entries[r.id]||[]);
+  const runners=[];
+  mine.forEach(e=>runners.push({h:e.h,j:e.j,mine:true}));
+  (r.decl||[]).forEach(d=>runners.push({h:d.h,j:d.j,mine:false}));
+  if(runners.length<2)return runners;
+  const avgHP=runners.reduce((s,u)=>s+hpOf(u.h),0)/runners.length;
+  const wthr=weatherOf(G.day),srfIdx=r.srf==="Kum"?1:0;
+  runners.forEach((u,idx)=>{
+    const s=G.owned.includes(u.h)?horseState(u.h):null;
+    const distPen=Math.abs(r.dist-idealDist(u.h))/70;
+    const hpW=r.named?0.4:0.22;
+    let perf=52+(hpOf(u.h)-avgHP)*hpW+(jSkill(u.j)-55)*0.13-distPen;
+    const sp=srfPref(u.h);
+    if(sp!==2)perf+=(sp===srfIdx)?2.5:-2.5;
+    if(wthr===2)perf+=rnd(-5,5)+(r.srf==="Çim"?rnd(-2,0):0);
+    if(u.mine&&s){
+      perf+=(s.cond-80)*0.25+s.form*0.7;
+      if(G.trainer>=0)perf+=TRAINERS[G.trainer][1]*0.12;
+      if(u.j===G.cJockey)perf+=1.5;
+      const gr=gearOf(u.h);
+      if(gr.includes("KG")&&styleOf(u.h)<0.67)perf+=1.5;
+      if(gr.includes("DB")&&r.dist>=1900)perf+=1.5;
+      if(gr.includes("KT")&&r.named)perf+=2;
+    }else{perf+=rnd(-2,2);}
+    perf+=rnd(-10,10);
+    u.perf=Math.max(25,perf);
+    u.style=Math.min(1,Math.max(0,styleOf(u.h)+rnd(-0.08,0.08)));
+    /* dayanıklılık: senin atlarında kondisyona bağlı, AI'da rastgele */
+    u.sta=u.mine&&s?Math.min(1.05,Math.max(0.6,0.9+(s.cond-80)*0.004)):rnd(0.75,1.0);
+    u.fat=0;u.turnAdj=0;u.tSpd=1;u.tSeg=0;
+    u.x=0;u.done=false;u.lane=idx;
+    if(u.mine){u.color=G.silk1||"#d21f26";u.color2=G.silk2||"#f5f5f5";}
+    else{u.color=SILKS[idx%SILKS.length];u.color2=u.color;}
+  });
+  return runners;
+}
+function eligible(hIdx,r){
+  const h=HORSES[hIdx];
+  if(ageOf(hIdx)>=10)return false; /* emekli */
+  if(isStud(hIdx))return false; /* damızlık koşamaz */
+  if(r.breed!=="*"&&h[1]!==r.breed)return false;
+  if(hpOf(hIdx)<r.lo||hpOf(hIdx)>r.hi)return false;
+  if(r.named&&r.name==="GAZİ KOŞUSU"&&ageOf(hIdx)!==3&&ageOf(hIdx)!==4)return false;
+  return true;
+}
+/* GANYAN & AGF: kamuya açık verilerle tahmini bahis oranları */
+function raceOdds(r){
+  const parts=[...(G.entries[r.id]||[]).map(e=>({h:e.h,j:e.j,mine:true})),
+               ...((r.decl||[]).map(d=>({h:d.h,j:d.j,mine:false})))];
+  if(!parts.length)return [];
+  const es=parts.map(p=>Math.exp((hpOf(p.h)+jSkill(p.j)*0.35)/9));
+  const S=es.reduce((a,b)=>a+b,0);
+  return parts.map((p,k)=>{
+    const pr=es[k]/S;
+    return {...p,agf:pr*100,gny:Math.max(1.1,Math.round(0.9/pr*100)/100)};
+  }).sort((a,b)=>b.agf-a.agf);
+}
+function oddsTable(r,dark){
+  const o=raceOdds(r);
+  if(!o.length)return "<p class='muted'>Deklare boş.</p>";
+  return '<table style="margin-top:6px"><tr><th>At</th><th>Jokey</th><th>Güç</th><th>Ganyan</th><th>AGF</th></tr>'
+    +o.map((p,k)=>'<tr'+(k===0?' style="font-weight:700"':'')+'><td>'+(p.mine?'★ ':'')
+      +(dark?HORSES[p.h][0]:hLink(p.h))+(k===0?' <span class="named">— FAVORİ</span>':'')
+      +'</td><td class="muted">'+JOCKEYS[p.j][0]+'</td><td>'+hpOf(p.h)+'</td><td><b>'+p.gny.toFixed(2)+'</b></td><td>%'+p.agf.toFixed(1)+'</td></tr>').join('')+'</table>';
+}
+/* ============ BÜYÜK KOŞU KATILIM ŞARTLARI (kalifikasyon) ============ */
+function seasonWins(h){return ((G.hlog||{})[h]||[]).filter(e=>e.y===G.year&&e.p===1).length;}
+function trialQ(h){return ((G.hlog||{})[h]||[]).some(e=>e.y===G.year&&e.p<=2&&/Tay Deneme|Kısrak Koşusu/.test(e.r));}
+function qualifies(h,r){
+  if(!r.named)return true;
+  if(/Tay Deneme|Kısrak Koşusu|Şanlıurfa/.test(r.name))return true; /* eleme/açılış koşuları şartsız */
+  if(r.name==="GAZİ KOŞUSU")return trialQ(h)||seasonWins(h)>=3;
+  return seasonWins(h)>=1;
+}
+function qualText(r){
+  if(!r.named||/Tay Deneme|Kısrak Koşusu|Şanlıurfa/.test(r.name))return "";
+  if(r.name==="GAZİ KOŞUSU")return "🎫 Şart: Tay Deneme/Kısrak Koşusu'nda ilk 2 VEYA bu sezon 3 galibiyet";
+  return "🎫 Şart: bu sezon en az 1 galibiyet";
+}
+/* oyuncunun bu koşuya sokabileceği boşta (sağlam + şartları sağlayan) atları */
+function myEligible(r){
+  return G.owned.filter(i=>eligible(i,r)&&qualifies(i,r)&&!(G.inj[i]>0)&&!(G.entries[r.id]||[]).some(e=>e.h===i)&&!enteredElsewhere(i,r.id));
+}
+/* at pist tercihi: 0=çim sever, 1=kum sever, 2=fark etmez */
+const srfPref=i=>hashStr(HORSES[i][0]+"srf")%3;
+/* GERÇEK koşu stilleri — kaynak: tjk.org Son 800 istatistikleri (2025-26).
+   Format: isim: [koşu sayısı, son 800'e önde girdiği koşu sayısı] */
+const STYLES={
+"GRANDE FLUSSO":[4,0],"TRUELY":[4,0],"ALBAYRAK":[2,0],"VIKING":[2,0],"ETSUKO":[2,0],
+"THE AUREL":[1,0],"TOR GOLD":[3,1],"AL TAN":[3,3],"RIDE THE LIGHTNING":[3,1],
+"DRAGON FLAME":[1,0],"BORREGO":[4,0],"SON OF COOGER":[1,0],"VINCITORE":[1,1],
+"HANDSOME KING":[5,0],"GÖKIRMAK":[3,1],"DENİZ EFE":[6,2],"KAHRAMANOĞLU":[8,0],
+"AMAN DULO":[3,0],"AK FİLOZOF":[3,0],"UPAMECANO":[4,1],"LOCO SUGAR":[3,1],
+"WHIZBANG":[5,5],"MUCHO BUENO":[2,0],"DEO VOLENTE":[2,0],"TULUMAR":[4,0],
+"AMAZING TOUCH":[3,0],"BEAUTY OF DARKNESS":[5,0],"BOON NAM":[3,0],"MANGUSTA":[1,0],
+"FLYING SPICE":[3,0],"TONBİ":[5,0],"MADRAS":[2,0],"CUTHA":[2,0],"SPECIAL MAN":[4,1],
+"ÖZMEN BEY":[4,1],"KRALKARINCA":[1,1],"DAŞ FATİH":[4,0],"BOZKIREFESİ":[1,0],
+"NYMPHADORA TONKS":[2,0],"EL GLADIADOR":[3,2],"BAY NALÇAKAN":[5,4]
+};
+/* koşu stili: gerçek veri varsa ondan, yoksa isimden türetilmiş KALICI karakter
+   (0=öne kaçan ... 1=finişçi) */
+function styleOf(i){
+  if(typeof G!=="undefined"&&G&&G.sty&&G.sty[HORSES[i][0]]!==undefined)return G.sty[HORSES[i][0]]; /* taylar: babadan miras */
+  const d=STYLES[HORSES[i][0]];
+  if(d&&d[0]>=1)return Math.min(0.92,Math.max(0.08,1-(d[1]/d[0])));
+  return (hashStr(HORSES[i][0]+"sty")%101)/100;
+}
+const styleReal=i=>!!STYLES[HORSES[i][0]];
+const styleName=i=>{const s=styleOf(i);return (s<0.33?"öne kaçar":s<0.67?"dengeli koşar":"finişçidir")+(styleReal(i)?"":" (tahmini)");};
+/* ============ MENÜ / SEKMELER ============ */
+function showTab(n){
+  G.tab=n;
+  for(let i=0;i<14;i++)document.getElementById("tab"+i).classList.toggle("on",i===n);
+  const el=document.getElementById("tabContent");
+  const views=[viewHome,viewStable,viewTraining,viewMarket,viewTransfers,viewProgram,viewStaff,viewStandings,viewAch,viewJockeys,viewInbox,viewCalendar,viewCareer,viewQualPath];
+  el.innerHTML=views[n]();
+}
+/* 🎫 BÜYÜK KOŞU YOLU sekmesi: tüm sezonun isimli koşuları + atlarının hak durumu */
+function viewQualPath(){
+  let html='<div class="card"><h3>🎫 Büyük Koşu Yolu — '+G.year+'</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">İsimli koşulara katılım hak ister: koşu kazanarak sayaç doldur; Gazi için Tay Deneme / Kısrak Koşusu\'nda ilk 2 kestirmedir.</p>';
+  const upcoming=NAMED.filter(n=>n[0]>=G.day);
+  if(!upcoming.length)html+='<p class="muted">Bu sezonun büyük koşuları tamamlandı.</p>';
+  upcoming.forEach(n=>{
+    html+='<div style="margin:8px 0;padding-bottom:8px;border-bottom:1px solid var(--line)">'
+      +'<b class="named">⭐ '+n[1]+'</b> <span class="muted">— '+dateStr(n[0])+' · '+TRACKS[n[6]]+' · '+fmt(n[5])+' · '+n[4]+'m · '+(n[2]==="A"?"Arap":"İngiliz")+'</span>';
+    const req=qualText({named:true,name:n[1]});
+    if(req)html+='<div style="font-size:10px;color:#b03a2e;font-weight:700">'+req+'</div>';
+    else html+='<div style="font-size:10px;color:#2e7d32;font-weight:700">Şartsız — güç ve ırk yeterliyse girilebilir</div>';
+    const phys=G.owned.filter(i=>!isStud(i)&&ageOf(i)<10
+      &&(n[2]==="*"||HORSES[i][1]===n[2])&&hpOf(i)>=n[3]
+      &&(n[1]!=="GAZİ KOŞUSU"||ageOf(i)===3||ageOf(i)===4));
+    if(!phys.length){
+      html+='<div class="muted" style="font-size:11px;margin-top:3px">Uygun atın yok ('+(n[2]==="A"?"Arap":"İngiliz")+', güç '+n[3]+'+'+(n[1]==="GAZİ KOŞUSU"?", 3-4 yaş":"")+').</div>';
+    }else phys.forEach(i=>{
+      const fake={named:true,name:n[1]};
+      let st;
+      if(qualifies(i,fake))st='<span class="gTxt">✅ HAK KAZANDI</span>';
+      else if(n[1]==="GAZİ KOŞUSU"){
+        const wn=seasonWins(i);
+        const trial=NAMED.find(x=>/Tay Deneme|Kısrak/.test(x[1])&&x[0]>=G.day&&x[2]===HORSES[i][1]);
+        st='<span class="rTxt">🎯 '+wn+'/3 galibiyet</span>'
+          +(trial?' <span class="muted">· kestirme: '+dateStr(trial[0])+' '+trial[1]+' → ilk 2</span>'
+                 :' <span class="muted">· denemeler geçti, tek yol 3 galibiyet</span>');
+      }else st='<span class="rTxt">🎯 '+seasonWins(i)+'/1 galibiyet gerekli</span>';
+      html+='<div style="font-size:11px;margin-top:3px">'+hLink(i)+' — '+st+'</div>';
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+/* ============ GELEN KUTUSU ============ */
+function pushNews(ic,t,m){
+  (G.inbox=G.inbox||[]).unshift({d:G.day,y:G.year,ic,t,m});
+  if(G.inbox.length>60)G.inbox.pop();
+  G.unread=(G.unread||0)+1;
+  updInboxBadge();
+}
+function updInboxBadge(){
+  const b=document.getElementById("inbxB");
+  if(b)b.textContent=(G&&G.unread)?("("+G.unread+")"):"";
+}
+function viewInbox(){
+  G.unread=0;updInboxBadge();save();
+  const inbox=G.inbox||[];
+  let html='<div class="card"><h3>📥 Gelen Kutusu</h3>';
+  if(!inbox.length)html+='<p class="muted" style="margin:6px 0">Henüz haber yok. Günler ilerledikçe eküri haberleri burada birikecek.</p>';
+  else html+=inbox.map(n=>{
+    let when;
+    if(n.y!==G.year)when=n.y+" sezonu";
+    else{
+      const diff=G.day-n.d;
+      when=diff<=0?"bugün":diff===1?"dün":diff+" gün önce";
+    }
+    return '<div style="padding:7px 4px;border-bottom:1px solid var(--line)"><b>'+n.ic+' '+n.t+'</b> <span class="muted">— '+when+'</span><br><span style="font-size:11px">'+n.m+'</span></div>';
+  }).join('');
+  html+='<div style="margin-top:10px;text-align:right"><button class="sec" onclick="G.inbox=[];save();showTab(10)">Kutuyu Temizle</button></div></div>';
+  return html;
+}
+/* ============ TAKVİM ============ */
+function viewCalendar(){
+  let html='<div class="card"><h3>📅 Sezon Takvimi — '+G.year+'</h3><p class="muted" style="margin:4px 0 8px">⭐ = isimli büyük koşu · sarı = bugün</p>';
+  const months=[["Nisan",1,30],["Mayıs",31,61],["Haziran",62,84]];
+  months.forEach(mo=>{
+    html+='<div style="background:var(--navyL);color:#fff;padding:4px 8px;font-size:11px;margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px">'+mo[0]+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+    ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"].forEach(g=>html+='<div class="muted" style="text-align:center;font-size:9px">'+g+'</div>');
+    const first=(new Date(G.year,3,1+(mo[1]-1)).getDay()+6)%7;
+    for(let k=0;k<first;k++)html+='<div></div>';
+    for(let d=mo[1];d<=mo[2];d++){
+      const nm=NAMED.find(n=>n[0]===d);
+      const today=d===G.day,past=d<G.day,future=d>G.day;
+      html+='<div '+(future?'onclick="goToDay('+d+')" title="Bu güne atla (aradaki koşular simüle edilir)"':'')
+        +' style="border:1px solid var(--line);border-radius:2px;min-height:36px;padding:2px;font-size:9px;'
+        +(today?'background:#e8c96a;font-weight:700;':past?'opacity:.4;':'background:var(--cream2);cursor:pointer;')+'"'
+        +(future?' onmouseover="this.style.background=\'#d6e0c9\'" onmouseout="this.style.background=\'var(--cream2)\'"':'')+'>'
+        +new Date(G.year,3,1+(d-1)).getDate()
+        +(nm?'<br><span style="color:#8a6d1d;font-weight:700">⭐'+nm[1].split(" ")[0]+'</span>':'')+'</div>';
+    }
+    html+='</div>';
+  });
+  html+='</div><div class="card"><h3>Büyük Koşular</h3><table><tr><th>Tarih</th><th>Koşu</th><th>Irk</th><th>Mesafe</th><th>İkramiye</th><th>Pist</th></tr>'
+    +NAMED.map(n=>'<tr'+(n[0]<G.day?' style="opacity:.5"':'')+'><td>'+dateStr(n[0])+'</td><td class="named">⭐ '+n[1]+'</td><td>'+(n[2]==="A"?"Arap":"İngiliz")+'</td><td>'+n[4]+'m</td><td>'+fmt(n[5])+'</td><td>'+TRACKS[n[6]]+'</td></tr>').join('')+'</table></div>';
+  return html;
+}
+/* ============ KARİYER & REKORLAR ============ */
+function viewCareer(){
+  const car=G.career||[];
+  let html='<div class="card"><h3>Kariyer Arşivi</h3>';
+  if(!car.length)html+='<p class="muted" style="margin:6px 0">İlk sezonun sonunda kariyer geçmişin burada birikecek.</p>';
+  else html+='<table><tr><th>Sezon</th><th>Galibiyet</th><th>Yıllık Kazanç</th><th>Gider</th><th>Net</th><th>Sıra</th><th>Kupa</th><th>En İyi At</th></tr>'
+    +car.map(c=>'<tr><td><b>'+c.y+'</b>'+(c.champ?' 🏆':'')+'</td><td>'+c.wins+'</td><td class="gTxt">'+fmt(c.earn)+'</td><td class="rTxt">'+fmt(c.exp)+'</td><td class="'+(c.net>=0?'gTxt':'rTxt')+'"><b>'+fmt(c.net)+'</b></td><td>'+(c.rank||'—')+'.</td><td>'+c.cups+'</td><td>'+(c.best||'—')+'</td></tr>').join('')+'</table>';
+  html+='</div>';
+  const R_=G.rec||{};
+  const card=(t,v)=>'<div class="statbox" style="min-width:160px;max-width:220px"><b style="font-size:11px">'+(v||'—')+'</b><span style="font-size:9px">'+t+'</span></div>';
+  html+='<div class="card"><h3>Oyun Rekorları</h3><div class="flexrow" style="margin-top:6px">'
+    +card("Tek sezonda en çok kazanan at",R_.atEarn?R_.atEarn.n+" · "+fmt(R_.atEarn.v)+" ("+R_.atEarn.y+")":null)
+    +card("Tek sezonda en çok galibiyet (at)",R_.atWins?R_.atWins.n+" · "+R_.atWins.v+" G ("+R_.atWins.y+")":null)
+    +card("Tek sezonda en çok galibiyet (jokey)",R_.jWins?R_.jWins.n+" · "+R_.jWins.v+" G ("+R_.jWins.y+")":null)
+    +card("En yüksek tek ikramiye",R_.big?R_.big.n+" · "+fmt(R_.big.v)+" ("+R_.big.y+")":null)
+    +card("Ekürinin en iyi sezonu",R_.myBest?fmt(R_.myBest.v)+" ("+R_.myBest.y+")":null)
+    +'</div><h3 style="margin:12px -10px 6px">GAZİ Şampiyonları</h3>'
+    +((R_.gazi&&R_.gazi.length)?('<table><tr><th>Yıl</th><th>At</th></tr>'+R_.gazi.map(g=>'<tr><td>'+g.y+'</td><td><b>'+g.n+'</b>'+(g.mine?' <span class="gTxt">★ SENİN ATIN</span>':'')+'</td></tr>').join('')+'</table>')
+      :'<p class="muted">Oyun içinde henüz Gazi Koşusu yapılmadı.</p>')
+    +'</div>';
+  return html;
+}
+/* ============ SEZON ÖDÜL TÖRENİ ============ */
+function showAwards(){
+  const A=G._awards||{};
+  const aw=(ic,t,o,extra)=>'<div style="background:var(--cream2);border:1px solid var(--gold);border-radius:4px;padding:10px;margin:6px 0"><b>'+ic+' '+t+'</b><br>'
+    +(o?('<span style="font-size:14px;font-weight:700">'+o.n+'</span> <span class="muted">'+(extra||'')+'</span>'+(o.mine?' <span class="gTxt">★ SENİN!</span>':'')):'<span class="muted">—</span>')+'</div>';
+  document.getElementById("modalBox").innerHTML=
+    '<h2 style="text-align:center">🎗 '+G.year+' Sezon Ödülleri</h2>'
+    +aw("🐎","Yılın Atı",A.at,A.at?fmt(A.at.v)+" ikramiye":"")
+    +aw("🏇","Yılın Jokeyi",A.j,A.j?A.j.v+" galibiyet":"")
+    +aw("🏰","Yılın Ekürisi",A.ek,A.ek?fmt(A.ek.v):"")
+    +aw("💥","Sezonun Sürprizi",A.surp,A.surp?"Güç "+A.surp.hp+" ile kazandı":"")
+    +'<div style="text-align:center;margin-top:14px"><button onclick="newSeason()">Kış Müzayedesine Geç ▸</button></div>';
+  document.getElementById("modalBg").classList.add("show");
+}
+function viewJockeys(){
+  const js=G.jstats||{};
+  const list=JOCKEYS.map((j,k)=>({k,j,s:js[k]||{rides:0,w:0,p2:0,p3:0,earn:0}}))
+    .sort((a,b)=>b.s.w-a.s.w||b.s.earn-a.s.earn||b.j[4]-a.j[4]);
+  let html='<div class="card"><h3>Jokeyler — '+G.year+' Sezonu</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">Sezonluk kazanç = binicilik ücretleri + kazandığı koşuların ikramiyesinden %5 pay. Kariyer istatistikleri gerçek TJK verisidir.</p>'
+    +'<table><tr><th>#</th><th>Jokey</th><th>Prestij</th><th>Kariyer %1</th><th>Koşu</th><th>1.</th><th>2.</th><th>3.</th><th>Sezon %1</th><th>Sezon Kazancı</th><th>Ücret</th><th></th></tr>'
+    +list.map((o,i)=>{
+      const pct=o.s.rides?Math.round(o.s.w/o.s.rides*100):0;
+      const mine=G.cJockey===o.k;
+      return "<tr"+(mine?" style='background:#d6e0c9'":"")+"><td>"+(i+1)+"</td>"
+        +"<td><b>"+o.j[0]+"</b>"+(mine?" <span class='gTxt'>⭐ anlaşmalı</span>":"")+"</td>"
+        +"<td>"+hpBar(o.j[4])+"</td><td>%"+o.j[1]+"</td>"
+        +"<td>"+o.s.rides+"</td><td class='"+(o.s.w?"pos1":"")+"'>"+o.s.w+"</td><td>"+o.s.p2+"</td><td>"+o.s.p3+"</td>"
+        +"<td>"+(o.s.rides?"%"+pct:"—")+"</td><td><b>"+fmt(o.s.earn)+"</b></td><td>"+fmt(jFee(o.k))+"</td>"
+        +"<td>"+(mine?"":"<button class='trainBtn' "+(G.money<cJPrice(o.k)?"disabled":"")+" onclick='signJockey("+o.k+");showTab(9)'>Anlaş</button>")+"</td></tr>";
+    }).join("")+'</table></div>';
+  return html;
+}
+function viewHome(){
+  const injured=G.owned.filter(i=>G.inj[i]>0).length;
+  const elig=G.program.races.filter(r=>!r.done&&myEligible(r).length>0).length;
+  const myEarn=G.ownerEarn[G.stable]||0;
+  const owners=Object.entries(G.ownerEarn).sort((a,b)=>b[1]-a[1]);
+  const rank=owners.findIndex(o=>o[0]===G.stable)+1;
+  let html='<div class="card"><h3>'+G.stable+' — Genel Bakış</h3><div class="flexrow">'
+    +'<div class="statbox"><b>'+fmt(G.money)+'</b>Kasa</div>'
+    +'<div class="statbox"><b>'+fmt(myEarn)+'</b>Sezon İkramiyesi</div>'
+    +'<div class="statbox"><b>'+(rank||"-")+'</b>Sahip Sırası</div>'
+    +'<div class="statbox"><b>'+G.owned.length+(injured?" ("+injured+" sakat)":"")+'</b>Atlarım</div>'
+    +'<div class="statbox"><b>'+Object.keys(G.ach).length+'/'+ACHS.length+'</b>Başarı</div></div></div>';
+  html+='<div class="card"><h3>Bugün — '+dateStr(G.day)+' · '+WEATHERS[weatherOf(G.day)]+'</h3>'
+    +'<p style="margin:4px 0">Koşular: <b>'+TRACKS[G.program.pair[0]]+'</b> ve <b>'+TRACKS[G.program.pair[1]]+'</b>'
+    +(G.program.races.some(r=>r.named)?' · <span class="named">⭐ '+G.program.races.find(r=>r.named).name+' bugün!</span>':'')+'</p>'
+    +'<p style="margin:4px 0">'+(elig?'<span class="gTxt">✔ '+elig+' koşuya girebilecek atın var.</span>':'<span class="muted">Bugünkü koşulara uygun boşta atın yok.</span>')
+    +(G.offers.length?' · <span class="gTxt">📨 '+G.offers.length+' transfer teklifi bekliyor!</span>':'')+'</p>'
+    +'<p style="margin:4px 0" class="muted">Antrenör: '+(G.trainer>=0?TRAINERS[G.trainer][0]+" (haftalık "+fmt(tFee(G.trainer))+")":"yok — Personel menüsünden tut")
+    +' · Anlaşmalı jokey: '+(G.cJockey>=0?JOCKEYS[G.cJockey][0]:"yok")+'</p></div>';
+  if(G.history.length){
+    html+='<div class="card"><h3>Son Sonuçlarım</h3><table><tr><th>Gün</th><th>Koşu</th><th>At</th><th>Sonuç</th><th>İkramiye</th></tr>'
+      +G.history.slice(-8).reverse().map(h=>"<tr><td>"+h.d+"</td><td>"+h.r+"</td><td>"+h.h+"</td><td class='"+(h.p===1?"pos1":"")+"'>"+h.p+".</td><td>"+(h.pr?fmt(h.pr):"—")+"</td></tr>").join("")+'</table></div>';
+  }
+  /* sezon gider dökümü */
+  const expEntries=Object.entries(G.exp||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+  if(expEntries.length){
+    const totExp=expEntries.reduce((s,e)=>s+e[1],0);
+    html+='<div class="card"><h3>Sezon Gider Dökümü</h3><table><tr><th>Kalem</th><th style="text-align:right">Tutar</th></tr>'
+      +expEntries.map(e=>"<tr><td>"+(EXP_ADLARI[e[0]]||e[0])+"</td><td style='text-align:right'>"+fmt(e[1])+"</td></tr>").join("")
+      +'<tr><td><b>TOPLAM GİDER</b></td><td style="text-align:right"><b class="rTxt">'+fmt(totExp)+'</b></td></tr>'
+      +'<tr><td><b>İKRAMİYE GELİRİ</b></td><td style="text-align:right"><b class="gTxt">'+fmt(myEarn)+'</b></td></tr>'
+      +'<tr><td><b>NET</b></td><td style="text-align:right"><b class="'+(myEarn-totExp>=0?"gTxt":"rTxt")+'">'+fmt(myEarn-totExp)+'</b></td></tr></table></div>';
+  }
+  /* büyük koşu kısayolu */
+  const nn=NAMED.find(n=>n[0]>=G.day);
+  if(nn)html+='<div class="card"><h3>Sıradaki Büyük Koşu</h3><p style="margin:6px 0"><b class="named">⭐ '+nn[1]+'</b> — '+dateStr(nn[0])+' · '+fmt(nn[5])+' &nbsp; <button class="sec" onclick="showTab(13)">🎫 Büyük Koşu Yolu\'nu Aç</button></p></div>';
+  return html;
+}
+function viewTraining(){
+  if(!G.owned.length)return '<div class="card"><h3>Antrenman</h3><p class="muted" style="margin-top:6px">Önce at satın al.</p></div>';
+  const tb=G.trainer>=0?TRAINERS[G.trainer][1]:0;
+  let rows=G.owned.map(i=>{
+    const h=HORSES[i],s=horseState(i);const cur=G.train[i]||"R";
+    const btns=Object.keys(TRAIN).map(k=>"<button class='trainBtn"+(cur===k?" on":"")+"' onclick='setTrain("+i+",\""+k+"\")'>"+TRAIN[k].ic+" "+TRAIN[k].ad+"</button>").join(" ");
+    const tedavi=G.inj[i]>1?" <button class='trainBtn' onclick='fastHeal("+i+")'>💉 Yoğun tedavi "+fmt(G.inj[i]*8000)+"</button>":"";
+    const inj=G.inj[i]>0?"<span class='rTxt'>🩹 Sakat — "+G.inj[i]+" gün</span>"+tedavi:"";
+    return "<tr><td><b>"+h[0]+"</b> "+inj+"</td><td>%"+s.cond+"</td><td>"+(s.form>=0?"+":"")+s.form+"</td><td>"+btns+"</td></tr>";
+  }).join("");
+  return '<div class="card"><h3>Günlük Antrenman Programı</h3><table><tr><th>At</th><th>Kondisyon</th><th>Form</th><th>Program</th></tr>'+rows+'</table>'
+    +'<p class="muted" style="margin-top:8px">😴 Dinlenme: kondisyon +10 · 💪 Kondisyon: +6 kond, hafif form · ⚡ Sprint: form +2, kond -2, sakatlık riski %2.5 · 🏃 Mesafe: form +1, kond +2, risk %1.2'
+    +(tb?' — Antrenörün ('+TRAINERS[G.trainer][0]+') kazanımları artırıyor, riski azaltıyor.':' — Antrenör tutarsan kazanımlar artar, sakatlık riski düşer.')+'</p></div>';
+}
+function setTrain(i,k){G.train[i]=k;save();showTab(2);}
+function buyGear(i,k){
+  if(!G.gear)G.gear={};
+  const gr=G.gear[i]=G.gear[i]||[];
+  if(gr.length>=2)return toast("Bir ata en fazla 2 takı takılabilir.");
+  if(G.money<GEAR[k].fiyat)return toast("Bütçe yetersiz!");
+  G.money-=GEAR[k].fiyat;addExp("taki",GEAR[k].fiyat);
+  gr.push(k);
+  save();refreshTop();showHorse(i);
+  toast(HORSES[i][0]+" için "+GEAR[k].ad+" takıldı.");
+}
+function removeGear(i,k){
+  if(G.gear&&G.gear[i])G.gear[i]=G.gear[i].filter(x=>x!==k);
+  save();showHorse(i);
+}
+function fastHeal(i){
+  const cost=G.inj[i]*8000;
+  if(G.money<cost)return toast("Bütçe yetersiz!");
+  G.money-=cost;addExp("vet",cost);
+  G.inj[i]=Math.max(1,Math.floor(G.inj[i]/2));
+  save();refreshTop();showTab(2);
+  toast(HORSES[i][0]+" yoğun tedaviye alındı — kalan: "+G.inj[i]+" gün.");
+}
+function viewTransfers(){
+  let html='<div class="card"><h3>Transfer Teklifleri</h3>';
+  if(!G.offers.length)html+='<p class="muted" style="margin-top:6px">Şu an bekleyen teklif yok. Atların koştukça (özellikle kazandıkça) diğer eküriler teklif gönderir.</p></div>';
+  else{
+    html+='<table><tr><th>At</th><th>Teklif Eden</th><th>Teklif</th><th>Piyasa Değeri</th><th>Süre</th><th></th><th></th></tr>'
+      +G.offers.map((o,k)=>{
+        const h=HORSES[o.h];
+        return "<tr><td>"+hLink(o.h)+"</td><td class='muted'>"+o.from+"</td><td><b>"+fmt(o.amt)+"</b>"+(o.neg?" <span class='gTxt'>(pazarlıklı)</span>":"")+"</td><td>"+fmt(horsePrice(o.h))+"</td><td>"+o.exp+" gün</td>"
+        +"<td><button onclick='acceptOffer("+k+")'>Kabul Et</button></td>"
+        +"<td>"+(o.neg?"":"<button class='sec' onclick='counterOffer("+k+")'>Pazarlık +%25</button> ")+"<button class='warn' onclick='rejectOffer("+k+")'>Reddet</button></td></tr>";
+      }).join("")+'</table></div>';
+  }
+  return html;
+}
+function acceptOffer(k){
+  const o=G.offers[k];if(!o)return;
+  if(!G.owned.includes(o.h)){G.offers.splice(k,1);return showTab(4);}
+  G.money+=o.amt;G.owned=G.owned.filter(x=>x!==o.h);G.offers.splice(k,1);
+  if(G.gear)delete G.gear[o.h];
+  pushNews("🤝","Transfer: "+HORSES[o.h][0],o.from+" ekürisine "+fmt(o.amt)+" karşılığında satıldı.");
+  save();refreshTop();showTab(4);toast(HORSES[o.h][0]+" satıldı: "+fmt(o.amt));
+}
+function rejectOffer(k){G.offers.splice(k,1);save();showTab(4);}
+/* pazarlık: %50 kabul eder, %50 çekilir */
+function counterOffer(k){
+  const o=G.offers[k];if(!o||o.neg)return;
+  if(Math.random()<0.5){
+    o.amt=Math.round(o.amt*1.25/1000)*1000;o.neg=true;
+    toast("✅ Pazarlık tuttu! Yeni teklif: "+fmt(o.amt));
+    pushNews("🤝","Pazarlık tuttu",o.from+", "+HORSES[o.h][0]+" için "+fmt(o.amt)+" ödemeyi kabul etti.");
+  }else{
+    const nm=HORSES[o.h][0],from=o.from;
+    G.offers.splice(k,1);
+    toast("❌ "+from+" pazarlıktan vazgeçti, teklif geri çekildi.");
+    pushNews("❌","Pazarlık koptu",from+", "+nm+" teklifini geri çekti. Açgözlülüğün bedeli...");
+  }
+  save();showTab(4);
+}
+function viewStaff(){
+  let html='<div class="card"><h3>Antrenör — gerçek TJK antrenörleri</h3>';
+  html+='<p class="muted" style="margin:4px 0 8px">Antrenör atlarının antrenman kazanımını artırır, sakatlık riskini düşürür ve koşu performansına katkı verir. Ücret her 7 günde bir kesilir.</p>';
+  html+='<table><tr><th>Antrenör</th><th>Galibiyet %</th><th>Haftalık Ücret</th><th></th></tr>'
+    +TRAINERS.map((t,k)=>({t,k})).sort((a,b)=>b.t[1]-a.t[1]).map(o=>
+      "<tr"+(G.trainer===o.k?" style='background:#d6e0c9'":"")+"><td><b>"+o.t[0]+"</b>"+(G.trainer===o.k?" <span class='gTxt'>— senin antrenörün</span>":"")+"</td><td>%"+o.t[1]+"</td><td>"+fmt(tFee(o.k))+"</td>"
+      +"<td>"+(G.trainer===o.k?"<button class='warn' onclick='fireTrainer()'>Yol Ver</button>":"<button onclick='hireTrainer("+o.k+")'>Tut</button>")+"</td></tr>").join("")+'</table></div>';
+  html+='<div class="card"><h3>Anlaşmalı Jokey</h3>';
+  html+='<p class="muted" style="margin:4px 0 8px">Sezonluk anlaşma: peşin ödeme karşılığında o jokeyin binicilik ücreti %50 düşer ve atlarınla koşarken ekstra motive olur.</p>';
+  if(G.cJockey>=0)html+='<p style="margin-bottom:8px">Anlaşmalı jokeyin: <b>'+JOCKEYS[G.cJockey][0]+'</b> <button class="warn" onclick="endContract()">Anlaşmayı Bitir</button></p>';
+  html+='<table><tr><th>Jokey</th><th>Prestij</th><th>Galibiyet %</th><th>Sezonluk Bedel</th><th></th></tr>'
+    +JOCKEYS.map((j,k)=>({j,k})).sort((a,b)=>b.j[4]-a.j[4]).slice(0,20).map(o=>
+      "<tr><td><b>"+o.j[0]+"</b></td><td>"+hpBar(o.j[4])+"</td><td>%"+o.j[1]+"</td><td>"+fmt(cJPrice(o.k))+"</td>"
+      +"<td>"+(G.cJockey===o.k?"<span class='gTxt'>✔ anlaşmalı</span>":"<button "+(G.money<cJPrice(o.k)?"disabled":"")+" onclick='signJockey("+o.k+")'>Anlaş</button>")+"</td></tr>").join("")+'</table></div>';
+  return html;
+}
+const cJPrice=k=>Math.round((250000+JOCKEYS[k][4]*30000)/1000)*1000;
+function hireTrainer(k){G.trainer=k;save();showTab(6);toast(TRAINERS[k][0]+" ekürinin antrenörü oldu.");}
+function fireTrainer(){G.trainer=-1;save();showTab(6);}
+function signJockey(k){
+  const p=cJPrice(k);if(G.money<p)return toast("Bütçe yetersiz!");
+  G.money-=p;addExp("anlasma",p);G.cJockey=k;save();refreshTop();showTab(6);
+  toast(JOCKEYS[k][0]+" ile sezonluk anlaşma imzalandı!");
+}
+function endContract(){G.cJockey=-1;save();showTab(6);}
+function viewAch(){
+  return '<div class="card"><h3>Başarılar ('+Object.keys(G.ach).length+'/'+ACHS.length+')</h3><table><tr><th></th><th>Başarı</th><th>Koşul</th><th>Kazanıldı</th></tr>'
+    +ACHS.map(a=>{
+      const got=G.ach[a[0]];
+      return "<tr style='"+(got?"":"opacity:.5")+"'><td>"+(got?"🏅":"🔒")+"</td><td><b>"+a[1]+"</b></td><td>"+a[2]+"</td><td>"+(got?"Gün "+got:"—")+"</td></tr>";
+    }).join("")+'</table></div>';
+}
+function hpBar(v){return '<span class="hpbar"><i style="width:'+Math.min(100,v)+'%"></i></span> '+v;}
+function breedBadge(b){return b==="A"?'<span class="badge arap">Arap</span>':'<span class="badge ing">İngiliz</span>';}
+function studFarmHtml(){
+  const studs=G.studs||[];
+  let html='<div class="card"><h3>🧬 Damızlık Çiftliği ('+studs.length+'/3)'+(studs.length?' — haftalık bakım: '+fmt(studs.length*7000):'')+'</h3>';
+  if(!studs.length)html+='<p class="muted" style="margin:6px 0">6 yaş üstü atlarını profillerinden damızlığa ayırabilirsin. Her damızlık her kış sana 1 tay üretir — babasının gücünden ve stilinden izler taşır. 10 yaşına gelen atların (yer varsa) otomatik buraya geçer.</p>';
+  else{
+    html+='<table><tr><th>Damızlık</th><th>Güç</th><th>Stil</th><th>Ayrılma</th><th>Verdiği Tay</th><th></th></tr>'
+      +studs.map((s,k)=>{
+        const tayCount=(G.foals||[]).filter(f=>f.sire===HORSES[s.h][0]).length;
+        return "<tr><td>"+hLink(s.h)+"</td><td>"+hpOf(s.h)+"</td><td>"+styleName(s.h)+"</td><td>"+s.y+"</td><td>"+tayCount+" 🍼</td><td><button class='sec' onclick='sellStud("+k+")'>Sat "+fmt(horsePrice(s.h)*0.6)+"</button></td></tr>";
+      }).join("")+'</table><p class="muted" style="margin-top:6px">Her damızlık her kış müzayedesi döneminde 1 tay verir. %12 ihtimalle istisnai bir tay doğar.</p>';
+  }
+  html+='</div>';
+  /* 🐎 AYGIR PAZARI */
+  html+='<div class="card"><h3>🐎 Aygır Deposu — efsane aygırlar satılık</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">Gerçek pedigrilerden ünlü aygırlar. Pahalıdırlar ama tayları çok daha güçlü doğar (tay gücü ≈ babanın yarısı + şans).</p>'
+    +'<table><tr><th>Aygır</th><th>Irk</th><th>Güç</th><th>Ünlü Yavrusu</th><th>Fiyat</th><th></th></tr>'
+    +SIREMARKET.map((s,k)=>{
+      const sold=(G.studs||[]).some(x=>x.n===s[0]);
+      const yavru=s[0]==="HAKEEM"?"GRANDE FLUSSO":s[0]==="KAIZBERT"?"GÜMBÜRGÜMBÜR":s[0]==="SERDÜMEN"?"ABADBEY":"—";
+      return "<tr"+(sold?" style='opacity:.5'":"")+"><td><b>"+s[0]+"</b></td><td>"+(s[3]==="A"?"Arap":"İngiliz")+"</td><td>"+hpBar(s[1])+"</td><td class='muted'>"+yavru+"</td><td><b>"+fmt(s[2])+"</b></td>"
+        +"<td>"+(sold?"<span class='gTxt'>✔ çiftliğinde</span>":"<button "+(G.money<s[2]||(G.studs||[]).length>=3?"disabled":"")+" onclick='buySire("+k+")'>Satın Al</button>")+"</td></tr>";
+    }).join("")+'</table></div>';
+  return html;
+}
+function viewStable(){
+  if(!G.owned.length)return '<div class="card"><h3>Ahırın boş</h3><p class="muted" style="margin-top:6px">At Pazarı sekmesinden ilk safkanını satın al. Bütçen: '+fmt(G.money)+'</p></div>'+studFarmHtml();
+  let rows=G.owned.map(i=>{
+    const h=HORSES[i],s=horseState(i);
+    const uygun=G.program.races.filter(r=>!r.done&&eligible(i,r)&&qualifies(i,r));
+    const inj=G.inj[i]>0;
+    const uygunTxt=inj?"<span class='rTxt'>🩹 Sakat — "+G.inj[i]+" gün koşamaz</span>"
+      :(uygun.length
+        ?"<span class='gTxt'>✔ Bugün: "+uygun.map(r=>(r.named?"⭐":"")+r.name).join(", ")+"</span>"
+        :"<span class='muted'>bugün uygun koşu yok</span>");
+    const sp=srfPref(i);
+    const grTxt=gearOf(i).length?" · 🎽 "+gearOf(i).map(k=>GEAR[k].ad).join(", "):"";
+    return "<tr><td>"+hLink(i)+(h[6]?"<br><span style='font-size:10px;color:#8a6d1d'>🏆 "+h[6]+"</span>":"")+"<br><span class='muted'>ideal "+idealDist(i)+"m · "+(sp===0?"çim sever":sp===1?"kum sever":"her pist")+" · "+styleName(i)+grTxt+"</span><br>"+uygunTxt+"</td><td>"+breedBadge(h[1])+"</td><td>"+h[2]+"</td><td>"+ageOf(i)+"</td><td>"+hpBar(hpOf(i))+((G.dev&&G.dev[i]>0)?" <span class='gTxt'>▲</span>":(G.dev&&G.dev[i]<0)?" <span class='rTxt'>▼</span>":"")+"</td><td>%"+s.cond+"</td><td>"+(s.form>=0?"+":"")+s.form+"</td><td>"+s.st.runs+" koşu / "+s.st.w+" G / "+s.st.p+" T</td><td>"+fmt(s.st.earn)+"</td><td><button class='sec' onclick='sellHorse("+i+")'>Sat "+fmt(horsePrice(i)*0.65)+"</button></td></tr>";
+  }).join("");
+  let html='<div class="card"><h3 style="margin-bottom:8px">Ahırım — günlük bakım: '+fmt(UPKEEP)+'/at</h3><table><tr><th>At</th><th>Irk</th><th>C</th><th>Yaş</th><th>Güç</th><th>Kondisyon</th><th>Form</th><th>Kariyer</th><th>Kazanç</th><th></th></tr>'+rows+'</table><p class="muted" style="margin-top:8px">Kondisyon her koşudan sonra düşer, dinlenen at her gün biraz toparlar. Yeşil ✔ işareti atın bugünkü programda girebileceği koşuları gösterir.</p></div>';
+  html+=studFarmHtml();
+  return html;
+}
+function viewMarket(){
+  const list=HORSES.map((h,i)=>i).filter(i=>!G.owned.includes(i)&&!isStud(i)&&ageOf(i)<10).sort((a,b)=>hpOf(b)-hpOf(a));
+  let rows=list.map(i=>{
+    const h=HORSES[i],p=horsePrice(i);
+    return "<tr><td>"+hLink(i)+(h[6]?"<br><span style='color:#8a6d1d;font-size:10px'>🏆 "+h[6]+"</span>":"")+"</td><td>"+breedBadge(h[1])+"</td><td>"+h[2]+"</td><td>"+ageOf(i)+"</td><td>"+hpBar(hpOf(i))+((G.dev&&G.dev[i]>0)?" <span class='gTxt'>▲"+G.dev[i]+"</span>":"")+"</td><td class='muted'>"+h[5]+"</td><td><b>"+fmt(p)+"</b></td><td><button "+(G.money<p?"disabled":"")+" onclick='buyHorse("+i+")'>Satın Al</button></td></tr>";
+  }).join("");
+  return '<div class="card"><h3 style="margin-bottom:8px">At Pazarı — '+list.length+' gerçek safkan (güce göre sıralı)</h3><p class="muted" style="margin-bottom:8px">🏆 rozeti, atın gerçek hayatta kazandığı önemli koşu derecesini gösterir. Güç puanları gerçek TJK handikap puanı ve kariyer kazancından hesaplanmıştır.</p><table><tr><th>At</th><th>Irk</th><th>C</th><th>Yaş</th><th>Güç</th><th>Gerçek Sahibi</th><th>Fiyat</th><th></th></tr>'+rows+'</table></div>';
+}
+function buyHorse(i){
+  const p=horsePrice(i);
+  if(G.money<p)return toast("Bütçe yetersiz!");
+  G.money-=p;G.owned.push(i);horseState(i);G.train[i]="R";
+  checkAchBasics();save();refreshTop();showTab(3);toast(HORSES[i][0]+" ahırına katıldı! 🐎");
+}
+function sellHorse(i){
+  const p=Math.round(horsePrice(i)*0.65);
+  G.money+=p;G.owned=G.owned.filter(x=>x!==i);
+  if(G.gear)delete G.gear[i];
+  save();refreshTop();showTab(1);toast(HORSES[i][0]+" satıldı: "+fmt(p));
+}
+function viewProgram(){
+  const P=G.program;
+  let html='<div class="card"><h3>'+dateStr(G.day)+' — Yarış Günü</h3><p class="muted" style="margin-top:4px">Bugün koşular <b>'+TRACKS[P.pair[0]]+'</b> ve <b>'+TRACKS[P.pair[1]]+'</b> hipodromlarında. Kayıt: ikramiyenin %2\'si (isimli koşuda %3) + jokey ücreti + at nakliyesi. İkramiye dağılımı: %60 / %20 / %10 / %6 / %4</p>'
+  +'<div style="text-align:right;margin-top:6px"><button onclick="simDay()">⏩ Günün Kalan Koşularını Simüle Et</button></div></div>';
+  function raceCard(r,showTrack){
+    const myEntries=(G.entries[r.id]||[]);
+    const myTxt=myEntries.map(e=>"<b>"+HORSES[e.h][0]+"</b> ("+JOCKEYS[e.j][0]+")").join(", ");
+    const elig=myEligible(r).length;
+    return '<div class="card"'+(myEntries.length?' style="border:2px solid #c8a23c"':'')+'><div class="raceHead"><h3 class="'+(r.named?"named":"")+'">'+(r.named?"⭐ ":"")+r.name
+    +(elig&&!r.done?' <span class="badge" style="background:#2e6b3a;color:#e8f5e8">✔ '+elig+' uygun atın var</span>':'')
+    +'</h3><span class="muted">'+(showTrack?'📍'+TRACKS[r.track]+' · ':'')+r.dist+'m · '+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+' · '+(r.breed==="*"?"Açık":r.breed==="A"?"Arap":"İngiliz")+' · Güç '+r.lo+(r.hi>100?"+":"-"+r.hi)+'</span></div>'
+    +(qualText(r)?'<div style="font-size:11px;color:#b03a2e;font-weight:700;margin:2px 0">'+qualText(r)+'</div>':'')
+    +'<div class="flexrow"><span>İkramiye: <b style="color:var(--gold)">'+fmt(r.purse)+'</b></span>'
+    +(r.done?'<span class="muted">✔ Koşuldu — kazanan: <b>'+r.result[0].name+'</b></span>'
+      :(myTxt?'<span class="muted">Kayıtlı: '+myTxt+'</span>':'')
+      +'<button class="sec" onclick="openEntry('+r.id+')">At Kaydet</button>'
+      +'<button onclick="runRace('+r.id+')">Koşuyu Başlat ▶</button>')
+    +'</div>'
+    +(!r.done?'<div style="margin-top:6px"><div style="font-size:11px;color:#8a6d1d;font-weight:700">📋 Deklare, Ganyan & AGF ('+((r.decl||[]).length+myEntries.length)+' at)</div>'+oddsTable(r)+'</div>':'')
+    +'</div>';
+  }
+  /* SENİN KOŞULARIN en üstte */
+  const mineRaces=P.races.filter(r=>(G.entries[r.id]||[]).length>0);
+  if(mineRaces.length){
+    html+='<h3 style="color:var(--gold);margin:14px 0 8px">🏇 Senin Koşuların</h3>';
+    mineRaces.forEach(r=>html+=raceCard(r,true));
+  }
+  const byTrack={};
+  P.races.filter(r=>!mineRaces.includes(r)).forEach(r=>{(byTrack[r.track]=byTrack[r.track]||[]).push(r);});
+  Object.keys(byTrack).forEach(t=>{
+    html+='<h3 style="color:var(--gold);margin:14px 0 8px">📍 '+TRACKS[t]+'</h3>';
+    byTrack[t].forEach(r=>html+=raceCard(r,false));
+  });
+  return html;
+}
+function openEntry(rid,preH){
+  const r=G.program.races.find(x=>x.id===rid);
+  const my=myEligible(r);
+  if(!G.owned.length)return toast("Önce pazardan at almalısın!");
+  if(!my.length)return toast(r.named&&qualText(r)?"Şartları sağlayan atın yok! "+qualText(r):"Bu koşuya uygun (ırk/güç) boşta atın yok.");
+  const fee=Math.round(r.purse*(r.named?0.03:0.02));
+  const nak=NAKLIYE[r.track];
+  let hOpts=my.map(i=>"<option value='"+i+"'>"+HORSES[i][0]+" (Güç "+hpOf(i)+", kond %"+horseState(i).cond+", "+styleName(i)+")</option>").join("");
+  let jOpts=JOCKEYS.map((j,k)=>({k})).sort((a,b)=>(b.k===G.cJockey)-(a.k===G.cJockey)||effJFee(b.k)-effJFee(a.k))
+    .map(o=>"<option value='"+o.k+"'>"+(o.k===G.cJockey?"⭐ ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+"</option>").join("");
+  document.getElementById("modalBox").innerHTML=
+    "<h3>"+r.name+" — Kayıt</h3>"
+    +"<table style='margin:10px 0'><tr><th colspan=2>Masraf Dökümü</th></tr>"
+    +"<tr><td>Kayıt ücreti (ikramiyenin %"+(r.named?3:2)+"'"+(r.named?"ü":"si")+")</td><td style='text-align:right'><b>"+fmt(fee)+"</b></td></tr>"
+    +"<tr><td>At nakliyesi → "+TRACKS[r.track]+"</td><td style='text-align:right'><b>"+fmt(nak)+"</b></td></tr>"
+    +"<tr><td>Jokey ücreti</td><td style='text-align:right'><b id='jFeeCell'>—</b></td></tr>"
+    +"<tr><td><b>TOPLAM</b></td><td style='text-align:right'><b id='totCell' style='color:#b03a2e'>—</b></td></tr></table>"
+    +"<p style='margin:10px 0 4px'>At seç:</p><select id='selH' style='width:100%'>"+hOpts+"</select>"
+    +"<p style='margin:10px 0 4px'>Jokey seç (gerçek istatistiklerle):</p><select id='selJ' style='width:100%' onchange='updEntryCost("+fee+","+nak+")'>"+jOpts+"</select>"
+    +"<div class='flexrow' style='margin-top:16px;justify-content:flex-end'><button class='sec' onclick='closeModal()'>Vazgeç</button><button onclick='confirmEntry("+rid+","+fee+")'>Kaydet</button></div>";
+  document.getElementById("modalBg").classList.add("show");
+  if(preH!==undefined&&my.includes(preH))document.getElementById("selH").value=String(preH);
+  updEntryCost(fee,nak);
+}
+function updEntryCost(fee,nak){
+  const j=+document.getElementById("selJ").value;
+  document.getElementById("jFeeCell").textContent=fmt(effJFee(j));
+  document.getElementById("totCell").textContent=fmt(fee+nak+effJFee(j));
+}
+function enteredElsewhere(h,rid){
+  return Object.keys(G.entries).some(k=>+k!==rid&&(G.entries[k]||[]).some(e=>e.h===h));
+}
+function closeModal(){document.getElementById("modalBg").classList.remove("show");}
+/* ============ AT PROFİLİ (FM tarzı tam sayfa) ============ */
+/* yıldız potansiyeli: güç + gençlik */
+function starsOf(i){
+  const pot=hpOf(i)*(1.22-ageOf(i)*0.045);
+  return pot>=92?5:pot>=78?4:pot>=62?3:pot>=45?2:1;
+}
+const starStr=i=>{const s=starsOf(i);return "★".repeat(s)+"<span style='opacity:.35'>"+"★".repeat(5-s)+"</span>";};
+/* antrenör raporu: özelliklerden üretilen yorum */
+function scoutReport(i){
+  if(G.trainer<0)return null;
+  const h=HORSES[i],owned=G.owned.includes(i);
+  const sty=styleOf(i),sp=srfPref(i),d=idealDist(i),age=ageOf(i);
+  const c=[];
+  if(sty<0.33)c.push("Starttan itibaren öne çıkıp yarışı önden kurmayı seven bir at"+(styleReal(i)?" — gerçek koşularında da son 800'e önde giriyor":"")+".");
+  else if(sty>0.67)c.push("Tipik bir finişçi; yarışın büyük kısmını gerilerde geçirip son 400'de yüklenir"+(styleReal(i)?" — gerçek verileri de bunu doğruluyor":"")+".");
+  else c.push("Dengeli bir tempoyla koşar, her senaryoya ayak uydurabilir.");
+  c.push("İdeal mesafesi "+d+"m civarı; "+(d<=1400?"sprint koşularında tut, uzun mesafede nefesi tükenir":d>=2000?"uzun mesafe atı, kısa koşularda hız yetiştiremez":"orta mesafelerde en verimli hali")+".");
+  if(sp===0)c.push("Çim pistte kendini çok daha rahat hissediyor.");
+  else if(sp===1)c.push("Kum pistin atı; çimde aynı performansı bekleme.");
+  if(h[3]>=95)c.push("Sınıfının üstünde bir safkan — büyük koşuların adayı.");
+  else if(h[3]<40)c.push("Sınırlı kapasiteli; ancak seviyesine uygun koşularda şansı olur.");
+  if(age<=3)c.push("Genç ve gelişime açık, önünde uzun bir kariyer var.");
+  else if(age>=8)c.push("Kariyerinin son demlerinde; her koşusu bonus.");
+  if(owned){
+    const s=horseState(i);
+    if(G.inj[i]>0)c.push("Şu an sakat — acele ettirme, yoğun tedaviyi değerlendir.");
+    else if(s.cond<60)c.push("Kondisyonu düşük; bu hafta dinlendirmeni öneririm.");
+    else if(s.form>=5)c.push("Formunun zirvesinde, ne kadar koşarsa o kadar iyi.");
+    else if(s.form<=-3)c.push("Formsuz görünüyor, hafif idmanla toparlanır.");
+  }
+  return c.join(" ");
+}
+/* form grafiği: son 10 koşunun bitiş sıraları (1 üstte) */
+function formGraph(log){
+  const L=log.slice(0,10).reverse();
+  if(L.length<2)return "";
+  const n=L.length,W=260,H=84;
+  const x=k=>18+k*((W-36)/(n-1));
+  const y=p=>12+(Math.min(10,p)-1)*((H-26)/9);
+  let pts=L.map((e,k)=>x(k)+","+y(e.p)).join(" ");
+  let dots=L.map((e,k)=>"<circle cx='"+x(k)+"' cy='"+y(e.p)+"' r='4' fill='"+(e.p===1?"#c8a23c":e.p<=3?"#2e7d32":"#8a8578")+"'/>"
+    +"<text x='"+x(k)+"' y='"+(y(e.p)-7)+"' font-size='8' text-anchor='middle' fill='#555'>"+e.p+"</text>").join("");
+  return "<svg viewBox='0 0 "+W+" "+H+"' style='width:100%;max-width:320px;background:#efece1;border:1px solid var(--line);border-radius:3px'>"
+    +"<text x='4' y='16' font-size='8' fill='#999'>1.</text><text x='4' y='"+(H-8)+"' font-size='8' fill='#999'>10.</text>"
+    +"<polyline points='"+pts+"' fill='none' stroke='#28395a' stroke-width='1.6'/>"+dots+"</svg>";
+}
+/* karşılaştırma */
+function cmpStart(i){
+  window.CMP=i;
+  toast("⚖ "+HORSES[i][0]+" karşılaştırmaya alındı — şimdi ikinci atın profiline gir.");
+}
+function showCompare(a,b){
+  window.CMP=null;
+  const row=(ad,va,vb,better)=>"<tr><td style='text-align:right"+(better===0?";font-weight:700;color:#2e7d32":"")+"'>"+va+"</td><th style='text-align:center'>"+ad+"</th><td"+(better===1?" style='font-weight:700;color:#2e7d32'":"")+">"+vb+"</td></tr>";
+  const H_=i=>HORSES[i];
+  const logW=i=>((G.hlog||{})[i]||[]).filter(e=>e.p===1).length;
+  const logN=i=>((G.hlog||{})[i]||[]).length;
+  const sn=i=>{const s=styleOf(i);return s<0.33?"Öne kaçar":s<0.67?"Dengeli":"Finişçi";};
+  let html='<div class="card"><h3>⚖ At Karşılaştırma</h3>'
+    +'<table style="margin-top:6px"><tr><td style="text-align:right">'+hLink(a)+'</td><th></th><td>'+hLink(b)+'</td></tr>'
+    +row("Güç",hpOf(a),hpOf(b),hpOf(a)===hpOf(b)?-1:(hpOf(a)>hpOf(b)?0:1))
+    +row("Potansiyel",starStr(a),starStr(b),starsOf(a)===starsOf(b)?-1:(starsOf(a)>starsOf(b)?0:1))
+    +row("Yaş",ageOf(a),ageOf(b),ageOf(a)===ageOf(b)?-1:(ageOf(a)<ageOf(b)?0:1))
+    +row("Stil",sn(a),sn(b),-1)
+    +row("İdeal Mesafe",idealDist(a)+"m",idealDist(b)+"m",-1)
+    +row("Pist",["Çim","Kum","Fark etmez"][srfPref(a)],["Çim","Kum","Fark etmez"][srfPref(b)],-1)
+    +row("Değer",fmt(horsePrice(a)),fmt(horsePrice(b)),-1)
+    +row("Oyun içi (G/K)",logW(a)+"/"+logN(a),logW(b)+"/"+logN(b),-1)
+    +'</table><div style="margin-top:12px"><button class="sec" onclick="showTab(G.tab)">◂ Geri</button></div></div>';
+  document.getElementById("tabContent").innerHTML=html;
+}
+function abar(pct,marker){
+  return "<span class='abar'><i style='width:"+Math.min(100,Math.max(2,pct))+"%'></i>"+(marker!==undefined?"<em style='left:"+Math.min(97,Math.max(0,marker))+"%'></em>":"")+"</span>";
+}
+function attr(ad,barHtml,val,note){
+  return "<div class='attrRow'><span>"+ad+(note?" <span class='muted'>"+note+"</span>":"")+"</span><span>"+barHtml+"<span class='val'>"+val+"</span></span></div>";
+}
+function showHorse(i){
+  if(window.CMP!=null&&window.CMP!==i)return showCompare(window.CMP,i);
+  const h=HORSES[i],owned=G.owned.includes(i);
+  const s=owned?horseState(i):null;
+  const sp=srfPref(i),sty=styleOf(i);
+  const log=((G.hlog||{})[i]||[]).slice().reverse();
+  const p=horsePrice(i);
+  const st=G.stats[i]||{runs:0,w:0,p:0,earn:0};
+  let html='<div class="card"><div class="profHead">'
+    +'<div><h2>'+h[0]+' '+breedBadge(h[1])+' <span style="color:#e8c96a;font-size:14px" title="Potansiyel">'+starStr(i)+'</span></h2>'
+    +'<div class="sub">'+ageOf(i)+' yaşında '+(h[2]==="E"?"erkek":"dişi")+' · Sahibi: '+h[5]
+    +(h[7]?' · <span style="color:#8fd694">🧬 Babası: '+h[7]+' (öz yetiştirme)</span>':'')
+    +(owned?' · <b style="color:#e8c96a">SENİN AHIRINDA</b>':'')+(isStud(i)?' · <b style="color:#8fd694">DAMIZLIK</b>':'')+'</div>'
+    +(h[6]?'<div style="color:#e8c96a;font-weight:700;margin-top:3px">🏆 '+h[6]+'</div>':'')
+    +((owned&&h[1]==="İ"&&(ageOf(i)===3||ageOf(i)===4)&&hpOf(i)>=80&&qualifies(i,{named:true,name:"GAZİ KOŞUSU"}))?'<div style="color:#8fd694;font-weight:700;margin-top:3px">🎫 GAZİ KOŞUSU HAKKI KAZANDI</div>':'')
+    +'</div><div style="text-align:right"><div style="font-size:16px;font-weight:700;color:#e8c96a">'+fmt(p)+'</div><div class="sub">piyasa değeri</div>'
+    +'<div style="margin-top:4px">'
+    +(owned?'<button class="warn" onclick="sellHorse('+i+');showTab(1)">Sat '+fmt(p*0.65)+'</button>'
+           :(isStud(i)?'<span class="muted">damızlıkta</span>':'<button '+(G.money<p?'disabled':'')+' onclick="buyHorse('+i+');showHorse('+i+')">Satın Al</button>'))
+    +(owned&&ageOf(i)>=6?' <button class="sec" onclick="makeStud('+i+')" title="Damızlığa ayır — her kış 1 tay">🧬</button>':'')
+    +' <button class="sec" onclick="cmpStart('+i+')">⚖</button></div>'
+    +'</div></div>';
+  html+='<div class="profGrid"><div>';
+  /* özellikler sütunu */
+  html+='<div class="card"><h3>Özellikler</h3>';
+  html+=attr("Güç",abar(hpOf(i)/1.1),hpOf(i)+((G.dev&&G.dev[i])?" ("+(G.dev[i]>0?"▲+":"▼")+G.dev[i]+")":""));
+  if(owned){
+    html+=attr("Kondisyon",abar(s.cond),"%"+s.cond);
+    html+=attr("Form",abar((s.form+10)*4),(s.form>=0?"+":"")+s.form);
+  }
+  html+=attr("Koşu Stili",abar(50,sty*100),sty<0.33?"Öne kaçar":sty<0.67?"Dengeli":"Finişçi",styleReal(i)?"✓ gerçek":"(tahmini)");
+  html+='<div class="attrRow"><span class="muted" style="font-size:9px">◀ öne kaçan &nbsp;&nbsp;·&nbsp;&nbsp; finişçi ▶</span><span></span></div>';
+  html+=attr("İdeal Mesafe",abar(50,(idealDist(i)-1200)/12),idealDist(i)+"m","(tahmini)");
+  html+='<div class="attrRow"><span class="muted" style="font-size:9px">◀ 1200m &nbsp;&nbsp;·&nbsp;&nbsp; 2400m ▶</span><span></span></div>';
+  html+=attr("Pist Tercihi","",(sp===0?"🟢 Çim":sp===1?"🟤 Kum":"Her pist"),"(tahmini)");
+  if(owned&&G.inj[i]>0)html+='<p class="rTxt" style="margin-top:8px">🩹 Sakat — '+G.inj[i]+' gün koşamaz</p>';
+  html+='</div>';
+  /* takılar */
+  if(owned){
+    if(!G.gear)G.gear={};
+    const gr=gearOf(i);
+    html+='<div class="card"><h3>Takılar ('+gr.length+'/2)</h3>';
+    Object.keys(GEAR).forEach(k=>{
+      const g=GEAR[k],on=gr.includes(k);
+      html+='<div class="attrRow"><span><b>'+g.ad+'</b><br><span class="muted">'+g.desc+'</span></span>'
+        +'<span>'+(on?'<button class="warn trainBtn" onclick="removeGear('+i+',\"'+k+'\")">Çıkar</button>'
+          :'<button class="trainBtn" '+(gr.length>=2||G.money<g.fiyat?'disabled':'')+' onclick="buyGear('+i+',\"'+k+'\")">Tak '+fmt(g.fiyat)+'</button>')+'</span></div>';
+    });
+    html+='<p class="muted" style="margin-top:6px">Takı bir kez alınır, o ata takılı kalır. Çıkarılan takı iade edilmez.</p></div>';
+  }
+  if(owned){
+    html+='<div class="card"><h3>Ahırındaki Kariyeri</h3>'
+      +attr("Koşu",'',st.runs)+attr("Galibiyet",'',st.w)+attr("Tabela (2.-3.)",'',st.p)+attr("İkramiye",'',fmt(st.earn))
+      +'<p class="muted" style="margin-top:6px">Antrenman: '+TRAIN[(G.train[i]||"R")].ic+' '+TRAIN[(G.train[i]||"R")].ad+' — Antrenman sekmesinden değiştirilebilir.</p></div>';
+  }
+  /* antrenör raporu */
+  const rapor=scoutReport(i);
+  html+='<div class="card"><h3>Antrenör Raporu</h3>'
+    +(rapor?'<p style="margin:6px 0;line-height:1.5"><i>"'+rapor+'"</i></p><p class="muted">— '+TRAINERS[G.trainer][0]+'</p>'
+           :'<p class="muted" style="margin:6px 0">Rapor için Personel menüsünden bir antrenör tutmalısın.</p>')+'</div>';
+  html+='</div><div>';
+  /* form grafiği */
+  const fg=formGraph(log);
+  if(fg)html+='<div class="card"><h3>Form Grafiği — son '+Math.min(10,log.length)+' koşu</h3>'+fg+'<p class="muted" style="margin-top:4px">Yukarı = iyi derece (1.), altın nokta = galibiyet</p></div>';
+  /* bugünkü uygun koşular (sahipli atlarda) */
+  if(owned){
+    const uygun=G.program.races.filter(r=>!r.done&&eligible(i,r));
+    html+='<div class="card"><h3>Bugün Girebileceği Koşular</h3>';
+    if(G.inj[i]>0)html+='<p class="rTxt" style="margin:6px 0">Sakat olduğu için koşamaz.</p>';
+    else if(!uygun.length)html+='<p class="muted" style="margin:6px 0">Bugünkü programda uygun koşu yok.</p>';
+    else uygun.forEach(r=>{
+      const entered=(G.entries[r.id]||[]).some(e=>e.h===i);
+      html+='<div class="flexrow" style="padding:4px 0;border-bottom:1px solid var(--line)"><span>'+(r.named?"⭐ ":"")+r.name+' <span class="muted">'+r.dist+'m · '+fmt(r.purse)+'</span></span>'
+        +(entered?'<span class="gTxt">✔ kayıtlı</span>':'<button class="sec" onclick="openEntry('+r.id+','+i+')">Kaydet</button>')+'</div>';
+    });
+    html+='</div>';
+  }
+  /* sonuçlar */
+  html+='<div class="card"><h3>Oyun İçi Koşu Sonuçları</h3>';
+  if(!log.length)html+='<p class="muted" style="margin:6px 0">Bu at oyun başladığından beri henüz koşmadı.</p>';
+  else html+='<table style="margin-top:4px"><tr><th>Gün</th><th>Koşu</th><th>Jokey</th><th>Snç</th><th>İkramiye</th></tr>'
+    +log.map(e=>"<tr><td>"+e.d+"/"+e.y+"</td><td>"+e.r+"</td><td class='muted'>"+e.j+"</td><td class='"+(e.p===1?"pos1":"")+"'><b>"+e.p+".</b></td><td>"+(e.pr?fmt(e.pr):"—")+"</td></tr>").join("")+'</table>';
+  html+='</div></div></div>';
+  html+='<div style="margin-top:4px"><button class="sec" onclick="showTab(G.tab)">◂ Geri</button></div></div>';
+  document.getElementById("tabContent").innerHTML=html;
+}
+const hLink=i=>"<a href='#' onclick='showHorse("+i+");return false' style='color:inherit;text-decoration:underline dotted'><b>"+HORSES[i][0]+"</b></a>";
+function effJFee(j){return G.cJockey===j?Math.round(jFee(j)*0.5):jFee(j);}
+function confirmEntry(rid,fee){
+  const r=G.program.races.find(x=>x.id===rid);
+  const h=+document.getElementById("selH").value,j=+document.getElementById("selJ").value;
+  const nak=NAKLIYE[r.track];
+  const total=fee+nak+effJFee(j);
+  if(G.money<total)return toast("Yetersiz bütçe! Gerekli: "+fmt(total));
+  G.money-=total;
+  addExp("kayit",fee);addExp("nakliye",nak);addExp("jokey",effJFee(j));
+  (G.entries[rid]=G.entries[rid]||[]).push({h,j});
+  closeModal();save();refreshTop();showTab(5);
+  toast(HORSES[h][0]+" kaydedildi — toplam masraf "+fmt(total));
+}
+function viewStandings(){
+  const owners=Object.entries(G.ownerEarn).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const jw=Object.entries(G.jockeyWins).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const myEarn=G.ownerEarn[G.stable]||0;
+  let html='<div class="card"><div class="flexrow">'
+    +'<div class="statbox"><b>'+fmt(G.money)+'</b>Kasa</div>'
+    +'<div class="statbox"><b>'+fmt(myEarn)+'</b>Sezon İkramiyesi</div>'
+    +'<div class="statbox"><b>'+(owners.findIndex(o=>o[0]===G.stable)+1||"-")+'</b>Sahip Sıralaman</div></div></div>';
+  html+='<div class="card"><h3 style="margin-bottom:8px">🏆 At Sahipleri Sıralaması (kazanç)</h3><table><tr><th>#</th><th>Sahip</th><th>Kazanç</th></tr>'
+    +(owners.length?owners.map((o,i)=>"<tr"+(o[0]===G.stable?" style='color:var(--gold)'":"")+"><td>"+(i+1)+"</td><td>"+o[0]+"</td><td>"+fmt(o[1])+"</td></tr>").join(""):"<tr><td colspan=3 class='muted'>Henüz koşu yapılmadı</td></tr>")+'</table></div>';
+  html+='<div class="card"><h3 style="margin-bottom:8px">🏇 Jokey Sıralaması (galibiyet)</h3><table><tr><th>#</th><th>Jokey</th><th>Galibiyet</th></tr>'
+    +(jw.length?jw.map((o,i)=>"<tr><td>"+(i+1)+"</td><td>"+o[0]+"</td><td>"+o[1]+"</td></tr>").join(""):"<tr><td colspan=3 class='muted'>Henüz koşu yapılmadı</td></tr>")+'</table></div>';
+  html+='<div style="text-align:right"><button class="sec" onclick="resetGame()">⟲ Oyunu Sıfırla</button></div>';
+  return html;
+}
+function nextDay(silent){
+  if(G.day>=SEASON_DAYS)return endSeason();
+  /* gün kapanmadan koşulmayan yarışlar otomatik koşulur —
+     rakip sahipler de kazanır, sıralama gerçek bir lige döner */
+  const kalan=G.program.races.filter(r=>!r.done).length;
+  const hasMine=G.program.races.some(r=>!r.done&&(G.entries[r.id]||[]).length);
+  if(hasMine&&!silent&&!confirm("Bugün kayıtlı ama koşulmamış atların var! Gün biterse koşuları izlemeden simüle edilecek. Devam mı?"))return;
+  if(kalan)simPendingRaces();
+  let cost=G.owned.length*UPKEEP;
+  addExp("bakim",G.owned.length*UPKEEP);
+  /* haftalık sabit giderler: antrenör + ahır kirası + seyisler */
+  if(G.day%7===0){
+    if(G.trainer>=0){cost+=tFee(G.trainer);addExp("antrenor",tFee(G.trainer));}
+    cost+=KIRA;addExp("kira",KIRA);
+    cost+=G.owned.length*SEYIS;addExp("seyis",G.owned.length*SEYIS);
+    const stc=(G.studs||[]).length*7000;
+    if(stc){cost+=stc;addExp("damizlik",stc);}
+  }
+  G.money-=cost;
+  const tSkill=G.trainer>=0?TRAINERS[G.trainer][1]:0;
+  const gainBoost=1+tSkill/25, riskCut=1-Math.min(0.5,tSkill/35);
+  G.owned.forEach(i=>{
+    horseState(i);
+    /* sakatlık iyileşmesi */
+    if(G.inj[i]>0){G.inj[i]--;if(G.inj[i]===0){toast(HORSES[i][0]+" iyileşti, tekrar koşabilir! 🎉");pushNews("✅","İyileşti: "+HORSES[i][0],"Tedavisi tamamlandı, koşulara dönmeye hazır.");}G.cond[i]=Math.min(100,G.cond[i]+6);return;}
+    /* antrenman uygula */
+    const t=G.train[i]||"R";let risk=0;
+    if(t==="R"){G.cond[i]=Math.min(100,G.cond[i]+10);}
+    else if(t==="K"){G.cond[i]=Math.min(100,G.cond[i]+Math.round(6*gainBoost));if(Math.random()<0.35)G.form[i]=Math.min(15,G.form[i]+1);risk=0.008;}
+    else if(t==="S"){G.form[i]=Math.min(15,G.form[i]+Math.round(2*gainBoost));G.cond[i]=Math.max(30,G.cond[i]-2);risk=0.025;}
+    else if(t==="M"){G.form[i]=Math.min(15,G.form[i]+1);G.cond[i]=Math.min(100,G.cond[i]+Math.round(2*gainBoost));risk=0.012;}
+    if(risk&&Math.random()<risk*riskCut){
+      G.inj[i]=3+Math.floor(rnd(2,8));
+      const vet=10000+G.inj[i]*3000;
+      G.money-=vet;addExp("vet",vet);
+      toast("🩹 "+HORSES[i][0]+" idmanda sakatlandı! "+G.inj[i]+" gün koşamaz. Veteriner: "+fmt(vet));
+      pushNews("🩹","Sakatlık: "+HORSES[i][0],"İdmanda sakatlandı, "+G.inj[i]+" gün koşamayacak. Veteriner faturası: "+fmt(vet)+".");
+    }
+    if(G.day%3===0)G.form[i]=G.form[i]>0?G.form[i]-1:(G.form[i]<0?G.form[i]+1:0);
+  });
+  /* transfer teklifleri: süre azalt, yeni teklif üret */
+  G.offers.forEach(o=>o.exp--);
+  G.offers=G.offers.filter(o=>o.exp>0&&G.owned.includes(o.h));
+  if(G.owned.length&&Math.random()<0.20&&G.offers.length<3){
+    const h=pick(G.owned);
+    const runs=(G.stats[h]||{}).runs||0;
+    const mult=rnd(0.7,1.15)+((G.stats[h]||{}).w||0)*0.12+(runs>0?0.1:0);
+    const from=pick(HORSES.filter(x=>x[5]!=="-").map(x=>x[5]));
+    const amt=Math.round(horsePrice(h)*mult/1000)*1000;
+    G.offers.push({h,amt,from,exp:3});
+    toast("📨 "+from+", "+HORSES[h][0]+" için teklif gönderdi!");
+    pushNews("📨","Transfer teklifi: "+HORSES[h][0],from+" ekürisi "+fmt(amt)+" teklif etti. 3 gün geçerli — Transfer Teklifleri menüsünden yanıtla.");
+  }
+  /* yaklaşan büyük koşu haberi */
+  const up=NAMED.find(n=>n[0]===G.day+3);
+  if(up){
+    const favs=HORSES.map((h,i)=>i).filter(i=>HORSES[i][1]===up[2]&&HORSES[i][3]>=up[3]&&ageOf(i)<10).sort((a,b)=>HORSES[b][3]-HORSES[a][3]).slice(0,3).map(i=>HORSES[i][0]);
+    pushNews("📅",up[1]+" yaklaşıyor","3 gün kaldı — "+dateStr(up[0])+", "+TRACKS[up[6]]+", "+up[4]+"m. İkramiye "+fmt(up[5])+". Favoriler: "+favs.join(", ")+".");
+  }
+  G.day++;
+  if(G.day>SEASON_DAYS)return endSeason();
+  genProgram();checkAchBasics();save();refreshTop();
+  if(!silent){
+    showTab(5);
+    if(cost>0)toast(dateStr(G.day)+" — günlük gider: "+fmt(cost));
+    if(G.money<0)toast("⚠ Kasa eksiye düştü! At satmayı veya teklif kabul etmeyi düşün.");
+  }
+}
+/* 📅 TAKVİMDEN GÜNE IŞINLAN: aradaki her şey otomatik simüle edilir */
+function goToDay(target){
+  target=Math.min(target,SEASON_DAYS);
+  if(target<=G.day)return toast("Geçmiş bir güne gidilemez.");
+  if(!confirm(dateStr(target)+" gününe atla? Aradaki "+(target-G.day)+" günün tüm koşuları otomatik simüle edilecek."))return;
+  let guard=0;
+  while(G.day<target&&guard++<SEASON_DAYS+2)nextDay(true);
+  save();refreshTop();showTab(5);
+  toast("⏩ "+dateStr(G.day)+" gününe gelindi. Bugünün programı hazır.");
+}
+function endSeason(){
+  const myEarn=G.ownerEarn[G.stable]||0;
+  const owners=Object.entries(G.ownerEarn).sort((a,b)=>b[1]-a[1]);
+  const rank=owners.findIndex(o=>o[0]===G.stable)+1;
+  if(rank===1){unlockAch("sampiyon");G.champCount++;}
+  /* sezon kapanışı: ödüller + kariyer arşivi + rekorlar (yılda bir kez) */
+  if(G._closed!==G.year){
+    G._closed=G.year;
+    const yr=G.year;
+    const hEarn={},hWins={};
+    Object.entries(G.hlog||{}).forEach(([h,arr])=>arr.forEach(e=>{if(e.y===yr){hEarn[h]=(hEarn[h]||0)+e.pr;if(e.p===1)hWins[h]=(hWins[h]||0)+1;}}));
+    const topEarn=Object.entries(hEarn).sort((a,b)=>b[1]-a[1])[0];
+    const topWins=Object.entries(hWins).sort((a,b)=>b[1]-a[1])[0];
+    const topJ=Object.entries(G.jstats||{}).sort((a,b)=>b[1].w-a[1].w)[0];
+    let surp=null;
+    Object.keys(hWins).forEach(h=>{if(HORSES[h][3]<60&&(surp===null||HORSES[h][3]<HORSES[surp][3]))surp=+h;});
+    G._awards={
+      at:topEarn?{n:HORSES[topEarn[0]][0],v:topEarn[1],mine:G.owned.includes(+topEarn[0])}:null,
+      j:topJ?{n:JOCKEYS[topJ[0]][0],v:topJ[1].w,mine:G.cJockey===+topJ[0]}:null,
+      ek:owners[0]?{n:owners[0][0],v:owners[0][1],mine:owners[0][0]===G.stable}:null,
+      surp:surp!==null?{n:HORSES[surp][0],hp:HORSES[surp][3],mine:G.owned.includes(surp)}:null
+    };
+    const R_=G.rec=G.rec||{};
+    if(topEarn&&(!R_.atEarn||topEarn[1]>R_.atEarn.v))R_.atEarn={n:HORSES[topEarn[0]][0],v:topEarn[1],y:yr};
+    if(topWins&&(!R_.atWins||topWins[1]>R_.atWins.v))R_.atWins={n:HORSES[topWins[0]][0],v:topWins[1],y:yr};
+    if(topJ&&topJ[1].w&&(!R_.jWins||topJ[1].w>R_.jWins.v))R_.jWins={n:JOCKEYS[topJ[0]][0],v:topJ[1].w,y:yr};
+    if(!R_.myBest||myEarn>R_.myBest.v)R_.myBest={v:myEarn,y:yr};
+    const totExp=Object.values(G.exp||{}).reduce((s,x)=>s+x,0);
+    const myTop=G.owned.map(i=>[i,(G.stats[i]||{}).earn||0]).sort((a,b)=>b[1]-a[1])[0];
+    (G.career=G.career||[]).push({y:yr,wins:G.seasonWins||0,earn:myEarn,exp:totExp,net:myEarn-totExp,rank:rank||0,champ:rank===1,cups:G.seasonCups||0,best:(myTop&&myTop[1]>0)?HORSES[myTop[0]][0]:null});
+    save();
+  }
+  /* emekliye ayrılacak atlar (gelecek sezon 10+ yaş) */
+  const retiring=G.owned.filter(i=>ageOf(i)+1>=10);
+  document.getElementById("modalBox").innerHTML=
+    "<h2>🏁 "+G.year+" Sezonu Bitti!</h2>"
+    +"<p style='margin:12px 0'>Toplam ikramiye: <b>"+fmt(myEarn)+"</b><br>Sahipler sıralaması: <b>"+(rank||"-")+".</b>"+(rank===1?" 🏆 <b>ŞAMPİYON!</b>":"")+"<br>Kasa: <b>"+fmt(G.money)+"</b></p>"
+    +(retiring.length?"<p style='margin:8px 0'>🐴 Emekliye ayrılıyor: <b>"+retiring.map(i=>HORSES[i][0]).join(", ")+"</b> — her biri damızlık olarak değerinin %60'ına satılacak.</p>":"")
+    +"<p class='muted'>Yeni sezonda tüm atlar 1 yaş büyür, sayaçlar sıfırlanır, kış müzayedesi seni bekler.</p>"
+    +"<div style='text-align:center;margin-top:16px'><button onclick='showAwards()'>🎗 Ödül Törenine Geç ▸</button></div>";
+  document.getElementById("modalBg").classList.add("show");
+}
+/* 🧬 DAMIZLIK SİSTEMİ (FM regen tarzı) */
+/* AYGIR PAZARI: gerçek aygırlar (TJK pedigri verilerinden) — [isim, güç, fiyat, ırk] */
+const SIREMARKET=[
+["HAKEEM",104,24000000,"İ"],       /* GRANDE FLUSSO'nun babası */
+["DECLARATION OF WAR",102,21000000,"İ"],
+["KANEKO",98,16000000,"İ"],
+["THREE VALLEYS",94,12000000,"İ"],
+["KAIZBERT",100,18000000,"A"],     /* GÜMBÜRGÜMBÜR'ün babası */
+["SERDÜMEN",92,10500000,"A"],
+["HANBEY",88,8000000,"A"],
+["YALAZ",85,6500000,"A"]
+];
+function buySire(k){
+  const s=SIREMARKET[k];
+  if((G.studs=G.studs||[]).length>=3)return toast("Damızlık çiftliği dolu (en fazla 3)!");
+  if(G.money<s[2])return toast("Bütçe yetersiz!");
+  if(G.studs.some(x=>x.n===s[0]))return toast("Bu aygır zaten çiftliğinde!");
+  if(!confirm(s[0]+" aygırı "+fmt(s[2])+" karşılığında satın alınsın mı? Her kış 1 tay verecek."))return;
+  G.money-=s[2];addExp("damizlik",s[2]);
+  /* havuzda zaten varsa (önceden alınıp satılmış) yeniden kullan, yoksa ekle */
+  let idx=HORSES.findIndex(h=>h[0]===s[0]);
+  if(idx<0){
+    (G.extra=G.extra||[]).push({k:"s",n:s[0],irk:s[3],hp:s[1]});
+    idx=HORSES.push([s[0],s[3],"E",s[1],12-(G.year-(G.y0||2026)),"Damızlık Deposu",null,null])-1;
+  }
+  G.studs.push({h:idx,n:s[0],y:G.year,ext:true});
+  pushNews("🐎","Aygır transferi: "+s[0],fmt(s[2])+" karşılığında çiftliğine katıldı — güç "+s[1]+". Tayları büyük potansiyel taşıyacak.");
+  save();refreshTop();showTab(1);
+}
+function makeStud(i){
+  if((G.studs=G.studs||[]).length>=3)return toast("Damızlık çiftliği dolu (en fazla 3)!");
+  if(!confirm(HORSES[i][0]+" yarış kariyerini bitirip damızlığa ayrılsın mı? Geri dönüşü yok — her kış sana 1 tay verecek."))return;
+  G.owned=G.owned.filter(x=>x!==i);
+  G.studs.push({h:i,n:HORSES[i][0],y:G.year});
+  if(G.gear)delete G.gear[i];
+  pushNews("🧬","Damızlığa ayrıldı: "+HORSES[i][0],"Yarış kariyeri sona erdi. Artık her kış müzayedesi döneminde bir tay üretecek.");
+  save();refreshTop();showTab(1);
+}
+function sellStud(k){
+  const s=G.studs[k];if(!s)return;
+  const nm=HORSES[s.h][0];
+  const p=Math.round(horsePrice(s.h)*0.6);
+  if(!confirm(nm+" damızlıktan haraya satılsın mı? ("+fmt(p)+")"))return;
+  G.money+=p;G.studs.splice(k,1);
+  pushNews("💰","Damızlık satışı",nm+" "+fmt(p)+" karşılığında haraya satıldı.");
+  save();refreshTop();showTab(1);
+}
+function genFoal(stud){
+  const sire=HORSES[stud.h];
+  const ON=["ŞİMŞEK","RÜZGAR","BOZKIR","YILDIZ","ATEŞ","GECE","ALTIN","DEMİR","KARA","TUNA","ASİL","GÖK","SULTAN","EFSANE","ŞAHİN","DUMAN"];
+  const SON=["KANAT","FIRTINA","OĞLU","TAY","HAN","EFE","BEYİ","RÜYA","MİRAS","YELE","PENÇE","KIVILCIM"];
+  let name,guard=0;
+  do{name=pick(ON)+" "+pick(SON);guard++;}while(guard<60&&HORSES.some(h=>h[0]===name));
+  if(HORSES.some(h=>h[0]===name))name+=" "+(G.year%100);
+  const gem=Math.random()<0.12; /* istisnai tay şansı */
+  const hp=Math.max(20,Math.min(95,Math.round(hpOf(stud.h)*0.5+rnd(12,32)+(gem?12:0))));
+  const cins=Math.random()<0.5?"E":"D";
+  const baseAge=2-(G.year-(G.y0||2026)); /* ageOf() doğru hesaplasın diye */
+  G.foals.push({n:name,irk:sire[1],c:cins,hp,ba:baseAge,sire:sire[0]});
+  (G.extra=G.extra||[]).push({k:"f",n:name,irk:sire[1],c:cins,hp,ba:baseAge,sire:sire[0]});
+  const idx=HORSES.push([name,sire[1],cins,hp,baseAge,G.stable,null,sire[0]])-1;
+  G.owned.push(idx);G.train[idx]="R";horseState(idx);
+  /* stil: babadan miras (mutasyonlu) */
+  G.sty[name]=Math.max(0.05,Math.min(0.95,styleOf(stud.h)+rnd(-0.15,0.15)));
+  pushNews("🍼","Tay doğdu: "+name,sire[0]+"'nın yavrusu ahırına katıldı — güç "+hp+", 2 yaşında."+(gem?" ⭐ İSTİSNAİ BİR TAY! Antrenörler geleceğini çok parlak görüyor!":""));
+  return name;
+}
+function newSeason(){
+  /* emeklilik: 10 yaşına gelenler damızlığa geçer (yer varsa), yoksa satılır */
+  G.owned.filter(i=>ageOf(i)+1>=10).forEach(i=>{
+    if((G.studs=G.studs||[]).length<3){
+      G.studs.push({h:i,y:G.year+1});
+      pushNews("🧬","Damızlığa geçti: "+HORSES[i][0],"Yaş sınırına ulaştı — artık damızlık çiftliğinde, her kış tay verecek.");
+    }else{
+      const p=Math.round(horsePrice(i)*0.6);
+      G.money+=p;
+      pushNews("💰","Emeklilik satışı: "+HORSES[i][0],"Çiftlikte yer olmadığından "+fmt(p)+" karşılığında haraya satıldı.");
+    }
+    G.owned=G.owned.filter(x=>x!==i);
+    if(G.gear)delete G.gear[i];
+  });
+  G.day=1;G.year++;G.ownerEarn={};G.jockeyWins={};G.jstats={};G.offers=[];G.seasonWins=0;G.seasonCups=0;G.cJockey=-1;G.history=[];G.exp={};
+  pushNews("🎉","Yeni sezon başladı",G.year+" sezonu açıldı. Kış müzayedesi seni bekliyor — bol şans!");
+  /* 🍼 damızlıklardan taylar doğar */
+  (G.studs||[]).forEach(s=>genFoal(s));
+  Object.keys(G.stats).forEach(k=>G.stats[k]={runs:0,w:0,p:0,earn:0});
+  genProgram();save();refreshTop();
+  /* kış müzayedesi: 6 rastgele at %30 indirimli */
+  const pool=HORSES.map((h,i)=>i).filter(i=>!G.owned.includes(i)&&ageOf(i)<9);
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  G.auction=pool.slice(0,6);
+  showAuction();
+}
+function showAuction(){
+  const rows=G.auction.filter(i=>!G.owned.includes(i)).map(i=>{
+    const h=HORSES[i],p=Math.round(horsePrice(i)*0.7/1000)*1000;
+    return "<tr><td><b>"+h[0]+"</b>"+(h[6]?"<br><span style='font-size:10px;color:#8a6d1d'>🏆 "+h[6]+"</span>":"")+"</td><td>"+(h[1]==="A"?"Arap":"İngiliz")+"</td><td>"+ageOf(i)+"</td><td>"+hpOf(i)+"</td><td><s class='muted'>"+fmt(horsePrice(i))+"</s> <b>"+fmt(p)+"</b></td><td><button "+(G.money<p?"disabled":"")+" onclick='auctionBuy("+i+","+p+")'>Al</button></td></tr>";
+  }).join("");
+  document.getElementById("modalBox").innerHTML=
+    "<h2>🔨 "+G.year+" Kış Müzayedesi</h2>"
+    +"<p class='muted' style='margin:8px 0'>Sezon başına özel: %30 indirimli safkanlar. Kasan: "+fmt(G.money)+"</p>"
+    +"<table><tr><th>At</th><th>Irk</th><th>Yaş</th><th>Güç</th><th>Fiyat</th><th></th></tr>"+rows+"</table>"
+    +"<div style='text-align:center;margin-top:14px'><button class='sec' onclick='closeModal();showTab(0)'>Müzayedeyi Kapat ▸</button></div>";
+  document.getElementById("modalBg").classList.add("show");
+}
+function auctionBuy(i,p){
+  if(G.money<p)return toast("Bütçe yetersiz!");
+  G.money-=p;G.owned.push(i);horseState(i);G.train[i]="R";
+  checkAchBasics();save();refreshTop();showAuction();
+  toast(HORSES[i][0]+" müzayededen alındı! 🔨");
+}
+/* ============ KOŞU SİMÜLASYONU + CANLI ANİMASYON ============ */
+const SILKS=["#e74c3c","#3498db","#f1c40f","#9b59b6","#1abc9c","#e67e22","#ecf0f1","#2ecc71","#e84393","#fd7272"];
+/* start numarasına göre eyer örtüsü renkleri (uluslararası standart): [zemin, yazı] */
+const CLOTH=[["#d21f26","#ffffff"],["#f5f5f5","#111111"],["#1553a4","#ffffff"],["#ffd400","#111111"],["#0a7a33","#ffffff"],["#111111","#ffd400"],["#f26f21","#111111"],["#f5a9c4","#111111"],["#40bfbf","#111111"],["#7b3fa0","#ffffff"]];
+let R=null; /* aktif koşu */
+function runRace(rid){
+  const r=G.program.races.find(x=>x.id===rid);
+  if(r.done)return;
+  const runners=buildRunners(r);
+  if(runners.length<2)return toast("Bu koşu için yeterli at yok.");
+  R={race:r,runners,order:[],t:0,lastC:0,cam:0,dust:[],conf:[],confT:0,phase:"pre",slow:1,bob:0,flash:0,photo:false};
+  R.worldLen=1400+r.dist*1.7; /* piksel cinsinden pist uzunluğu */
+  show("scrRace");
+  document.getElementById("raceTitle").textContent=(r.named?"⭐ ":"")+r.name;
+  document.getElementById("raceMeta").textContent=r.dist+"m "+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+" · "+TRACKS[r.track]+" · "+WEATHERS[weatherOf(G.day)]+" · İkramiye "+fmt(r.purse);
+  /* yarış öncesi: GANYAN & AGF tablosu */
+  const odds=raceOdds(r);
+  document.getElementById("raceResult").innerHTML='<div class="card"><h3>Ganyan & AGF Tablosu</h3>'+oddsTable(r,true)+'</div>';
+  document.getElementById("btnBack").style.display="none";
+  const cv=document.getElementById("track");
+  cv.height=170+runners.length*40;
+  const fav=odds[0];
+  setComment("Deklare ve ganyanlar ekranda — atlar start makinesine yerleşiyor... 🏇");
+  R.mode="2d";
+  drawRace();
+  /* YARIŞ ÖNCESİ: ganyan & AGF tablosu ekranda birkaç saniye kalır, sonra start */
+  const po=document.getElementById("preOdds");
+  po.innerHTML='<h3 style="color:#e8c96a;margin-bottom:2px">'+(r.named?"⭐ ":"")+r.name+'</h3>'
+    +'<p style="color:#aab6cc;font-size:11px;margin-bottom:8px">'+r.dist+'m · '+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+' · '+TRACKS[r.track]+' · İkramiye '+fmt(r.purse)+'</p>'
+    +oddsTable(r,true)
+    +'<p style="color:#e8c96a;font-size:12px;margin-top:10px;font-weight:700" id="preCnt">Start birazdan...</p>';
+  po.style.display="block";
+  let cnt=3;
+  R.preT=setTimeout(()=>{
+    if(!R)return;
+    R.cd=setInterval(()=>{
+      if(!R){return;}
+      const pc=document.getElementById("preCnt");
+      if(cnt>0){
+        if(pc)pc.innerHTML="Start için: <span style='font-size:20px'>"+cnt+"</span>";
+        setComment("Start için: <b style='font-size:22px;color:#e8c96a'>"+cnt+"</b>");cnt--;
+      }else{
+        clearInterval(R.cd);
+        po.style.display="none";
+        sfx("bell");setComment("🔔 <b>VE BAŞLADILAR!</b>");
+        R.phase="run";R.going=true;R.last=undefined;requestAnimationFrame(raceFrame);
+      }
+    },850);
+  },3200);
+}
+/* görünüm geçişi: YARIŞ ORTASINDA ANINDA çalışır */
+function toggleView(){
+  G.view3d=G.view3d===false?true:false;
+  save();
+  const btn=document.getElementById("btnView");
+  if(R&&!R.finished){
+    if(R.mode==="3d"&&G.view3d===false){
+      teardown3D();R.mode="2d";
+      if(btn)btn.textContent="🎥 2D";
+      toast("2D görünüme geçildi.");return;
+    }
+    if(R.mode==="2d"&&G.view3d!==false&&window.THREE&&window.__horseGLTF){
+      try{
+        init3D();R.mode="3d";
+        document.getElementById("hud3d").style.display="block";
+        if(btn)btn.textContent="🎥 3D";
+        toast("3D görünüme geçildi.");return;
+      }catch(e){R.mode="2d";R.T=null;}
+    }
+  }
+  toast(G.view3d===false?"2D görünüm seçildi.":"3D görünüm seçildi"+(window.__horseGLTF?".":" (model henüz inmedi, sonraki koşularda)."));
+}
+function rotModel(){
+  G.mrot=((G.mrot||0)+90)%360;
+  save();
+  toast("At modeli yönü: "+G.mrot+"° — sonraki koşuda geçerli.");
+}
+/* --- ses efektleri (WebAudio, dosyasız) --- */
+let MUTE=false;
+function toggleMute(){MUTE=!MUTE;document.getElementById("btnMute").textContent=MUTE?"🔇":"🔊";}
+function sfx(type){
+  if(MUTE)return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    sfx.ctx=sfx.ctx||new AC();const c=sfx.ctx;
+    if(c.state==="suspended")c.resume();
+    if(type==="bell"){
+      [0,0.18,0.36].forEach((t,i)=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.type="square";o.frequency.value=i===2?988:784;
+        g.gain.setValueAtTime(0.1,c.currentTime+t);
+        g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+t+0.15);
+        o.connect(g);g.connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+0.16);
+      });
+    }else if(type==="cheer"){
+      const len=1.6,buf=c.createBuffer(1,c.sampleRate*len,c.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++){const t=i/d.length;d[i]=(Math.random()*2-1)*(t<0.12?t/0.12:1-(t-0.12)/0.88)*0.6;}
+      const s=c.createBufferSource();s.buffer=buf;
+      const f=c.createBiquadFilter();f.type="bandpass";f.frequency.value=850;f.Q.value=0.5;
+      const g=c.createGain();g.gain.value=0.3;
+      s.connect(f);f.connect(g);g.connect(c.destination);s.start();
+    }
+  }catch(e){}
+}
+function setComment(t){document.getElementById("commentary").innerHTML=t;}
+/* --- 2D vektörel at çizimi (sağa koşar) --- */
+const COATS=["#5a3d22","#3a2a1a","#7a5230"];
+function drawHorse2D(ctx,x,y,silk,ph,coatIdx){
+  const coat=COATS[coatIdx];
+  ctx.save();ctx.translate(x,y);
+  /* bacaklar (galop animasyonu) */
+  ctx.strokeStyle=coat;ctx.lineWidth=2.6;ctx.lineCap="round";
+  const s1=Math.sin(ph),s2=Math.sin(ph+Math.PI),s3=Math.sin(ph+1.2),s4=Math.sin(ph+Math.PI+1.2);
+  const leg=(bx,sw)=>{ctx.beginPath();ctx.moveTo(bx,3);ctx.quadraticCurveTo(bx+sw*2,9,bx+sw*4.5,14);ctx.stroke();};
+  leg(-9,s1*0.9);leg(-6,s2*0.7);leg(7,s3*0.9);leg(10,s4*0.7);
+  /* kuyruk */
+  ctx.beginPath();ctx.moveTo(-13,-2);ctx.quadraticCurveTo(-19,-1+Math.sin(ph*0.7)*2,-21,4);ctx.stroke();
+  /* gövde */
+  ctx.fillStyle=coat;
+  ctx.beginPath();ctx.ellipse(0,0,13,5.8,0,0,7);ctx.fill();
+  /* boyun + kafa */
+  ctx.beginPath();ctx.moveTo(8,-2);ctx.quadraticCurveTo(14,-9,17,-10);ctx.lineTo(20,-8);ctx.quadraticCurveTo(15,-3,11,2);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.ellipse(19,-9,4.5,2.6,-0.35,0,7);ctx.fill();
+  /* yele */
+  ctx.strokeStyle="#241a10";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(9,-4);ctx.quadraticCurveTo(13,-9,16,-11);ctx.stroke();
+  /* jokey: forma rengiyle */
+  ctx.fillStyle=silk;
+  ctx.beginPath();ctx.ellipse(-1,-8,4,4.6,0.5,0,7);ctx.fill(); /* gövde eğik */
+  ctx.fillStyle="#e8b88a";ctx.beginPath();ctx.arc(2,-13,2.2,0,7);ctx.fill(); /* kafa */
+  ctx.fillStyle=silk;ctx.beginPath();ctx.arc(2,-14.4,2.3,Math.PI,0);ctx.fill(); /* kask */
+  ctx.strokeStyle=silk;ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(1,-5);ctx.lineTo(6,-1);ctx.stroke(); /* kol */
+  ctx.restore();
+}
+/* ============ 3D MOTOR (Three.js — internet yoksa 2D'ye düşer) ============ */
+function loadThree(){
+  return new Promise(res=>{
+    if(window.THREE)return res(true);
+    if(loadThree.failed)return res(false);
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    let done=false;
+    s.onload=()=>{done=true;res(true);};
+    s.onerror=()=>{done=true;loadThree.failed=true;res(false);};
+    setTimeout(()=>{if(!done){loadThree.failed=true;res(false);}},5000);
+    document.head.appendChild(s);
+  });
+}
+/* gerçek at modeli (three.js resmi Horse.glb — morph animasyonlu) */
+function ensureHorseModel(){
+  if(window.__horseGLTF||ensureHorseModel.busy||ensureHorseModel.failed)return;
+  ensureHorseModel.busy=true;
+  const step2=()=>{
+    try{
+      new THREE.GLTFLoader().load(
+        "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Horse.glb",
+        gltf=>{
+          try{
+            let mesh=null;
+            gltf.scene.traverse(o=>{if(!mesh&&o.isMesh)mesh=o;});
+            if(!mesh||!gltf.animations.length){ensureHorseModel.failed=true;return;}
+            const bb=new THREE.Box3().setFromObject(mesh);
+            const size=new THREE.Vector3();bb.getSize(size);
+            window.__horseGLTF={mesh,clip:gltf.animations[0],scaleF:3.3/size.y,h:3.3,l:size.z*(3.3/size.y)};
+          }catch(e){ensureHorseModel.failed=true;}
+        },
+        undefined,()=>{ensureHorseModel.failed=true;});
+    }catch(e){ensureHorseModel.failed=true;}
+  };
+  if(window.THREE&&THREE.GLTFLoader)return step2();
+  const s=document.createElement("script");
+  s.src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js";
+  s.onload=step2;s.onerror=()=>{ensureHorseModel.failed=true;};
+  document.head.appendChild(s);
+}
+function makeHorseModel3D(u,i,laneX){
+  const src=window.__horseGLTF;
+  const g=new THREE.Group();
+  const coatCol=[0x8a5a33,0x5a3a22,0x38281a,0xb5b0a8,0x6e4526,0x94684a][hashStr(HORSES[u.h][0])%6];
+  const mesh=src.mesh.clone();
+  /* DON RENGİ: modelin TÜM alt parçalarına uygula (beyaz kalma sorunu düzeltildi) */
+  const coatMat=new THREE.MeshLambertMaterial({color:coatCol,morphTargets:true});
+  coatMat.vertexColors=false;
+  if(mesh.traverse)mesh.traverse(o=>{if(o.isMesh){o.material=coatMat;}});
+  if(mesh.isMesh)mesh.material=coatMat;
+  mesh.scale.setScalar(src.scaleF*(0.95+((hashStr(HORSES[u.h][0])%11)/100)));
+  mesh.rotation.y=((G.mrot||0)*Math.PI/180);
+  g.add(mesh);
+  const mixer=new THREE.AnimationMixer(mesh);
+  const act=mixer.clipAction(src.clip);act.play();
+  /* İNSAN GÖRÜNÜMLÜ JOKEY: eğilmiş gövde, kollar, bacaklar, bot, kask */
+  const cc=CLOTH[i%CLOTH.length];
+  const num=document.createElement("canvas");num.width=64;num.height=64;
+  const nx=num.getContext("2d");
+  nx.fillStyle=cc[0];nx.fillRect(0,0,64,64);
+  nx.fillStyle=cc[1];nx.font="bold 46px Tahoma";nx.textAlign="center";nx.fillText(String(i+1),32,50);
+  const rig=new THREE.Group();rig.position.set(0,src.h*0.54,0);rig.scale.setScalar(0.88);
+  const silk=new THREE.MeshLambertMaterial({color:u.color});
+  const silk2=new THREE.MeshLambertMaterial({color:u.color2||u.color});
+  const skin=new THREE.MeshLambertMaterial({color:0xe8b88a});
+  const dark=new THREE.MeshLambertMaterial({color:0x231a12});
+  const white=new THREE.MeshLambertMaterial({color:0xf5f5f0});
+  /* eyer bezi (küçültüldü) */
+  const cloth=new THREE.Mesh(new THREE.BoxGeometry(0.72,0.46,0.85),new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(num)}));
+  cloth.position.y=-0.05;rig.add(cloth);
+  /* gövde: öne eğik */
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(0.36,0.6,0.3),silk);torso.position.set(0,0.5,0.12);torso.rotation.x=0.95;rig.add(torso);
+  /* omuz + kollar: boyuna uzanır (2. renk) */
+  [-1,1].forEach(sX=>{
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.42,0.11),silk2);
+    arm.position.set(sX*0.22,0.52,0.42);arm.rotation.x=1.15;rig.add(arm);
+    /* bacaklar: yanlarda aşağı */
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.42,0.14),white);
+    leg.position.set(sX*0.4,0.05,0.05);leg.rotation.x=0.45;rig.add(leg);
+    const boot=new THREE.Mesh(new THREE.BoxGeometry(0.13,0.2,0.13),dark);
+    boot.position.set(sX*0.42,-0.22,0.14);rig.add(boot);
+  });
+  /* kafa + kask (2. renk) + vizör */
+  const jhead=new THREE.Mesh(new THREE.SphereGeometry(0.16,10,10),skin);jhead.position.set(0,0.86,0.36);rig.add(jhead);
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(0.185,10,10,0,Math.PI*2,0,1.35),silk2);cap.position.set(0,0.9,0.36);rig.add(cap);
+  const visor=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.05,0.16),dark);visor.position.set(0,0.86,0.5);rig.add(visor);
+  g.add(rig);
+  /* isim etiketi: SADECE senin atlarında (ekran kalabalığı önlenir) */
+  if(u.mine){
+    const label=textSprite("★"+HORSES[u.h][0],true);
+    label.position.set(0,4.4,0);g.add(label);
+  }
+  /* gölge: küçük ve hafif */
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(0.95,14),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.16}));
+  sh.rotation.x=-Math.PI/2;sh.position.y=0.02;sh.scale.z=1.6;g.add(sh);
+  g.position.set(laneX,0,0);
+  g.userData={mixer,model:true,ph:i*1.3,legs:[],body:{position:{y:0}}};
+  return g;
+}
+function textSprite(txt,gold){
+  const c=document.createElement("canvas");c.width=256;c.height=48;
+  const x=c.getContext("2d");
+  x.font="bold 26px Tahoma";x.textAlign="center";
+  x.strokeStyle="rgba(0,0,0,.85)";x.lineWidth=5;x.strokeText(txt,128,32);
+  x.fillStyle=gold?"#ffd75e":"#ffffff";x.fillText(txt,128,32);
+  const t=new THREE.CanvasTexture(c);
+  const m=new THREE.SpriteMaterial({map:t,depthTest:false});
+  const sp=new THREE.Sprite(m);sp.scale.set(7,1.3,1);
+  return sp;
+}
+function makeHorse3D(u,i,laneX){
+  const g=new THREE.Group();
+  /* gerçekçi oranlar: ince uzun gövde, uzanmış boyun, iki eklemli bacaklar */
+  const coatCol=[0x8a5a33,0x5a3a22,0x38281a,0xb5b0a8,0x6e4526,0x94684a][hashStr(HORSES[u.h][0])%6];
+  const coat=new THREE.MeshLambertMaterial({color:coatCol});
+  const silk=new THREE.MeshLambertMaterial({color:u.color});
+  const skin=new THREE.MeshLambertMaterial({color:0xe8b88a});
+  const dark=new THREE.MeshLambertMaterial({color:0x231a12});
+  /* gövde */
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.95,1.2,2.9),coat);body.position.y=1.9;g.add(body);
+  const chest=new THREE.Mesh(new THREE.BoxGeometry(0.85,1.05,0.8),coat);chest.position.set(0,1.8,1.6);g.add(chest);
+  const rump=new THREE.Mesh(new THREE.BoxGeometry(0.88,1.0,0.8),coat);rump.position.set(0,1.95,-1.55);rump.rotation.x=-0.12;g.add(rump);
+  /* numaralı eyer örtüsü (iki yandan görünür) */
+  const num=document.createElement("canvas");num.width=64;num.height=64;
+  const nx=num.getContext("2d");
+  const cc=CLOTH[i%CLOTH.length];
+  nx.fillStyle=cc[0];nx.fillRect(0,0,64,64);
+  nx.fillStyle=cc[1];nx.font="bold 46px Tahoma";nx.textAlign="center";nx.fillText(String(i+1),32,50);
+  const cloth=new THREE.Mesh(new THREE.BoxGeometry(1.06,0.7,0.95),new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(num)}));
+  cloth.position.set(0,2.05,0.45);g.add(cloth);
+  /* boyun ve kafa: dörtnalda ileri uzanmış */
+  const neck=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.62,1.35),coat);neck.position.set(0,2.5,1.95);neck.rotation.x=0.5;g.add(neck);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.48,1.0),coat);head.position.set(0,2.88,2.65);head.rotation.x=0.32;g.add(head);
+  const muzzle=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.32,0.4),dark);muzzle.position.set(0,2.78,3.1);g.add(muzzle);
+  const e1=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.3,0.1),coat);e1.position.set(0.14,3.22,2.3);g.add(e1);
+  const e2=e1.clone();e2.position.x=-0.14;g.add(e2);
+  /* yele: boyun üstünde ince koyu şerit */
+  const mane=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.5,1.3),dark);mane.position.set(0,2.85,1.9);mane.rotation.x=0.5;g.add(mane);
+  /* kuyruk: geriye savrulmuş */
+  const tail=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.25,1.1),dark);tail.position.set(0,2.1,-2.4);tail.rotation.x=0.25;g.add(tail);
+  /* bacaklar: omuz/kalça pivotu + diz eklemi */
+  const legs=[];
+  [[0.3,1.3,1],[-0.3,1.3,1],[0.3,-1.4,0],[-0.3,-1.4,0]].forEach((p,k)=>{
+    const piv=new THREE.Group();piv.position.set(p[0],1.5,p[1]);
+    const up=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.9,0.3),coat);up.position.y=-0.45;piv.add(up);
+    const knee=new THREE.Group();knee.position.y=-0.88;piv.add(knee);
+    const low=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.75,0.2),coat);low.position.y=-0.36;knee.add(low);
+    const hoof=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.15,0.26),dark);hoof.position.y=-0.76;knee.add(hoof);
+    piv.userData={knee,front:p[2]===1};
+    g.add(piv);legs.push(piv);
+  });
+  /* jokey: öne yatmış yarış pozisyonu */
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.8,0.45),silk);torso.position.set(0,2.9,0.15);torso.rotation.x=1.0;g.add(torso);
+  const arms=new THREE.Mesh(new THREE.BoxGeometry(0.65,0.16,0.7),silk);arms.position.set(0,2.85,0.85);arms.rotation.x=0.4;g.add(arms);
+  const thigh=new THREE.Mesh(new THREE.BoxGeometry(0.75,0.5,0.4),new THREE.MeshLambertMaterial({color:0xf5f5f0}));thigh.position.set(0,2.55,-0.15);g.add(thigh);
+  const jhead=new THREE.Mesh(new THREE.SphereGeometry(0.24,10,10),skin);jhead.position.set(0,3.15,0.62);g.add(jhead);
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(0.27,10,10,0,Math.PI*2,0,1.3),silk);cap.position.set(0,3.2,0.62);g.add(cap);
+  const visor=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.06,0.24),dark);visor.position.set(0,3.16,0.85);g.add(visor);
+  /* isim etiketi */
+  const label=textSprite((u.mine?"★":"")+HORSES[u.h][0],u.mine);
+  label.position.set(0,4.4,0);g.add(label);
+  /* gölge */
+  const sh=new THREE.Mesh(new THREE.CircleGeometry(1.4,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.28}));
+  sh.rotation.x=-Math.PI/2;sh.position.y=0.02;sh.scale.z=1.8;g.add(sh);
+  g.position.set(laneX,0,0);
+  g.userData={legs,body,ph:i*1.3};
+  return g;
+}
+function init3D(){
+  /* ÖNEMLİ: 2D çizim ana tuvali kilitler — 3D için ayrı tuval kullanılır */
+  const cv=document.getElementById("track3d");
+  cv.width=1060;cv.height=440;
+  cv.style.display="block";
+  document.getElementById("track").style.display="none";
+  const T={};
+  T.renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  T.renderer.setSize(cv.width,cv.height,false);
+  const rainy=weatherOf(G.day)===2, kum=R.race.srf==="Kum";
+  T.scene=new THREE.Scene();
+  /* gerçekçi TV yayını görünümü: doğal ışık, yandan alçak kamera */
+  T.scene.background=new THREE.Color(rainy?0x93a2b0:0x9ecbf0);
+  T.scene.fog=new THREE.Fog(rainy?0x93a2b0:0xbcdaf2,70,rainy?180:280);
+  T.camera=new THREE.PerspectiveCamera(42,cv.width/cv.height,0.1,700);
+  T.scene.add(new THREE.AmbientLight(0xffffff,rainy?0.7:0.75));
+  const sun=new THREE.DirectionalLight(0xfff4e0,rainy?0.3:0.7);sun.position.set(-30,70,40);T.scene.add(sun);
+  const n=R.runners.length;
+  T.laneW=2.4;T.halfW=n*T.laneW/2;
+  T.len=Math.max(140,R.race.dist/7);
+  /* zemin + pist: prosedürel doku (toprak taneleri / çim kırpıntısı) */
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(2200,900),new THREE.MeshLambertMaterial({color:0x5da562}));
+  ground.rotation.x=-Math.PI/2;ground.position.set(0,-0.03,T.len/2);T.scene.add(ground);
+  const tc=document.createElement("canvas");tc.width=256;tc.height=256;
+  const tx=tc.getContext("2d");
+  tx.fillStyle=kum?"#c49a6a":"#4f9e55";tx.fillRect(0,0,256,256);
+  for(let k=0;k<2600;k++){
+    tx.fillStyle=kum?["#b98e5e","#d0a674","#aa8050","#c8a070"][k%4]:["#479149","#57ab5c","#3f8342","#5cb361"][k%4];
+    tx.fillRect(Math.random()*256,Math.random()*256,2,2);
+  }
+  const trkTex=new THREE.CanvasTexture(tc);
+  trkTex.wrapS=trkTex.wrapT=THREE.RepeatWrapping;trkTex.repeat.set(4,Math.max(8,Math.round(T.len/9)));
+  const trk=new THREE.Mesh(new THREE.PlaneGeometry(T.halfW*2+8,T.len+90),new THREE.MeshLambertMaterial({map:trkTex}));
+  trk.rotation.x=-Math.PI/2;trk.position.set(0,0,T.len/2);T.scene.add(trk);
+  /* pist dokusu: tırmık izleri */
+  for(let z=0;z<T.len+70;z+=7){
+    const band=new THREE.Mesh(new THREE.PlaneGeometry(T.halfW*2+8,0.35),new THREE.MeshLambertMaterial({color:kum?0xb98e5e:0x479149,transparent:true,opacity:0.5}));
+    band.rotation.x=-Math.PI/2;band.position.set(0,0.004,z);T.scene.add(band);
+  }
+  /* beyaz çitler: çift kuşaklı, sık direkli (fotoğraftaki gibi) */
+  const railMat=new THREE.MeshLambertMaterial({color:0xf5f5f0});
+  [-1,1].forEach(s=>{
+    [0.72,1.12].forEach(hY=>{
+      const plank=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.16,T.len+90),railMat);
+      plank.position.set(s*(T.halfW+1.6),hY,T.len/2);T.scene.add(plank);
+    });
+    for(let z=-25;z<T.len+45;z+=6){
+      const post=new THREE.Mesh(new THREE.BoxGeometry(0.14,1.3,0.14),railMat);
+      post.position.set(s*(T.halfW+1.6),0.65,z);T.scene.add(post);
+    }
+  });
+  /* mesafe tabelaları */
+  for(let m=200;m<R.race.dist;m+=200){
+    const z=(m/R.race.dist)*T.len;
+    const c=document.createElement("canvas");c.width=128;c.height=64;
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,128,64);
+    x.fillStyle="#111";x.font="bold 34px Tahoma";x.textAlign="center";x.fillText(m+"m",64,44);
+    const bd=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));
+    bd.position.set(-(T.halfW+2.2),1.8,z);bd.rotation.y=Math.PI/2;T.scene.add(bd);
+    const pole=new THREE.Mesh(new THREE.BoxGeometry(0.1,1.8,0.1),new THREE.MeshLambertMaterial({color:0x888}));
+    pole.position.set(-(T.halfW+2.2),0.9,z);T.scene.add(pole);
+  }
+  /* start kapıları */
+  R.runners.forEach((u,i)=>{
+    const gate=new THREE.Mesh(new THREE.BoxGeometry(T.laneW-0.4,2.6,0.15),new THREE.MeshLambertMaterial({color:0x6a7280}));
+    gate.position.set(-T.halfW+T.laneW*(i+0.5),1.3,-1.4);T.scene.add(gate);
+  });
+  /* finiş: damalı direkler + bant */
+  const chk=document.createElement("canvas");chk.width=64;chk.height=64;
+  const cx=chk.getContext("2d");
+  for(let a=0;a<8;a++)for(let b=0;b<8;b++){cx.fillStyle=(a+b)%2?"#111":"#fff";cx.fillRect(a*8,b*8,8,8);}
+  const chkTex=new THREE.CanvasTexture(chk);chkTex.wrapS=chkTex.wrapT=THREE.RepeatWrapping;chkTex.repeat.set(6,1);
+  [-1,1].forEach(s=>{
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,6,10),new THREE.MeshLambertMaterial({color:0xc8102e}));
+    pole.position.set(s*(T.halfW+1.4),3,T.len);T.scene.add(pole);
+  });
+  const band=new THREE.Mesh(new THREE.PlaneGeometry(T.halfW*2+3,0.9),new THREE.MeshBasicMaterial({map:chkTex,side:THREE.DoubleSide}));
+  band.position.set(0,5.2,T.len);T.scene.add(band);
+  const fline=new THREE.Mesh(new THREE.PlaneGeometry(T.halfW*2+3,0.5),new THREE.MeshBasicMaterial({color:0xffffff}));
+  fline.rotation.x=-Math.PI/2;fline.position.set(0,0.02,T.len);T.scene.add(fline);
+  /* DEV SKORBOARD: canlı sıralama gösterir (finişin ilerisinde) */
+  {
+    const sc=document.createElement("canvas");sc.width=512;sc.height=288;
+    T.sb={cv:sc,cx:sc.getContext("2d"),last:-1};
+    T.sbTex=new THREE.CanvasTexture(sc);
+    const board=new THREE.Mesh(new THREE.PlaneGeometry(16,9),new THREE.MeshBasicMaterial({map:T.sbTex}));
+    board.position.set(6,11,T.len+34);board.rotation.y=Math.PI; /* piste bakar */
+    T.scene.add(board);
+    const frame=new THREE.Mesh(new THREE.BoxGeometry(17,10,0.5),new THREE.MeshLambertMaterial({color:0x22335c}));
+    frame.position.set(6,11,T.len+34.3);T.scene.add(frame);
+    [-6,6].forEach(px=>{
+      const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,13,8),new THREE.MeshLambertMaterial({color:0x555f70}));
+      pole.position.set(6+px*0.9,6.5,T.len+34.5);T.scene.add(pole);
+    });
+  }
+  /* ağaçlar (sağ taraf, söğüt hissi) */
+  for(let k=0;k<6;k++){
+    const z=T.len*0.15+k*(T.len*0.75/6)+((k*37)%13);
+    const tx=T.halfW+10+((k*29)%8);
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.4,3.4,6),new THREE.MeshLambertMaterial({color:0x5a4630}));
+    trunk.position.set(tx,1.7,z);T.scene.add(trunk);
+    for(let b=0;b<3;b++){
+      const blob=new THREE.Mesh(new THREE.SphereGeometry(1.6+((k+b)%3)*0.5,7,7),new THREE.MeshLambertMaterial({color:[0x3f7a3a,0x4a8a42,0x35682f][(k+b)%3]}));
+      blob.position.set(tx+((b*17+k*7)%3)-1,3.6+b*1.1,z+((b*11)%3)-1);
+      T.scene.add(blob);
+    }
+  }
+  /* tribün fonu: kalabalık dokulu geniş pano (fotoğraftaki gibi) */
+  const gs=document.createElement("canvas");gs.width=1024;gs.height=256;
+  const gx=gs.getContext("2d");
+  gx.fillStyle="#b8bcc4";gx.fillRect(0,0,1024,256);
+  gx.fillStyle="#8a919c";gx.fillRect(0,0,1024,24);
+  for(let t=0;t<4;t++){
+    const y=38+t*54;
+    gx.fillStyle="#9aa0aa";gx.fillRect(0,y+36,1024,11);
+    for(let k=0;k<900;k++){
+      gx.fillStyle=["#d8c8a8","#c96a5a","#7a9ac9","#e8e0c9","#9ac97a","#c9b04a","#553d33","#2a2a34"][(k*7+t)%8];
+      gx.fillRect(Math.random()*1024,y+Math.random()*32,2.5,3.5);
+    }
+  }
+  const gsTex=new THREE.CanvasTexture(gs);gsTex.wrapS=THREE.RepeatWrapping;gsTex.repeat.set(Math.max(2,Math.round(T.len/55)),1);
+  const stand=new THREE.Mesh(new THREE.PlaneGeometry(T.len+140,15),new THREE.MeshBasicMaterial({map:gsTex}));
+  stand.position.set(-(T.halfW+15),7.4,T.len/2);stand.rotation.y=Math.PI/2;T.scene.add(stand);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(3,0.4,T.len+140),new THREE.MeshLambertMaterial({color:0xdde2e8}));
+  roof.position.set(-(T.halfW+14.5),15.1,T.len/2);T.scene.add(roof);
+  /* tribün önü çim bandı ve iç alan */
+  T.crowd=[];
+  /* atlar: gerçek model yüklendiyse onu, yoksa el yapımını kullan */
+  T.horses=R.runners.map((u,i)=>{
+    const laneX=-T.halfW+T.laneW*(i+0.5);
+    const h=window.__horseGLTF?makeHorseModel3D(u,i,laneX):makeHorse3D(u,i,laneX);
+    T.scene.add(h);return h;
+  });
+  /* konfeti havuzu */
+  T.confetti=[];
+  T.camera.position.set(T.halfW+16,8,-10);
+  T.camera.lookAt(0,1.5,10);
+  R.T=T;
+}
+function update3D(dtRaw){
+  const T=R.T;if(!T)return;
+  const lead=Math.max(...R.runners.map(u=>u.x));
+  R.runners.forEach((u,i)=>{
+    const g=T.horses[i],ud=g.userData;
+    g.position.z=u.x*T.len;
+    const running=R.phase==="run"&&!u.done;
+    if(ud.model){
+      /* gerçek model: galop animasyonu hızla senkron */
+      ud.mixer.update(dtRaw*(running?(0.85+u.perf*0.004)*R.slow:0.0001));
+      if(running)g.position.x+=(Math.sin((ud.ph+=dtRaw)*1.7+i)*0.015);
+      return;
+    }
+    if(running){
+      ud.ph+=dtRaw*(9+u.perf*0.05)*R.slow;
+      const ph=ud.ph;
+      /* dörtnal: arka çift iter, ön çift uzanır; diz/ard diz bükülür */
+      ud.legs.forEach((piv,k)=>{
+        const front=piv.userData.front;
+        const off=(front?Math.PI*0.95:0)+(k%2)*0.35;
+        piv.rotation.x=Math.sin(ph+off)*(front?0.85:0.7);
+        piv.userData.knee.rotation.x=Math.max(0,Math.sin(ph+off+1.25))*(front?1.15:-0.7);
+      });
+      ud.body.position.y=1.9+Math.abs(Math.sin(ph))*0.13;
+      g.rotation.x=Math.sin(ph)*0.04; /* gövde dalgalanması */
+      g.position.x+=(Math.sin(ph*0.19+i)*0.02);
+    }else{
+      ud.legs.forEach(p=>{p.rotation.x*=0.9;p.userData.knee.rotation.x*=0.9;});
+      g.rotation.x*=0.9;
+    }
+  });
+  /* kalabalık coşkusu */
+  if(lead>0.8){T.crowd.forEach(p=>{p.position.y=p.userData.by+(Math.sin(R.bob*10+p.userData.k)>0.5?0.25:0);});}
+  /* kamera: PAKETİN ARKASINDAN takip (Starters Orders tarzı) */
+  const leadZ=lead*T.len;
+  const tail=Math.min(...R.runners.map(u=>u.x))*T.len;
+  let target;
+  if(R.phase==="done"){
+    target=new THREE.Vector3(0,5,T.len+12);
+    T.camera.position.lerp(target,0.04);
+    T.camera.lookAt(0,2.2,T.len-6);
+  }else{
+    target=new THREE.Vector3(0,4.6,tail-12);
+    T.camera.position.lerp(target,0.09);
+    T.camera.lookAt(0,2.4,(leadZ+tail)/2+14);
+  }
+  /* skorboard canlı güncelleme (saniyede 2) */
+  if(T.sb&&Math.floor(R.bob*2)!==T.sb.last){
+    T.sb.last=Math.floor(R.bob*2);
+    const cx=T.sb.cx;
+    cx.fillStyle="#101c38";cx.fillRect(0,0,512,288);
+    cx.fillStyle="#e8c96a";cx.font="bold 30px Tahoma";cx.fillText("★ TJK — "+R.race.name.slice(0,20),16,40);
+    cx.fillStyle="#4a5f8a";cx.fillRect(0,52,512,3);
+    cx.font="bold 26px Tahoma";
+    const srt=[...R.runners].sort((a,b)=>b.x-a.x).slice(0,5);
+    srt.forEach((u,i)=>{
+      cx.fillStyle=i===0?"#ffd75e":"#e8eefc";
+      cx.fillText((i+1)+".  "+(u.lane+1)+"  "+HORSES[u.h][0].slice(0,16),20,92+i*38);
+    });
+    cx.fillStyle="#9fb4dd";cx.font="bold 22px Tahoma";
+    cx.fillText(Math.min(R.race.dist,Math.round(lead*R.race.dist))+"m / "+R.race.dist+"m",360,282);
+    T.sbTex.needsUpdate=true;
+  }
+  /* konfeti */
+  T.confetti.forEach(p=>{
+    p.position.add(p.userData.v);p.userData.v.y-=0.012;
+    p.rotation.x+=0.15;p.rotation.z+=0.1;
+    if(p.position.y<0)p.position.y=0;
+  });
+  T.renderer.render(T.scene,T.camera);
+  /* DOM HUD */
+  document.getElementById("hudDist").textContent=Math.min(R.race.dist,Math.round(lead*R.race.dist))+"m / "+R.race.dist+"m "+(R.photo?"📸":"");
+  document.getElementById("hudBar").style.width=Math.min(100,lead*100)+"%";
+  document.getElementById("son200").style.display=(R.phase==="run"&&lead>1-200/R.race.dist&&lead<1)?"block":"none";
+}
+function spawnConfetti3D(){
+  const T=R.T;if(!T)return;
+  const cols=[0xe8c96a,0xc8102e,0x3a7bd5,0x2e9e4f,0xe87ab0,0xffffff];
+  for(let k=0;k<130;k++){
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(0.28,0.18),new THREE.MeshBasicMaterial({color:cols[k%6],side:THREE.DoubleSide}));
+    p.position.set(rnd(-T.halfW,T.halfW+8),rnd(6,14),T.len+rnd(-6,8));
+    p.userData.v=new THREE.Vector3(rnd(-0.03,0.03),rnd(-0.08,-0.02),rnd(-0.03,0.03));
+    T.scene.add(p);T.confetti.push(p);
+  }
+}
+function teardown3D(){
+  if(R&&R.T){
+    try{R.T.renderer.dispose();R.T.scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m.map)m.map.dispose();m.dispose();});}});}catch(e){}
+    R.T=null;
+  }
+  document.getElementById("track3d").style.display="none";
+  document.getElementById("track").style.display="block";
+  ["hud3d","son200","banner3d","flash3d"].forEach(id=>document.getElementById(id).style.display="none");
+}
+/* ============ NSS TARZI YARIŞ GÖRÜNÜMÜ ============ */
+function drawHorseNSS(ctx,x,y,silk,ph,coatIdx,mine,silk2){
+  silk2=silk2||silk;
+  const coat=["#4a2e18","#2b1d12","#6b4423","#8f8f8a"][coatIdx%4],dark="#1c1209";
+  /* oyuncunun atı: yeşil seçim halkası */
+  if(mine){ctx.strokeStyle="#39e639";ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(x,y+17,30,8,0,0,7);ctx.stroke();}
+  /* gölge */
+  ctx.fillStyle="rgba(0,50,0,.28)";ctx.beginPath();ctx.ellipse(x,y+16,24,5,0,0,7);ctx.fill();
+  /* bacaklar (galop döngüsü) */
+  ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";
+  const A=Math.sin(ph),B=Math.sin(ph+Math.PI),C=Math.sin(ph+0.9),D=Math.sin(ph+Math.PI+0.9);
+  const leg=(bx,sw)=>{ctx.beginPath();ctx.moveTo(x+bx,y+4);ctx.quadraticCurveTo(x+bx+sw*3,y+11,x+bx+sw*7,y+16);ctx.stroke();};
+  leg(-14,B*0.8);leg(-10,A*0.95);
+  leg(10,D*0.8);leg(14,C*0.95);
+  /* kuyruk */
+  ctx.strokeStyle=dark;ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(x-19,y-4);ctx.quadraticCurveTo(x-27,y+Math.sin(ph*0.6)*3,x-30,y+6);ctx.stroke();
+  /* gövde */
+  ctx.fillStyle=coat;
+  ctx.beginPath();ctx.ellipse(x,y,19,8.5,0,0,7);ctx.fill();
+  /* boyun + kafa: öne uzanmış */
+  ctx.beginPath();ctx.moveTo(x+11,y-4);ctx.quadraticCurveTo(x+20,y-10,x+26,y-9);ctx.lineTo(x+30,y-5);ctx.quadraticCurveTo(x+22,y-1,x+15,y+3);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+28,y-7,6,3.4,-0.25,0,7);ctx.fill();
+  ctx.fillStyle=dark;ctx.fillRect(x+32,y-8.5,3.5,2.6);
+  /* yele */
+  ctx.strokeStyle=dark;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y-6);ctx.quadraticCurveTo(x+19,y-11,x+24,y-11);ctx.stroke();
+  /* eyer bezi */
+  ctx.fillStyle="#fff";ctx.fillRect(x-6,y-4,11,9);
+  ctx.fillStyle=silk;ctx.fillRect(x-5,y-3,9,7);
+  /* jokey */
+  ctx.fillStyle="#fff";ctx.fillRect(x-6,y-9,8,5); /* beyaz pantolon */
+  ctx.fillStyle=silk;
+  ctx.beginPath();ctx.ellipse(x-1,y-12,5,6,0.6,0,7);ctx.fill();
+  ctx.fillStyle="#e8b88a";ctx.beginPath();ctx.arc(x+4,y-16,2.8,0,7);ctx.fill();
+  /* kask ve kollar: 2. eküri rengi */
+  ctx.fillStyle=silk2;ctx.beginPath();ctx.arc(x+4,y-17.2,3,Math.PI,0);ctx.fill();
+  ctx.strokeStyle=silk2;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(x+2,y-9);ctx.lineTo(x+9,y-5);ctx.stroke();
+}
+/* oval pist mini haritası: atlar gerçek oval üzerinde döner, viraj hissi burada */
+function drawMiniOval(ctx,x0,y0,w,h){
+  const pad=14,r=(h-pad*2)/2;
+  const cx1=x0+pad+r,cx2=x0+w-pad-r,cy=y0+h/2;
+  const S=cx2-cx1;                       /* düzlük uzunluğu (px) */
+  const lapPx=2*S+2*Math.PI*r;           /* tam tur (px) */
+  const OVAL_M=2000;                     /* varsayılan pist turu (metre) */
+  const px=m=>m*(lapPx/OVAL_M);
+  /* finişten GERİYE d px yürü (koşu yönünün tersi): F=(cx2,alt), sıra: sağ viraj↑ → üst düzlük← → sol viraj↓ → alt düzlük→ */
+  function back(d){
+    d=((d%lapPx)+lapPx)%lapPx;
+    const arc=Math.PI*r;
+    if(d<arc){const a=Math.PI/2-(d/r);return[cx2+r*Math.cos(a),cy+r*Math.sin(a)];} /* sağ viraj (alt→üst) */
+    d-=arc;
+    if(d<S)return[cx2-d,cy-r];                                                     /* üst düzlük (sağ→sol) */
+    d-=S;
+    if(d<arc){const a=-Math.PI/2-(d/r);return[cx1+r*Math.cos(a),cy+r*Math.sin(a)];}/* sol viraj (üst→alt) */
+    d-=arc;
+    return[cx1+d,cy+r];                                                            /* alt düzlük (sol→sağ) */
+  }
+  /* zemin kartı */
+  ctx.fillStyle="rgba(12,22,40,.78)";
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(x0,y0,w,h,6):ctx.rect(x0,y0,w,h);ctx.fill();
+  /* pist şeridi */
+  ctx.strokeStyle=R.race.srf==="Kum"?"#b98e5e":"#3f8f47";
+  ctx.lineWidth=9;ctx.lineCap="round";
+  ctx.beginPath();
+  ctx.moveTo(cx1,cy-r);ctx.lineTo(cx2,cy-r);
+  ctx.arc(cx2,cy,r,-Math.PI/2,Math.PI/2);
+  ctx.lineTo(cx1,cy+r);
+  ctx.arc(cx1,cy,r,Math.PI/2,Math.PI*1.5);
+  ctx.stroke();
+  ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(cx1,cy-r+5.5);ctx.lineTo(cx2,cy-r+5.5);
+  ctx.arc(cx2,cy,r-5.5,-Math.PI/2,Math.PI/2);
+  ctx.lineTo(cx1,cy+r-5.5);
+  ctx.arc(cx1,cy,r-5.5,Math.PI/2,Math.PI*1.5);
+  ctx.stroke();
+  /* finiş çizgisi */
+  ctx.strokeStyle="#fff";ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(cx2,cy+r-6);ctx.lineTo(cx2,cy+r+6);ctx.stroke();
+  /* start işareti (mesafeye göre ovalin gerisinde) */
+  const [sx_,sy_]=back(px(R.race.dist));
+  ctx.fillStyle="#ffd75e";ctx.font="bold 9px Tahoma";
+  ctx.beginPath();ctx.arc(sx_,sy_,3,0,7);ctx.fill();
+  ctx.fillText("S",sx_-3,sy_-5);
+  /* atlar: kalan mesafeye göre oval üzerinde */
+  const srt=[...R.runners].sort((a,b)=>a.x-b.x); /* önce arkadakiler çiz, lider üstte */
+  srt.forEach(u=>{
+    const rem=(1-Math.min(1,u.x))*R.race.dist;
+    const [hx,hy]=back(px(rem));
+    const c=CLOTH[u.lane%CLOTH.length];
+    if(u.mine){ctx.strokeStyle="#39e639";ctx.lineWidth=2;ctx.beginPath();ctx.arc(hx,hy,5.5,0,7);ctx.stroke();}
+    ctx.fillStyle=c[0];ctx.beginPath();ctx.arc(hx,hy,3.6,0,7);ctx.fill();
+    ctx.strokeStyle="#111";ctx.lineWidth=1;ctx.stroke();
+  });
+  /* başlık */
+  ctx.fillStyle="rgba(255,255,255,.75)";ctx.font="bold 8px Tahoma";
+  ctx.fillText(R.race.dist+"m",x0+8,y0+12);
+}
+function drawRaceNSS(){
+  const cv=document.getElementById("track"),ctx=cv.getContext("2d");
+  const n=R.runners.length;
+  const WALL=54,RAILH=30,laneH=44,skew=0;
+  /* mobil: net görüntü + %25 büyütme */
+  const cssW=cv.clientWidth||1060;
+  const mob=cssW<620;
+  const targetW=mob?Math.max(640,Math.round(cssW*2)):1060;
+  if(cv.width!==targetW)cv.width=targetW;
+  const S=mob?1.25:1;
+  const needH=Math.round((WALL+RAILH+n*laneH+36)*S);
+  if(cv.height!==needH)cv.height=needH;
+  ctx.setTransform(S,0,0,S,0,0);
+  const W=cv.width/S,H=cv.height/S;
+  const worldPx=R.worldLen,startX=70,finX=worldPx-90;
+  const lead=Math.max(...R.runners.map(u=>u.x));
+  let camT=R.phase==="pre"?0:lead*(finX-startX)+startX-W*0.62;
+  camT=Math.max(0,Math.min(camT,worldPx-W+n*skew+60));
+  R.cam+=(camT-R.cam)*0.12;
+  const cam=R.cam;
+  /* VİRAJ HİSSİ: oval konumuna göre yumuşak yan eğim + çevre değişimi */
+  const remLead=(1-lead)*R.race.dist;
+  const seg=R.race.dist<1000?0:(remLead<600?0:(remLead<1000?1:(remLead<1600?2:1))); /* 0 son düzlük, 1 viraj, 2 arka düzlük */
+  R.tilt=(R.tilt||0)+((seg===1?18:0)-R.tilt)*0.035;
+  R.wallT=(R.wallT===undefined?1:R.wallT)+((seg===0?1:0)-R.wallT)*0.035;
+  const off=wx=>R.tilt*(((wx-cam)/W)-0.5);
+  /* çim */
+  ctx.fillStyle="#4fae46";ctx.fillRect(0,0,W,H);
+  const stripeW=64;
+  for(let wx=Math.floor(cam/(stripeW*2))*(stripeW*2);wx<cam+W+stripeW*2;wx+=stripeW*2){
+    ctx.fillStyle="#58bb4e";ctx.fillRect(wx-cam,WALL+RAILH-6+off(wx+stripeW/2),stripeW,H);
+  }
+  /* uzak taraf: virajda/arka düzlükte çalılık + ağaçlar */
+  ctx.fillStyle="#2c6733";ctx.fillRect(0,0,W,WALL);
+  ctx.fillStyle="#245a2b";ctx.fillRect(0,WALL-8,W,8);
+  for(let wx=Math.floor(cam*0.8/110)*110;wx<cam*0.8+W+110;wx+=110){
+    const tx=wx-cam*0.8;
+    ctx.fillStyle="#1e4a24";
+    ctx.beginPath();ctx.arc(tx,WALL-26,16,0,7);ctx.arc(tx+14,WALL-18,12,0,7);ctx.fill();
+    ctx.fillStyle="#5a4630";ctx.fillRect(tx-2,WALL-14,4,12);
+  }
+  /* son düzlükte tribün panosu (yumuşak geçişle belirir) */
+  if(R.wallT>0.02){
+    ctx.globalAlpha=Math.min(1,R.wallT);
+    ctx.fillStyle="#f2f2f4";ctx.fillRect(0,0,W,WALL);
+    ctx.fillStyle="#d8d8de";ctx.fillRect(0,0,W,5);
+    ctx.fillStyle="#20336b";ctx.font="italic bold 19px Tahoma";
+    const logoW=150;
+    for(let wx=Math.floor(cam*0.7/logoW)*logoW;wx<cam*0.7+W+logoW;wx+=logoW){
+      ctx.fillText("★ TJK",wx-cam*0.7,WALL-19);
+    }
+    ctx.globalAlpha=1;
+  }
+  /* viraj göstergesi */
+  if(R.tilt>4){
+    ctx.fillStyle="rgba(255,255,255,.85)";ctx.font="bold 12px Tahoma";
+    ctx.fillText("↩ VİRAJ",W/2-24,16);
+  }
+  /* korkuluk: viraja uyan beyaz bar + direkler */
+  for(let x=0;x<W;x+=8){
+    const oy=off(cam+x);
+    ctx.fillStyle="#ffffff";ctx.fillRect(x,WALL+oy,8,7);
+    ctx.fillStyle="#dcdce2";ctx.fillRect(x,WALL+7+oy,8,2);
+  }
+  for(let wx=Math.floor(cam/44)*44;wx<cam+W+44;wx+=44){
+    const sx=wx-cam,oy=off(wx);
+    ctx.fillStyle="#ffffff";ctx.fillRect(sx,WALL+9+oy,5,RAILH-8);
+    ctx.fillStyle="rgba(0,0,0,.14)";ctx.fillRect(sx+5,WALL+9+oy,2,RAILH-8);
+  }
+  const laneTop=WALL+RAILH+10;
+  /* start çizgisi (soluk) */
+  {const sx0=startX-cam,oy=off(startX);
+   if(sx0>-40&&sx0<W+40){
+     ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=3;
+     ctx.beginPath();ctx.moveTo(sx0,WALL+RAILH+oy);ctx.lineTo(sx0,H);ctx.stroke();}}
+  /* finiş: dik beyaz çizgi + kırmızı toplu direk */
+  {const fx=finX-cam,oy=off(finX);
+   if(fx>-50&&fx<W+70){
+     ctx.strokeStyle="rgba(255,255,255,.95)";ctx.lineWidth=4;
+     ctx.beginPath();ctx.moveTo(fx,WALL+oy);ctx.lineTo(fx,H);ctx.stroke();
+     ctx.fillStyle="#e8e8ee";ctx.fillRect(fx-2,8+oy,5,WALL-8);
+     ctx.beginPath();ctx.arc(fx,12+oy,9,0,7);ctx.fillStyle="#fff";ctx.fill();
+     ctx.strokeStyle="#c8102e";ctx.lineWidth=3;ctx.stroke();
+     ctx.fillStyle="#c8102e";ctx.beginPath();ctx.arc(fx,12+oy,4.5,0,7);ctx.fill();}}
+  /* mesafe işaretleri */
+  ctx.font="bold 10px Tahoma";
+  for(let m=200;m<R.race.dist;m+=200){
+    const wx=startX+(finX-startX)*(m/R.race.dist),sx=wx-cam,oy=off(wx);
+    if(sx<-30||sx>W+30)continue;
+    ctx.fillStyle="rgba(255,255,255,.85)";ctx.fillRect(sx-15,WALL+11+oy,30,13);
+    ctx.fillStyle="#333";ctx.fillText(m+"m",sx-11,WALL+21+oy);
+  }
+  /* atlar: uzak kulvardan yakına (çapraz diziliş) */
+  const sorted=[...R.runners].sort((a,b)=>b.x-a.x);
+  /* atlar: SIRALAMAYA GÖRE ŞERİT DEĞİŞTİRİRLER — geçen at rakibinin önüne süzülür */
+  const drawOrder=[...R.runners].sort((a,b)=>(a.dispY||0)-(b.dispY||0)); /* üstteki önce çizilir */
+  drawOrder.forEach(u=>{
+    const wx=startX+(finX-startX)*Math.min(1,u.x);
+    const oy=off(wx);
+    const rank=sorted.indexOf(u);
+    const targetY=laneTop+rank*laneH+16;
+    if(u.dispY===undefined)u.dispY=laneTop+u.lane*laneH+16;
+    u.dispY+=(targetY-u.dispY)*0.035; /* yumuşak şerit geçişi */
+    const y=u.dispY+oy;
+    const sx=wx-cam;
+    if(sx<-90||sx>W+90)return;
+    const run=(R.phase==="run"&&!u.done);
+    const ph=run?R.bob*13+u.lane*1.7:0;
+    const bob=run?Math.sin(R.bob*13+u.lane*1.7)*2:0;
+    /* virajda hafif yatış */
+    const lean=(R.tilt||0)*0.005;
+    ctx.save();ctx.translate(sx,y+bob);ctx.rotate(lean);
+    drawHorseNSS(ctx,0,0,u.color,ph,hashStr(HORSES[u.h][0])%4,u.mine,u.color2);
+    ctx.restore();
+    /* isim (kontürlü) */
+    const t=(rank+1)+". "+(u.mine?"★":"")+HORSES[u.h][0];
+    ctx.font=(u.mine?"bold ":"")+"11px Tahoma";
+    ctx.strokeStyle="rgba(0,40,0,.6)";ctx.lineWidth=3;ctx.strokeText(t,sx-18,y-24+bob);
+    ctx.fillStyle=u.mine?"#ffe680":"#ffffff";ctx.fillText(t,sx-18,y-24+bob);
+  });
+  /* 🗺 CANLI OVAL PİST HARİTASI (TV yayını grafiği gibi) */
+  drawMiniOval(ctx,10,H-118,196,108);
+  /* HUD: ilerleme çubuğu */
+  const bx=W-280,bw=250;
+  ctx.fillStyle="rgba(15,25,45,.75)";ctx.fillRect(bx-8,H-34,bw+16,26);
+  ctx.fillStyle="rgba(255,255,255,.3)";ctx.fillRect(bx,H-20,bw,4);
+  ctx.fillStyle="#e8c96a";ctx.fillRect(bx,H-20,bw*Math.min(1,lead),4);
+  ctx.beginPath();ctx.arc(bx+bw*Math.min(1,lead),H-18,5,0,7);ctx.fill();
+  ctx.font="bold 10px Tahoma";ctx.fillStyle="#fff";
+  ctx.fillText(Math.min(R.race.dist,Math.round(lead*R.race.dist))+"m / "+R.race.dist+"m",bx,H-24);
+  /* SON 200m */
+  if(R.phase==="run"&&lead>1-200/R.race.dist&&lead<1){
+    const a=0.5+Math.sin(R.bob*18)*0.5;
+    ctx.font="bold 24px Tahoma";
+    ctx.strokeStyle="rgba(0,40,0,.7)";ctx.lineWidth=4;ctx.strokeText("⚡ SON 200 METRE ⚡",W/2-125,WALL+RAILH+28);
+    ctx.fillStyle="rgba(255,230,110,"+a.toFixed(2)+")";ctx.fillText("⚡ SON 200 METRE ⚡",W/2-125,WALL+RAILH+28);
+  }
+  if(R.photo&&R.phase==="run"){
+    ctx.font="bold 20px Tahoma";
+    ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=4;ctx.strokeText("📸 FOTO FİNİŞ!",W/2-65,WALL+RAILH+56);
+    ctx.fillStyle="#fff";ctx.fillText("📸 FOTO FİNİŞ!",W/2-65,WALL+RAILH+56);
+  }
+  /* flaş */
+  if(R.flash>0){ctx.fillStyle="rgba(255,255,255,"+R.flash.toFixed(2)+")";ctx.fillRect(0,0,W,H);}
+  /* konfeti */
+  R.conf.forEach(p=>{
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+    ctx.fillStyle=p.c;ctx.fillRect(-3,-2,6,4);ctx.restore();
+  });
+  /* kazanan pankartı */
+  if(R.phase==="done"&&R.order.length){
+    const w=R.order[0];
+    ctx.fillStyle="rgba(15,30,12,.8)";ctx.fillRect(W/2-230,H/2-34,460,62);
+    ctx.strokeStyle="#e8c96a";ctx.lineWidth=2;ctx.strokeRect(W/2-230,H/2-34,460,62);
+    ctx.font="bold 22px Tahoma";ctx.fillStyle="#e8c96a";
+    ctx.fillText("🏆 KAZANAN: "+HORSES[w.h][0],W/2-210,H/2+2);
+    ctx.font="11px Tahoma";ctx.fillStyle="#fff";
+    ctx.fillText(JOCKEYS[w.j][0]+" ile · "+(w.mine?"SENİN ATIN! 🎉":HORSES[w.h][5]),W/2-210,H/2+20);
+  }
+}
+/* ============ ANA GÖRÜNÜM: KUŞBAKIŞI OVAL PİST ============ */
+/* kazanma farkı: mesafe ORANI → yarışçılık terimi (görsel ölçeğe kalibre) */
+function marginName(frac){
+  if(frac<0.0015)return "BURUN FARKI";
+  if(frac<0.0032)return "KAFA FARKI";
+  if(frac<0.0065)return "BOYUN FARKI";
+  if(frac<0.013)return "YARIM BOY";
+  const boy=Math.max(1,Math.round(frac/0.013));
+  return boy+" BOY";
+}
+/* pist bölgesi tespiti (yarış mantığı için): 0=son düzlük, 1/3=viraj, 2=arka düzlük */
+const OVG={r:200,S:590};OVG.lap=2*OVG.S+2*Math.PI*OVG.r;OVG.ppm=OVG.lap/2000;
+function ovalSeg(remM){
+  let d=(remM*OVG.ppm)%OVG.lap;if(d<0)d+=OVG.lap;
+  const arc=Math.PI*OVG.r;
+  if(d<OVG.S)return 0;
+  if(d<OVG.S+arc)return 1;
+  if(d<2*OVG.S+arc)return 2;
+  return 3;
+}
+function drawRaceOval(){
+  const cv=document.getElementById("track"),ctx=cv.getContext("2d");
+  if(cv.width!==1060)cv.width=1060;
+  if(cv.height!==560)cv.height=560;
+  ctx.setTransform(1,0,0,1,0,0);
+  const W=cv.width,H=cv.height;
+  const kum=R.race.srf==="Kum";
+  /* geometri: iki düzlük + iki viraj (koşu yönü saat tersine, finiş alt sağda) */
+  const r=(H-160)/2, cy=H/2+18, trackW=68;
+  const cx1=235, cx2=W-235, S=cx2-cx1;
+  const lapPx=2*S+2*Math.PI*r, OVAL_M=2000;
+  const px=m=>m*(lapPx/OVAL_M);
+  /* finişten d px GERİDEKİ nokta + o noktadaki İLERİ yön açısı */
+  function back(d){
+    d=((d%lapPx)+lapPx)%lapPx;
+    const arc=Math.PI*r;
+    if(d<S)return[cx2-d,cy+r,0];                                    /* alt düzlük → sağa koşar */
+    d-=S;
+    if(d<arc){const a=Math.PI/2+d/r;
+      return[cx1+r*Math.cos(a),cy+r*Math.sin(a),Math.atan2(-Math.cos(a),Math.sin(a))];} /* sol viraj */
+    d-=arc;
+    if(d<S)return[cx1+d,cy-r,Math.PI];                              /* üst düzlük → sola koşar */
+    d-=S;
+    const a=-Math.PI/2+(d-0)/r*1+ (0); /* sağ viraj: a=-π/2..π/2 */
+    const a2=-Math.PI/2+(d)/r;
+    return[cx2+r*Math.cos(a2),cy+r*Math.sin(a2),Math.atan2(-Math.cos(a2),Math.sin(a2))];
+  }
+  /* START SABİT (tribün önü), FİNİŞ MESAFEYE GÖRE: 1200m kısa yay, 2400m tam tur+ */
+  const OFFM=OVAL_M-R.race.dist;
+  const pos=rm=>back(px(rm+OFFM));
+  /* ---- sahne ---- */
+  ctx.fillStyle="#4fae46";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#58bb4e";
+  for(let x=0;x<W;x+=128)ctx.fillRect(x,0,64,H);
+  /* tribün: alt düzlük boyunca (finiş tarafı) */
+  ctx.fillStyle="#b9bec7";ctx.fillRect(cx1-40,H-46,S+80,34);
+  ctx.fillStyle="#8a919c";ctx.fillRect(cx1-40,H-46,S+80,6);
+  for(let k=0;k<220;k++){
+    ctx.fillStyle=["#e8c9a0","#c96a5a","#7a9ac9","#e8e0c9","#9ac97a","#c9b04a"][k%6];
+    ctx.fillRect(cx1-34+(k*4.1)%(S+68),H-36+(k%4)*6,2.5,3.5);
+  }
+  ctx.fillStyle="#20336b";ctx.font="italic bold 13px Tahoma";
+  for(let x=cx1;x<cx2-160;x+=290)ctx.fillText("★ Tamgaç Jokey Kulübü",x,H-6);
+  /* iç saha: göl + ağaçlar */
+  ctx.fillStyle="#46a03e";
+  ctx.beginPath();ctx.ellipse((cx1+cx2)/2,cy,S/2+r-trackW-24,r-trackW-18,0,0,7);ctx.fill();
+  ctx.fillStyle="#5aa7d6";
+  ctx.beginPath();ctx.ellipse((cx1+cx2)/2+60,cy+8,90,34,0,0,7);ctx.fill();
+  ctx.fillStyle="#7fc0e4";
+  ctx.beginPath();ctx.ellipse((cx1+cx2)/2+45,cy+2,55,18,0,0,7);ctx.fill();
+  [[-170,-30],[-60,26],[120,-38],[210,20]].forEach(t=>{
+    const tx=(cx1+cx2)/2+t[0],ty=cy+t[1];
+    ctx.fillStyle="#5a4630";ctx.fillRect(tx-2,ty,4,10);
+    ctx.fillStyle="#2e6b34";ctx.beginPath();ctx.arc(tx,ty-6,11,0,7);ctx.arc(tx+8,ty-1,8,0,7);ctx.fill();
+  });
+  /* pist halkası */
+  function ringPath(rad){
+    ctx.beginPath();
+    ctx.moveTo(cx1,cy-rad);ctx.lineTo(cx2,cy-rad);
+    ctx.arc(cx2,cy,rad,-Math.PI/2,Math.PI/2);
+    ctx.lineTo(cx1,cy+rad);
+    ctx.arc(cx1,cy,rad,Math.PI/2,Math.PI*1.5);
+  }
+  ctx.lineCap="butt";
+  ctx.strokeStyle=kum?"#a87f4f":"#3c8a44";ctx.lineWidth=trackW+6;ringPath(r);ctx.stroke();
+  ctx.strokeStyle=kum?"#c49a6a":"#4f9e55";ctx.lineWidth=trackW;ringPath(r);ctx.stroke();
+  /* iç şerit izleri */
+  ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1;
+  ringPath(r-trackW/2+12);ctx.stroke();ringPath(r+trackW/2-12);ctx.stroke();
+  /* korkuluklar */
+  ctx.strokeStyle="#f5f5f0";ctx.lineWidth=3;
+  ringPath(r-trackW/2-3);ctx.stroke();ringPath(r+trackW/2+3);ctx.stroke();
+  /* 200m çizgileri */
+  for(let m=200;m<R.race.dist;m+=200){
+    const[mx,my,ma]=pos(m);
+    ctx.save();ctx.translate(mx,my);ctx.rotate(ma+Math.PI/2);
+    ctx.strokeStyle="rgba(255,255,255,.4)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-trackW/2+4,0);ctx.lineTo(trackW/2-4,0);ctx.stroke();
+    ctx.restore();
+  }
+  /* START */
+  {const[sx_,sy_,sa]=pos(R.race.dist);
+   ctx.save();ctx.translate(sx_,sy_);ctx.rotate(sa+Math.PI/2);
+   ctx.strokeStyle="#ffd75e";ctx.lineWidth=3;
+   ctx.beginPath();ctx.moveTo(-trackW/2,0);ctx.lineTo(trackW/2,0);ctx.stroke();
+   ctx.restore();
+   ctx.fillStyle="#ffd75e";ctx.font="bold 10px Tahoma";
+   ctx.fillText("START",sx_-16,sy_-trackW/2-8);}
+  /* FİNİŞ: damalı çizgi + direk */
+  {const[fx,fy,fa]=pos(0);
+   ctx.save();ctx.translate(fx,fy);ctx.rotate(fa+Math.PI/2);
+   for(let q=0;q<8;q++){ctx.fillStyle=q%2?"#111":"#fff";ctx.fillRect(-trackW/2+q*(trackW/8),-3,trackW/8,6);}
+   ctx.restore();
+   ctx.fillStyle="#e8e8ee";ctx.fillRect(fx-2,fy+trackW/2+4,4,16);
+   ctx.beginPath();ctx.arc(fx,fy+trackW/2+22,6,0,7);ctx.fillStyle="#fff";ctx.fill();
+   ctx.strokeStyle="#c8102e";ctx.lineWidth=2.5;ctx.stroke();}
+  /* ---- atlar: pist üzerinde, dönüşe göre yönelmiş ---- */
+  const sorted=[...R.runners].sort((a,b)=>b.x-a.x);
+  const n=R.runners.length;
+  const drawList=[...R.runners].sort((a,b)=>{
+    const[,ya]=pos((1-Math.min(1,a.x))*R.race.dist);
+    const[,yb]=pos((1-Math.min(1,b.x))*R.race.dist);
+    return ya-yb;
+  });
+  drawList.forEach(u=>{
+    const rem=(1-Math.min(1,u.x))*R.race.dist;
+    const[bx,by,ang]=pos(rem);
+    /* şerit: lider içeride — sıralamaya göre yumuşak geçiş */
+    const rank=sorted.indexOf(u);
+    const targetOff=(0.5-(n>1?rank/(n-1):0.5))*(trackW-26)+(u.turnAdj||0);
+    if(u.lo===undefined)u.lo=(0.5-(n>1?u.lane/(n-1):0.5))*(trackW-26);
+    u.lo+=(targetOff-u.lo)*0.04;
+    const ix=-Math.sin(ang),iy=-Math.cos(ang); /* iç yön */
+    const hx=bx+ix*u.lo,hy=by+iy*u.lo;
+    const run=(R.phase==="run"&&!u.done);
+    const ph=run?R.bob*13+u.lane*1.7:0;
+    const bob=run?Math.sin(R.bob*13+u.lane*1.7)*1.4:0;
+    /* yön: sola giderken aynala, dönüşte eğ */
+    let a2=ang;let flip=false;
+    if(Math.cos(a2)<0){flip=true;a2=a2>0?a2-Math.PI:a2+Math.PI;}
+    ctx.save();ctx.translate(hx,hy+bob);
+    if(flip)ctx.scale(-1,1);
+    ctx.rotate(Math.max(-0.7,Math.min(0.7,a2))*(flip?-1:1));
+    ctx.scale(0.82,0.82);
+    drawHorseNSS(ctx,0,0,u.color,ph,hashStr(HORSES[u.h][0])%4,u.mine,u.color2);
+    ctx.restore();
+    /* numara pulu */
+    const c=CLOTH[u.lane%CLOTH.length];
+    ctx.beginPath();ctx.arc(hx,hy-20,8.5,0,7);
+    ctx.fillStyle=c[0];ctx.fill();ctx.strokeStyle="#111";ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=c[1];ctx.font="bold 11px Tahoma";ctx.textAlign="center";
+    ctx.fillText(String(u.lane+1),hx,hy-16);ctx.textAlign="left";
+    /* isim: sadece lider + senin atların */
+    if(u.mine||rank===0){
+      const t=(rank+1)+". "+(u.mine?"★":"")+HORSES[u.h][0];
+      ctx.font=(u.mine?"bold ":"")+"13px Tahoma";
+      ctx.strokeStyle="rgba(0,40,0,.65)";ctx.lineWidth=3.5;ctx.strokeText(t,hx-24,hy-32);
+      ctx.fillStyle=u.mine?"#ffe680":"#ffffff";ctx.fillText(t,hx-24,hy-32);
+    }
+  });
+  /* ---- HUD ve efektler ---- */
+  const lead=Math.max(...R.runners.map(u=>u.x));
+  const bx2=W-280,bw=250;
+  ctx.fillStyle="rgba(15,25,45,.75)";ctx.fillRect(bx2-8,8,bw+16,26);
+  ctx.fillStyle="rgba(255,255,255,.3)";ctx.fillRect(bx2,22,bw,4);
+  ctx.fillStyle="#e8c96a";ctx.fillRect(bx2,22,bw*Math.min(1,lead),4);
+  ctx.beginPath();ctx.arc(bx2+bw*Math.min(1,lead),24,5,0,7);ctx.fill();
+  ctx.font="bold 10px Tahoma";ctx.fillStyle="#fff";
+  ctx.fillText(Math.min(R.race.dist,Math.round(lead*R.race.dist))+"m / "+R.race.dist+"m",bx2,18);
+  if(R.phase==="run"&&lead>1-200/R.race.dist&&lead<1){
+    const a=0.5+Math.sin(R.bob*18)*0.5;
+    ctx.font="bold 24px Tahoma";
+    ctx.strokeStyle="rgba(0,40,0,.7)";ctx.lineWidth=4;ctx.strokeText("⚡ SON 200 METRE ⚡",W/2-125,30);
+    ctx.fillStyle="rgba(255,230,110,"+a.toFixed(2)+")";ctx.fillText("⚡ SON 200 METRE ⚡",W/2-125,30);
+  }
+  if(R.photo&&R.phase==="run"){
+    ctx.font="bold 20px Tahoma";
+    ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=4;ctx.strokeText("📸 FOTO FİNİŞ!",W/2-65,56);
+    ctx.fillStyle="#fff";ctx.fillText("📸 FOTO FİNİŞ!",W/2-65,56);
+  }
+  if(R.flash>0){ctx.fillStyle="rgba(255,255,255,"+R.flash.toFixed(2)+")";ctx.fillRect(0,0,W,H);}
+  R.conf.forEach(p=>{
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+    ctx.fillStyle=p.c;ctx.fillRect(-3,-2,6,4);ctx.restore();
+  });
+  if(R.phase==="done"&&R.order.length){
+    const wn=R.order[0];
+    ctx.fillStyle="rgba(15,30,12,.82)";ctx.fillRect(W/2-230,H/2-34,460,62);
+    ctx.strokeStyle="#e8c96a";ctx.lineWidth=2;ctx.strokeRect(W/2-230,H/2-34,460,62);
+    ctx.font="bold 22px Tahoma";ctx.fillStyle="#e8c96a";
+    ctx.fillText("🏆 KAZANAN: "+HORSES[wn.h][0],W/2-210,H/2+2);
+    ctx.font="11px Tahoma";ctx.fillStyle="#fff";
+    ctx.fillText(JOCKEYS[wn.j][0]+" ile"+(R.margin!==undefined?" · Fark: "+marginName(R.margin)+(R.photo?" 📸":""):"")+" · "+(wn.mine?"SENİN ATIN! 🎉":HORSES[wn.h][5]),W/2-210,H/2+20);
+  }
+}
+function drawRace(){
+  if(!R)return;
+  if(R.mode==="3d"&&R.T)return;
+  /* MASAÜSTÜ SÜRÜMÜ: her zaman oval görünüm */
+  return drawRaceOval();
+  const cv=document.getElementById("track"),ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height;
+  const world=R.worldLen,startX=90,finX=world-150;
+  const kum=R.race.srf==="Kum";
+  /* kamera: lideri takip et */
+  const lead=Math.max(...R.runners.map(u=>u.x));
+  let camT=R.phase==="pre"?0:lead*(finX-startX)+startX-W*0.6;
+  camT=Math.max(0,Math.min(camT,world-W));
+  R.cam+= (camT-R.cam)*0.12; /* yumuşak takip */
+  const cam=R.cam;
+  const wx2sx=wx=>wx-cam;
+  /* gökyüzü */
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,weatherOf(G.day)===2?"#8d9aa8":"#a9c9e8");
+  sky.addColorStop(0.26,weatherOf(G.day)===2?"#aeb8c2":"#d5e4f0");
+  sky.addColorStop(0.27,kum?"#9c7a4d":"#1e5a2a");
+  sky.addColorStop(1,kum?"#8a6a40":"#174a22");
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  /* tribün */
+  const trY=H*0.10,trH=H*0.14;
+  ctx.fillStyle="#4a4438";ctx.fillRect(0,trY,W,trH);
+  ctx.fillStyle="#5c5546";ctx.fillRect(0,trY,W,4);
+  const cc=["#e8c9a0","#c96a5a","#7a9ac9","#e8e0c9","#9ac97a","#c9b04a","#c98adf"];
+  for(let k=0;k<300;k++){
+    const x=(k*37.3+((k*k)%17)*3)%W, y=trY+5+(k%6)*(trH-8)/6;
+    ctx.fillStyle=cc[k%7];
+    const jump=(R.phase!=="pre"&&lead>0.85)?(Math.sin(R.bob*9+k)>0.55?-2:0):0; /* son düzlükte kalabalık coşar */
+    ctx.fillRect(x,y+jump,3,4);
+  }
+  /* korkuluk */
+  ctx.fillStyle="#e8e4d8";ctx.fillRect(0,trY+trH+2,W,3);
+  for(let wx=Math.floor(cam/80)*80;wx<cam+W+80;wx+=80){
+    const sx=wx2sx(wx);ctx.fillRect(sx,trY+trH+2,3,12);
+  }
+  const laneTop=trY+trH+26;
+  /* kulvarlar */
+  ctx.strokeStyle="rgba(255,255,255,.10)";
+  R.runners.forEach((u,i)=>{const y=laneTop+i*40;ctx.beginPath();ctx.moveTo(0,y+20);ctx.lineTo(W,y+20);ctx.stroke();});
+  /* mesafe tabelaları: her 200m */
+  ctx.font="bold 11px Tahoma";
+  for(let m=200;m<R.race.dist;m+=200){
+    const wx=startX+(finX-startX)*(m/R.race.dist),sx=wx2sx(wx);
+    if(sx<-40||sx>W+40)continue;
+    ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(sx,laneTop-14,2,H-laneTop);
+    ctx.fillStyle="#fff";ctx.fillRect(sx-16,laneTop-26,34,14);
+    ctx.fillStyle="#222";ctx.fillText(m+"m",sx-12,laneTop-15);
+  }
+  /* start makinesi */
+  {const sx=wx2sx(startX-24);
+   if(sx>-60&&sx<W){ctx.fillStyle="#6a7280";ctx.fillRect(sx,laneTop-16,14,H-laneTop);ctx.fillStyle="#8a93a3";ctx.fillRect(sx+2,laneTop-16,3,H-laneTop);}}
+  /* finiş direği */
+  {const sx=wx2sx(finX);
+   if(sx>-60&&sx<W+60){
+     for(let y=laneTop-30;y<H;y+=14){ctx.fillStyle=((y/14)|0)%2?"#fff":"#111";ctx.fillRect(sx,y,9,14);}
+     ctx.fillStyle="#c8102e";ctx.fillRect(sx-30,laneTop-44,70,16);
+     ctx.fillStyle="#fff";ctx.font="bold 10px Tahoma";ctx.fillText("F İ N İ Ş",sx-20,laneTop-32);
+   }}
+  /* toz zerreleri */
+  R.dust.forEach(p=>{
+    ctx.fillStyle="rgba("+(kum?"200,170,120":"160,150,120")+","+p.a.toFixed(2)+")";
+    ctx.beginPath();ctx.arc(wx2sx(p.wx),p.y,p.r,0,7);ctx.fill();
+  });
+  /* atlar */
+  const sorted=[...R.runners].sort((a,b)=>b.x-a.x);
+  R.runners.forEach((u,i)=>{
+    const y=laneTop+i*40+14;
+    const wx=startX+(finX-startX)*Math.min(1,u.x);
+    const sx=wx2sx(wx);
+    if(sx<-80||sx>W+80)return;
+    const bob=(R.phase==="run"&&!u.done)?Math.sin(R.bob*13+i*1.7)*2.4:0;
+    const ph=(R.phase==="run"&&!u.done)?R.bob*14+i*1.7:0;
+    /* gölge */
+    ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(sx-2,y+15,16,3.5,0,0,7);ctx.fill();
+    /* vektörel at + jokey (emoji değil — her tarayıcıda çizilir) */
+    drawHorse2D(ctx,sx,y+bob,u.color,ph,hashStr(HORSES[u.h][0])%3);
+    /* isim */
+    const pos=sorted.indexOf(u)+1;
+    ctx.font=(u.mine?"bold ":"")+"11px Tahoma";
+    ctx.fillStyle=u.mine?"#ffd75e":"rgba(255,255,255,.92)";
+    ctx.fillText(pos+". "+(u.mine?"★":"")+HORSES[u.h][0],sx-14,y-24+bob);
+  });
+  /* HUD: yarış ilerleme çubuğu */
+  const bx=W-280,bw=250;
+  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx-8,8,bw+16,26);
+  ctx.fillStyle="rgba(255,255,255,.3)";ctx.fillRect(bx,20,bw,4);
+  ctx.fillStyle="#e8c96a";ctx.fillRect(bx,20,bw*Math.min(1,lead),4);
+  ctx.beginPath();ctx.arc(bx+bw*Math.min(1,lead),22,5,0,7);ctx.fill();
+  ctx.font="bold 10px Tahoma";ctx.fillStyle="#fff";
+  ctx.fillText(Math.min(R.race.dist,Math.round(lead*R.race.dist))+"m / "+R.race.dist+"m",bx,16);
+  /* SON 200m uyarısı */
+  if(R.phase==="run"&&lead>1-200/R.race.dist&&lead<1){
+    const a=0.5+Math.sin(R.bob*18)*0.5;
+    ctx.font="bold 26px Tahoma";ctx.fillStyle="rgba(255,220,90,"+a.toFixed(2)+")";
+    ctx.fillText("⚡ SON 200 METRE ⚡",W/2-130,52);
+  }
+  if(R.photo&&R.phase==="run"){
+    ctx.font="bold 22px Tahoma";ctx.fillStyle="#fff";
+    ctx.fillText("📸 FOTO FİNİŞ!",W/2-70,80);
+  }
+  /* foto finiş flaşı */
+  if(R.flash>0){ctx.fillStyle="rgba(255,255,255,"+R.flash.toFixed(2)+")";ctx.fillRect(0,0,W,H);}
+  /* konfeti */
+  R.conf.forEach(p=>{
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+    ctx.fillStyle=p.c;ctx.fillRect(-3,-2,6,4);ctx.restore();
+  });
+  /* kazanan pankartı */
+  if(R.phase==="done"&&R.order.length){
+    const w=R.order[0];
+    ctx.fillStyle="rgba(20,30,15,.75)";ctx.fillRect(W/2-230,H/2-34,460,62);
+    ctx.strokeStyle="#e8c96a";ctx.lineWidth=2;ctx.strokeRect(W/2-230,H/2-34,460,62);
+    ctx.font="bold 22px Tahoma";ctx.fillStyle="#e8c96a";
+    ctx.fillText("🏆 KAZANAN: "+HORSES[w.h][0],W/2-210,H/2+2);
+    ctx.font="11px Tahoma";ctx.fillStyle="#fff";
+    ctx.fillText(JOCKEYS[w.j][0]+" ile · "+(w.mine?"SENİN ATIN! 🎉":HORSES[w.h][5]),W/2-210,H/2+20);
+  }
+}
+function raceFrame(now){
+  if(!R)return;
+  const dtRaw=Math.min(0.05,(now-(R.last||now))/1000);R.last=now;
+  const dt=dtRaw*R.slow;
+  R.bob+=dtRaw*(R.phase==="run"?1:0.4);
+  if(R.flash>0)R.flash=Math.max(0,R.flash-dtRaw*1.5);
+  /* toz güncelle */
+  R.dust.forEach(p=>{p.wx-=p.v*dtRaw*60;p.y+=p.vy*dtRaw*60;p.a-=dtRaw*0.9;p.r+=dtRaw*6;});
+  R.dust=R.dust.filter(p=>p.a>0);
+  if(R.phase==="run"){
+    const dur=R.race.dist/130; /* süre mesafeyle TAM orantılı: 2400m = 1200m'nin 2 katı */
+    const world=R.worldLen,startX=90,finX=world-150;
+    const laneTop=document.getElementById("track").height*0.10+document.getElementById("track").height*0.14+26;
+    let allDone=true;
+    const leadX=Math.max(...R.runners.map(v=>v.x));
+    /* liderin 2.'ye farkı (foto finiş dramaturjisi için) */
+    const xs=[...R.runners].map(v=>v.x).sort((a,b)=>b-a);
+    const secondX=xs[1]||0;
+    R.runners.forEach((u,i)=>{
+      if(u.done)return;
+      allDone=false;
+      const prog=u.x;
+      /* ❗ KOŞU İÇİ SAKATLIK (nadir): at aniden çekilir */
+      if(!u.hurt&&R.race.dist>=1000&&Math.random()<dt*0.0006){
+        u.hurt=true;
+        setComment("❗ <b>"+HORSES[u.h][0]+"</b> sakatlandı, jokeyi çekiyor!"+(u.mine?" — SENİN ATIN! 😱":""));
+      }
+      if(u.hurt){
+        u.x+=((u.perf||50)/78)/(11+R.race.dist/400)*0.15*dt*0.88; /* topallayarak ilerler */
+        return;
+      }
+      /* koşu stili: öne kaçanlar erken hızlı, finişçiler sonda atak yapar */
+      let phase=1;
+      if(prog<0.35)phase=1.05-u.style*0.10;
+      else if(prog>0.65)phase=0.93+u.style*0.20;
+      /* ÇEKİŞME: ilk %70'te güç farkı bastırılır (grup bir arada),
+         son %30'da tam açılır (belirleyici sprint) */
+      const pw=prog<0.7?0.35:1.2;
+      const eff=52+(u.perf-52)*pw;
+      const base=(Math.max(30,eff)/78)/dur;
+      /* paket yapışması: geride kalan son düzlüğe kadar hafif toparlar */
+      const boost=prog<0.72?1+Math.min(0.07,(leadX-u.x)*0.9):1;
+      /* TEMPO DALGALARI: ataklar ve nefeslenmeler */
+      const surge=1+0.065*Math.sin(now/900+u.lane*2.3)+0.05*Math.sin(now/2100+u.lane*1.1);
+      /* YORGUNLUK: önde götüren ve atak basan at yorulur, son düzlükte fatura kesilir */
+      const isLead=u.x>=leadX-0.004;
+      u.fat=Math.min(1.15,(u.fat||0)+dt*(0.030+(isLead&&prog<0.7?0.016:0)+(surge>1.04?0.010:0)));
+      const fatMult=1-(u.fat*u.fat)*(prog>0.6?0.24:0.07)/(u.sta||0.9);
+      /* VİRAJ MÜCADELESİ: içeriden kırmayı dene — jokey becerisi ve yorgunluk belirler */
+      const remM=(1-prog)*R.race.dist;
+      const sg=ovalSeg(remM+(2000-R.race.dist)); /* start sabit, konum kaydırmalı */
+      if(sg===1||sg===3){
+        if(u.tSeg!==sg){
+          u.tSeg=sg;
+          const chance=0.38+jSkill(u.j)*0.004-(u.fat*0.35);
+          if(Math.random()<chance){u.turnAdj=8;u.tSpd=1.035;}
+          else{
+            u.turnAdj=-11;u.tSpd=0.972;
+            if(now-(R.wideC||0)>4500&&Math.random()<0.5){
+              R.wideC=now;
+              setComment("〰 <b>"+HORSES[u.h][0]+"</b> virajı içeriden alamadı, dışarı savruldu!");
+            }
+          }
+        }
+      }else{u.tSeg=0;u.turnAdj=0;u.tSpd=1;}
+      /* önde erken kaçan finalde toparlanır (yarışlar sıkışır → daha çok foto finiş) */
+      const easeUp=(isLead&&prog>0.88&&(u.x-secondX)>0.012)?0.978:1;
+      u.x+=base*phase*(0.95+Math.random()*0.10)*dt*0.88*boost*surge*fatMult*(u.tSpd||1)*easeUp;
+      if(u.x>=1){
+        u.done=true;u.x=1;R.order.push(u);
+        if(R.order.length===1){
+          R.flash=0.8;R.firstT=now;
+          /* FARK: 2.'nin o anki konumundan, mesafe oranı olarak */
+          const others=R.runners.filter(v=>!v.done).map(v=>v.x);
+          const sec2=others.length?Math.max(...others):0.999;
+          R.margin=Math.max(0.0005,1-sec2);
+        }
+        if(R.order.length>=2)R.slow=1;
+      }
+      /* toz bırak */
+      if(Math.random()<0.4&&R.dust.length<80){
+        const wx=startX+(finX-startX)*u.x;
+        R.dust.push({wx:wx-14,y:laneTop+i*40+26,v:rnd(0.3,1),vy:rnd(-0.2,0.1),a:rnd(0.2,0.45),r:rnd(2,4)});
+      }
+    });
+    /* canlı sıralama: TV yayın barı (numaralı eyer örtüleriyle) */
+    const sorted=[...R.runners].sort((a,b)=>b.x-a.x);
+    document.getElementById("liveOrder").innerHTML=sorted.map((u,i)=>{
+      const c=CLOTH[u.lane%CLOTH.length];
+      return "<span class='pb"+(u.mine?" mine":"")+"'><small>"+(u.mine?"★":"")+HORSES[u.h][0]+"</small><span class='no' style='background:"+c[0]+";color:"+c[1]+"'>"+(u.lane+1)+"</span><span class='pos'>"+(i+1)+".</span></span>";
+    }).join("");
+    /* anlık anons */
+    const lead=sorted[0],pr=lead.x;
+    const myBest=sorted.findIndex(u=>u.mine);
+    if(pr>0.24&&R.lastC<1){R.lastC=1;setComment("İlk çeyrekte önde <b>"+HORSES[lead.h][0]+"</b>!"+(sorted[1]?" Hemen arkasında "+HORSES[sorted[1].h][0]+".":""));}
+    else if(pr>0.5&&R.lastC<2){R.lastC=2;setComment("Yarı mesafeyi geçtik — <b>"+HORSES[lead.h][0]+"</b> ile "+HORSES[sorted[1].h][0]+" başa baş!"+(myBest>=0&&myBest<3?" Senin at öndekiler arasında! 👀":""));}
+    else if(pr>0.75&&R.lastC<3){R.lastC=3;setComment("Son 600'e girerken <b>"+HORSES[lead.h][0]+"</b> öne çıkıyor!"+(sorted[1]&&(sorted[0].x-sorted[1].x)<0.01?" Ama "+HORSES[sorted[1].h][0]+" pes etmiyor!":""));}
+    else if(pr>0.9&&R.lastC<4){R.lastC=4;setComment("SON DÜZLÜK! Kırbaçlar havada, tribünler ayakta! 🔥");}
+    /* viraj dönüşü anonsu */
+    const remLead=(1-sorted[0].x)*R.race.dist;
+    if(R.race.dist>=1000&&!R.straightC&&sorted[0].x>0.3&&sorted[0].x<0.95&&ovalSeg(remLead+(2000-R.race.dist))===0){
+      R.straightC=true;
+      setComment("↩ Virajı döndüler — DÜZLÜĞE ÇIKTILAR! Önde <b>"+HORSES[sorted[0].h][0]+"</b>!");
+    }
+    /* atak anonsu: kısa sürede 3+ sıra kazanan at */
+    if(!R.rankT||now-R.rankT>1500){
+      if(R.lastRanks){
+        for(const u of R.runners){
+          const prev=R.lastRanks[u.lane],cur=sorted.indexOf(u);
+          if(prev!==undefined&&prev-cur>=3&&cur<=4&&now-(R.moveC||0)>5000){
+            R.moveC=now;
+            setComment("🔥 <b>"+HORSES[u.h][0]+"</b> atağa kalktı, dışarıdan geliyor!");
+            break;
+          }
+          if(prev!==undefined&&cur-prev>=3&&prev<=2&&u.fat>0.6&&now-(R.moveC||0)>5000){
+            R.moveC=now;
+            setComment("💨 <b>"+HORSES[u.h][0]+"</b> yoruldu, temposu düşüyor — geriye geliyor!");
+            break;
+          }
+        }
+      }
+      R.lastRanks={};R.runners.forEach(u=>{R.lastRanks[u.lane]=sorted.indexOf(u);});
+      R.rankT=now;
+    }
+    /* foto finiş: son metrelerde burun buruna → yavaş çekim */
+    if(!R.photo&&sorted[0].x>0.9&&sorted[0].x<1&&sorted[1]&&(sorted[0].x-sorted[1].x)<0.010){
+      R.photo=true;R.slow=0.35;
+      setComment("📸 <b>FOTO FİNİŞ!</b> Burun buruna geliyorlar!");
+    }
+    /* ilk 5 bittiyse (ya da ilk bitişten 6 sn geçtiyse) kalanları sonuçlandır */
+    if(!allDone&&R.order.length){
+      const needed=Math.min(5,R.runners.length);
+      if(R.order.length>=needed||(R.firstT&&now-R.firstT>10000)){
+        [...R.runners].filter(u=>!u.done).sort((a,b)=>b.x-a.x).forEach(u=>{u.done=true;R.order.push(u);});
+        allDone=true;
+      }
+    }
+    if(allDone){R.slow=1;finishRace();}
+  }else if(R.phase==="done"){
+    /* konfeti fiziği */
+    R.conf.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.06;p.rot+=p.vr;});
+    R.confT-=dtRaw;
+    if(R.confT<=0){render();return;} /* kutlama bitti, döngüyü durdur */
+  }
+  render();
+  requestAnimationFrame(raceFrame);
+  function render(){
+    if(R.mode==="3d"&&R.T){
+      update3D(dtRaw);
+      const f=document.getElementById("flash3d");
+      if(R.flash>0){f.style.display="block";f.style.opacity=R.flash;}else f.style.display="none";
+    }else drawRace();
+  }
+}
+function finishRace(){
+  if(R.finished)return;R.finished=true;
+  const quiet=R.mode==="sim"; /* günü simüle et: görsel/ses yok */
+  R.going=false;R.phase="done";R.confT=quiet?0:4.5;
+  if(!quiet)sfx("cheer");
+  /* konfeti yağmuru */
+  if(quiet){}
+  else if(R.mode==="3d"&&R.T){spawnConfetti3D();}
+  else{
+    const cv=document.getElementById("track");
+    const colors=["#e8c96a","#c8102e","#3a7bd5","#2e9e4f","#e87ab0","#fff"];
+    for(let k=0;k<140;k++){
+      R.conf.push({x:Math.random()*cv.width,y:-10-Math.random()*160,vx:rnd(-0.6,0.6),vy:rnd(0.6,2.2),vr:rnd(-0.2,0.2),rot:Math.random()*6,c:pick(colors)});
+    }
+  }
+  const r=R.race,order=R.order;
+  const win=order[0];
+  if(R.mode==="3d"){
+    document.getElementById("bannerTxt").textContent="🏆 KAZANAN: "+HORSES[win.h][0];
+    document.getElementById("bannerSub").textContent=JOCKEYS[win.j][0]+" ile · "+(win.mine?"SENİN ATIN! 🎉":HORSES[win.h][5]);
+    document.getElementById("banner3d").style.display="block";
+  }
+  const foto=R.photo?"Foto finişte ":"";
+  const farkTxt=R.margin!==undefined?" Fark: <b>"+marginName(R.margin)+"</b>!":"";
+  if(!quiet)setComment("🏆 "+foto+"kazanan: <b>"+HORSES[win.h][0]+"</b> — jokeyi "+JOCKEYS[win.j][0]+"!"+farkTxt+(win.mine?" <b>SENİN ATIN!</b> 🎉":""));
+  const split=[0.6,0.2,0.1,0.06,0.04];
+  let rows="",res=[];
+  order.forEach((u,i)=>{
+    const h=HORSES[u.h];
+    const owner=u.mine?G.stable:h[5];
+    const prize=i<5?Math.round(r.purse*split[i]):0;
+    G.ownerEarn[owner]=(G.ownerEarn[owner]||0)+prize;
+    if(i===0)G.jockeyWins[JOCKEYS[u.j][0]]=(G.jockeyWins[JOCKEYS[u.j][0]]||0)+1;
+    /* jokey sezon istatistikleri (tüm biniciler için) */
+    if(!G.jstats)G.jstats={};
+    const jst=G.jstats[u.j]=G.jstats[u.j]||{rides:0,w:0,p2:0,p3:0,earn:0};
+    jst.rides++;
+    if(i===0)jst.w++;else if(i===1)jst.p2++;else if(i===2)jst.p3++;
+    jst.earn+=jFee(u.j)+Math.round(prize*0.05);
+    /* GİZLİ CEVHERLER: genç at iyi koştukça gelişir, yaşlı at geriler */
+    if(!G.dev)G.dev={};
+    if(ageOf(u.h)<=4&&i<3&&Math.random()<0.30&&(G.dev[u.h]||0)<10){
+      G.dev[u.h]=(G.dev[u.h]||0)+1;
+      if(u.mine)pushNews("📈","Gelişiyor: "+h[0],"Genç safkan ilerleme kaydediyor — gücü "+hpOf(u.h)+" oldu. Antrenörler geleceğini parlak görüyor.");
+    }else if(ageOf(u.h)>=8&&i>=5&&Math.random()<0.12&&(G.dev[u.h]||0)>-8){
+      G.dev[u.h]=(G.dev[u.h]||0)-1;
+      if(u.mine)pushNews("📉","Yaş gösteriyor: "+h[0],"Performansı geriliyor — gücü "+hpOf(u.h)+" seviyesine düştü.");
+    }
+    if(u.mine){
+      const s=horseState(u.h);
+      G.money+=prize;G.stats[u.h].runs++;G.stats[u.h].earn+=prize;
+      if(i===0){
+        G.stats[u.h].w++;G.form[u.h]=Math.min(15,G.form[u.h]+6);G.seasonWins++;
+        if(r.named)unlockAch("isimli");
+        if(r.name==="GAZİ KOŞUSU")unlockAch("gazi");
+        if(HORSES[u.h][3]<60)unlockAch("surpriz");
+      }
+      else if(i<3){G.stats[u.h].p++;G.form[u.h]=Math.min(15,G.form[u.h]+3);}
+      else G.form[u.h]=Math.max(-10,G.form[u.h]-2);
+      G.cond[u.h]=Math.max(35,G.cond[u.h]-Math.round(rnd(15,25)*(gearOf(u.h).includes("BS")?0.7:1)));
+      /* koşu sonrası sakatlık riski (koşuda sakatlanan kesin sakat) */
+      const tCut=G.trainer>=0?(1-Math.min(0.5,TRAINERS[G.trainer][1]/35)):1;
+      const risk=u.hurt?1:(0.02+(G.cond[u.h]<50?0.04:0))*tCut;
+      if(Math.random()<risk){
+        G.inj[u.h]=3+Math.floor(rnd(3,10));
+        const vet=10000+G.inj[u.h]*3000;G.money-=vet;addExp("vet",vet);
+        setTimeout(()=>toast("🩹 "+h[0]+" koşuda sakatlandı! "+G.inj[u.h]+" gün dinlenecek. Veteriner: "+fmt(vet)),1500);
+      }
+      G.history.push({d:G.day,r:r.name,h:h[0],p:i+1,pr:prize});
+    }
+    res.push({name:h[0],owner});
+    /* her atın oyun içi koşu geçmişi (sahibinden bağımsız) */
+    if(!G.hlog)G.hlog={};
+    (G.hlog[u.h]=G.hlog[u.h]||[]).push({d:G.day,y:G.year,r:r.name,p:i+1,pr:prize,j:JOCKEYS[u.j][0]});
+    if(G.hlog[u.h].length>25)G.hlog[u.h].shift();
+    rows+="<tr"+(u.mine?" style='color:#e8c96a'":"")+"><td class='"+(i===0?"pos1":"")+"'>"+(i+1)+".</td><td>"+HORSES[u.h][0]+(u.mine?" ★":"")+(u.hurt?" <span style='color:#e88'>❗sakatlandı</span>":"")+"</td><td>"+JOCKEYS[u.j][0]+"</td><td class='muted'>"+owner+"</td><td>"+(prize?fmt(prize):"—")+"</td></tr>";
+  });
+  r.done=true;r.result=res;
+  delete G.entries[r.id];
+  /* haberler + rekorlar */
+  const winName=HORSES[win.h][0],winPrize=Math.round(r.purse*0.6);
+  if(r.named){
+    pushNews("⭐",r.name+" sonuçlandı","Kazanan: "+winName+" ("+JOCKEYS[win.j][0]+" ile). İkramiye: "+fmt(winPrize)+"."+(win.mine?" HEM DE SENİN ATINLA! 🎉":""));
+    if(r.name==="GAZİ KOŞUSU"){const R_=G.rec=G.rec||{};(R_.gazi=R_.gazi||[]).push({y:G.year,n:winName,mine:!!win.mine});}
+  }else if(win.mine){
+    pushNews("🏆","Eküriden zafer: "+winName,r.name+"'nda kazandı, kasaya "+fmt(winPrize)+" girdi. Basın ekürini konuşuyor.");
+  }
+  if(win.mine)G.seasonCups=(G.seasonCups||0)+(r.named?1:0);
+  {const R_=G.rec=G.rec||{};if(!R_.big||winPrize>R_.big.v)R_.big={n:winName,v:winPrize,y:G.year};}
+  checkAchBasics();
+  document.getElementById("raceResult").innerHTML="<div class='card'><h3 style='margin-bottom:8px'>Resmi Sonuç"+(R.margin!==undefined?" — kazanma farkı: "+marginName(R.margin)+(R.photo?" 📸":""):"")+"</h3><table><tr><th>#</th><th>At</th><th>Jokey</th><th>Sahip</th><th>İkramiye</th></tr>"+rows+"</table></div>";
+  document.getElementById("btnBack").style.display="inline-block";
+  save();refreshTop();
+}
+function backFromRace(){
+  document.getElementById("preOdds").style.display="none";
+  teardown3D();R=null;show("scrGame");refreshTop();showTab(5);
+}
+/* kalan koşuları sessizce sonuçlandır (dünya sensiz de yarışır) */
+function simPendingRaces(){
+  const pend=G.program.races.filter(r=>!r.done);
+  let myResults=[];
+  pend.forEach(r=>{
+    const runners=buildRunners(r);
+    if(runners.length<2)return;
+    runners.forEach(u=>{u.score=u.perf+rnd(-5,5);});
+    const order=[...runners].sort((a,b)=>b.score-a.score);
+    order.forEach(u=>{u.done=true;u.x=1;});
+    R={race:r,runners,order,conf:[],mode:"sim",phase:"done",finished:false,slow:1,photo:false,flash:0,dust:[],confT:0,bob:0,cam:0,worldLen:2000};
+    finishRace();
+    order.forEach((u,i)=>{if(u.mine)myResults.push(HORSES[u.h][0]+" → "+(i+1)+".");});
+  });
+  R=null;
+  return myResults;
+}
+/* ⏩ GÜNÜ SİMÜLE ET butonu */
+function simDay(){
+  const pend=G.program.races.filter(r=>!r.done);
+  if(!pend.length)return toast("Bugün koşulacak koşu kalmadı.");
+  const hasMine=pend.some(r=>(G.entries[r.id]||[]).length);
+  if(hasMine&&!confirm("Kayıtlı atların var! Koşularını izlemeden simüle etmek istediğine emin misin?"))return;
+  const myResults=simPendingRaces();
+  save();refreshTop();showTab(5);
+  toast("⏩ Gün simüle edildi."+(myResults.length?" Atların: "+myResults.join(" · "):""));
+}
+/* ============ BAŞLAT ============ */
+window.addEventListener("load",()=>{
+  initSilkPicker();
+  if(load()){
+    if(!G.program)genProgram();
+    show("scrGame");refreshTop();showTab(G.tab||0);
+  }
+});
+function resetGame(){if(confirm("Tüm ilerleme silinsin mi?")){try{localStorage.removeItem("atmenajer");}catch(e){}location.reload();}}
+/* SPACE = devam et (FM'in space tuşu gibi) */
+window.addEventListener("keydown",e=>{
+  if(e.code!=="Space")return;
+  const t=e.target&&e.target.tagName;
+  if(t==="INPUT"||t==="SELECT"||t==="TEXTAREA")return;
+  if(!G)return;
+  e.preventDefault();
+  if(t==="BUTTON")e.target.blur(); /* butona tıklandıktan sonra da space çalışsın */
+  /* açık modal varsa ana butonuna bas */
+  if(document.getElementById("modalBg").classList.contains("show")){
+    const btns=document.querySelectorAll("#modalBox button");
+    if(btns.length){btns[btns.length-1].click();}
+    return;
+  }
+  /* yarış ekranı: bitti ise devam */
+  if(document.getElementById("scrRace").classList.contains("active")){
+    if(R&&R.finished)backFromRace();
+    return;
+  }
+  /* ana ekran: günü bitir */
+  if(document.getElementById("scrGame").classList.contains("active"))nextDay();
+});
+</script>
+</body>
+</html>

@@ -1847,7 +1847,12 @@ function refreshTop(){
   document.getElementById("tbHorses").textContent="🐎 "+G.owned.length+" at";
   /* lig modunda "Günü Bitir" yerine canlı kapanış sayacı */
   const bn=document.getElementById("btnNext"),fb=document.getElementById("fabNext");
-  if(G.online&&OL){
+  if(G.online&&OL&&OL.mode==="ready"){
+    const d=olClosed()+1,c=(OL.readies||[]).filter(r=>r.gday===d).length;
+    const txt=olMyReady()?("⏳ Hazırsın — "+c+"/"+OL.mems.length+" hazır"):("✅ Günü Bitir ("+c+"/"+OL.mems.length+" hazır)");
+    if(bn)bn.textContent=txt;
+    if(fb)fb.textContent=txt;
+  }else if(G.online&&OL){
     const left=olCloseMs(OL.epoch,Math.min((G.olDone||0)+1,SEASON_DAYS))-Date.now();
     const txt="⏳ Kapanış: "+olCountdown(left);
     if(bn)bn.textContent=txt;
@@ -2152,12 +2157,12 @@ function viewAltiLog(){
   html+='</div>';
   /* altılı tevzi arşivi */
   const log=G.altiLog||[];
-  html+='<div class="card"><h3>🎫 Altılı Tevzi Arşivi</h3>'
-    +'<p class="muted" style="margin:4px 0 8px">Brüt havuzdan kanuni kesintiler (%53) düşülür, kalan net tutar bilen birim sayısına bölünür. Bilen çıkmazsa yarına devreder.</p>';
+  html+='<div class="card"><h3>🎫 Altılı Sonuç Arşivi</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">Tevzi = o gün altılıya oynanan toplam para. Kanuni kesintiler (%53) düşülür, kalan net tutar bilen birim sayısına bölünür = kazanç. Bilen çıkmazsa yarına devreder.</p>';
   if((G.altiCarry||0)>0)html+='<p style="font-weight:700;color:#b03a2e;margin:4px 0">🔄 DEVREDEN: '+fmt(G.altiCarry)+' — bugünkü altılıda dev havuz var!</p>';
   if(!log.length)html+='<p class="muted" style="margin:8px 0">Henüz sonuçlanmış altılı yok.</p>';
   else{
-    html+='<table><tr><th>Gün</th><th>Kazananlar (ganyan)</th><th style="text-align:right">Brüt Havuz</th><th style="text-align:right">Bilen</th><th style="text-align:right">Tevzi</th></tr>'
+    html+='<table><tr><th>Gün</th><th>Kazananlar (ganyan)</th><th style="text-align:right">Tevzi</th><th style="text-align:right">Bilen</th><th style="text-align:right">Kazanç</th></tr>'
       +log.map(e=>'<tr><td style="white-space:nowrap"><b>'+e.d+'</b>'+(e.y!==G.year?'<span class="muted">/'+e.y+'</span>':'')+'</td>'
           +'<td style="font-size:10px">'+e.legs.map(l=>l.n+' <b style="color:#8a6d1d">('+(l.g?l.g.toFixed(2):'—')+')</b>').join(' · ')+'</td>'
           +'<td style="text-align:right" class="muted">'+fmt(e.pool||0)+'</td>'
@@ -2166,7 +2171,7 @@ function viewAltiLog(){
     const paid=log.filter(e=>!e.rolled&&e.div);
     if(paid.length){
       const mx=paid.reduce((m,e)=>e.div>m.div?e:m,paid[0]);
-      html+='<p class="muted" style="margin-top:8px">📈 Rekor tevzi: <b>'+fmt(mx.div)+'</b> ('+mx.d+'. gün, '+(mx.winners||0)+' bilen)</p>';
+      html+='<p class="muted" style="margin-top:8px">📈 Rekor kazanç: <b>'+fmt(mx.div)+'</b> ('+mx.d+'. gün, '+(mx.winners||0)+' bilen)</p>';
     }
   }
   html+='</div>';
@@ -3125,7 +3130,7 @@ function updAlti(){
   let txt=combos+" kombinasyon × "+fmt(ALTI_BIRIM)+" × "+misli+" misli = <b>"+fmt(cost)+"</b>";
   if(!okAll)txt+=" — ⚠ her ayakta en az 1 at işaretle!";
   else if(cost>cap)txt+=" — ⚠ limit "+fmt(cap)+"!";
-  else txt+=" · Tutarsa: tevzi × "+misli+" misli ödenir. Tevzi son ayakta açıklanır.";
+  else txt+=" · Tutarsa: kazanç × "+misli+" misli ödenir. Kazanç son ayakta açıklanır.";
   el.innerHTML=txt;
   const btn=document.getElementById("altiBtn");
   if(btn)btn.disabled=!okAll||cost>cap||cost>G.money;
@@ -3194,7 +3199,7 @@ function resolveAlti(){
     }else{
       pay=Math.round(rec.div*A.misli); /* tevzi × misli */
       pushBet("A6",desc+" — tevzi "+fmt(rec.div)+" × "+A.misli+" misli ("+rec.winners+" bilen)",A.cost,pay,"W");
-      setTimeout(()=>toast("🎫🎉 ALTILI TUTTU! Tevzi "+fmt(rec.div)+" × "+A.misli+" = +"+fmt(pay)),1000);
+      setTimeout(()=>toast("🎫🎉 ALTILI TUTTU! Kazanç "+fmt(rec.div)+" × "+A.misli+" = +"+fmt(pay)),1000);
     }
     G.money+=pay;
   }else{
@@ -3445,6 +3450,7 @@ function viewStandings(){
   return html;
 }
 function nextDay(silent){
+  if(G&&G.online&&OL&&OL.mode==="ready")return olReady();
   if(G&&G.online)return toast("🌐 Online ligde günler gerçek saatle ilerler — kapanışı bekle!");
   if(G.day>=SEASON_DAYS)return endSeason();
   /* gün kapanmadan koşulmayan yarışlar otomatik koşulur —
@@ -5306,6 +5312,41 @@ function olNextEpoch(){ /* BUGÜNÜN 09:00 TRT'si — sezon anında başlar;
   const now=new Date(),trt=new Date(now.getTime()+3*3600e3);
   return new Date(Date.UTC(trt.getUTCFullYear(),trt.getUTCMonth(),trt.getUTCDate(),6,0,0)).toISOString();
 }
+/* --- 🤝 HAZIRIZ MODU (FM Online tarzı): herkes 'Günü Bitir' deyince gün kapanır --- */
+function olReadyClosed(readies,memCount){
+  const cnt={};(readies||[]).forEach(r=>{cnt[r.gday]=(cnt[r.gday]||0)+1;});
+  let n=0;
+  while(n<SEASON_DAYS&&(cnt[n+1]||0)>=memCount)n++;
+  return n;
+}
+function olClosed(){ /* lig moduna göre kapanmış gün sayısı */
+  if(!OL)return 0;
+  if(OL.mode==="ready")return olReadyClosed(OL.readies,OL.mems.length);
+  return olClosedDays(OL.epoch);
+}
+function olMyReady(){ /* açık gün için hazır dedim mi? */
+  if(!OL||OL.mode!=="ready")return false;
+  const d=olClosed()+1;
+  return (OL.readies||[]).some(r=>r.gday===d&&r.member_id===OL.mid);
+}
+async function olReady(){
+  if(!OL||OL.mode!=="ready")return;
+  const d=olClosed()+1;
+  if(d>SEASON_DAYS)return toast("Sezon bitti!");
+  if(olMyReady())return toast("Zaten hazırsın — diğer eküriler bekleniyor ("+(OL.readies||[]).filter(r=>r.gday===d).length+"/"+OL.mems.length+").");
+  if(!confirm("Günü bitirmeye hazır mısın? Herkes hazır olunca Gün "+d+" koşulur ve deklareler kilitlenir."))return;
+  try{
+    await sb("POST","readies",{league_id:OL.lid,gday:d,member_id:OL.mid});
+    OL.readies=(OL.readies||[]);OL.readies.push({gday:d,member_id:OL.mid,created_at:new Date().toISOString()});
+    const c=OL.readies.filter(r=>r.gday===d).length;
+    toast("✅ Hazır olduğun bildirildi — "+c+"/"+OL.mems.length+" eküri hazır."+(c>=OL.mems.length?" Koşular başlıyor!":""));
+    refreshTop();
+    olPoll(); /* herkes hazırsa hemen işle */
+  }catch(e){
+    if(/duplicate/i.test(e.message)){toast("Zaten hazır demişsin.");}
+    else toast("Bağlantı hatası: "+e.message);
+  }
+}
 /* --- ONLINE LİG ARAYÜZÜ --- */
 function openOnline(){show("scrOnline");sbLoadSes();SBS?olHub():olLoginView();}
 function olLoginView(msg){
@@ -5339,22 +5380,29 @@ async function olHub(){
   const body=document.getElementById("olBody");
   body.innerHTML='<p style="color:#aab6cc">Liglerin yükleniyor...</p>';
   let mems;
-  try{mems=await sb("GET","members?user_id=eq."+sbUid()+"&select=id,stable,league_id,leagues(id,code,name,epoch,y0)");}
-  catch(e){return olLoginView("Bağlantı sorunu: "+e.message);}
+  try{mems=await sb("GET","members?user_id=eq."+sbUid()+"&select=id,stable,league_id,leagues(id,code,name,epoch,y0,mode)");}
+  catch(e){
+    /* mode kolonu henüz eklenmemişse eski sorguyla devam et */
+    try{mems=await sb("GET","members?user_id=eq."+sbUid()+"&select=id,stable,league_id,leagues(id,code,name,epoch,y0)");}
+    catch(e2){return olLoginView("Bağlantı sorunu: "+e2.message);}
+  }
   let html='';
   if(mems&&mems.length){
     html+='<h3 style="color:var(--gold);margin-bottom:10px">Liglerin</h3>';
     mems.forEach(m=>{
-      const L=m.leagues,cd=olClosedDays(L.epoch);
+      const L=m.leagues,ready=L.mode==="ready",cd=ready?null:olClosedDays(L.epoch);
       html+='<div class="saveCard" onclick="olLobby(\''+L.id+'\')"><div style="text-align:left">'
-        +'<b style="font-size:15px;color:#e8c96a">🏆 '+L.name+'</b>'
-        +'<div style="color:#aab6cc;font-size:11px;margin-top:3px">'+m.stable+' · '+(cd>=SEASON_DAYS?'Sezon bitti':cd===0?'Sezon '+olCountdown(olCloseMs(L.epoch,1)-Date.now())+' sonra başlıyor':'Gün '+cd+'/'+SEASON_DAYS)+'</div></div>'
+        +'<b style="font-size:15px;color:#e8c96a">🏆 '+L.name+'</b>'+(ready?' <span style="font-size:10px;color:#8fd694">🤝 HAZIRIZ MODU</span>':'')
+        +'<div style="color:#aab6cc;font-size:11px;margin-top:3px">'+m.stable+' · '+(ready?'gün herkes hazır olunca geçer':(cd>=SEASON_DAYS?'Sezon bitti':cd===0?'Sezon '+olCountdown(olCloseMs(L.epoch,1)-Date.now())+' sonra başlıyor':'Gün '+cd+'/'+SEASON_DAYS))+'</div></div>'
         +'<button class="sec" onclick="event.stopPropagation();olLobby(\''+L.id+'\')">Lobi ▸</button></div>';
     });
   }else html+='<p style="color:#aab6cc;margin:14px 0">Henüz bir ligde değilsin.</p>';
   html+='<div class="olBox" style="margin-top:18px"><h3 style="color:var(--gold)">Lig Kur</h3>'
     +'<input id="olLgName" maxlength="24" placeholder="Lig adı (örn. Kanka Ligi)">'
     +'<input id="olStable1" maxlength="24" placeholder="Eküri adın">'
+    +'<select id="olMode" style="width:100%;margin:6px 0;padding:8px">'
+    +'<option value="clock">⏰ Saatli mod — günler gerçek saatle kapanır (09:00/15:00/21:00)</option>'
+    +'<option value="ready">🤝 Hazırız modu (FM tarzı) — herkes "Günü Bitir" deyince gün geçer</option></select>'
     +'<div class="olErr" id="olErr1"></div>'
     +'<button onclick="olCreate()">Ligi Kur (sezon hemen başlar)</button></div>'
     +'<div class="olBox" style="margin-top:14px"><h3 style="color:var(--gold)">Koda Katıl</h3>'
@@ -5371,8 +5419,14 @@ async function olCreate(){
   if(!name||!st)return err.textContent="Lig adı ve eküri adı gerekli.";
   err.textContent="Kuruluyor...";
   const code=Array.from({length:6},()=>"ABCDEFGHJKLMNPRSTUVYZ23456789"[Math.floor(Math.random()*29)]).join("");
+  const mode=(document.getElementById("olMode")||{}).value||"clock";
   try{
-    const L=(await sb("POST","leagues",{code,name,epoch:olNextEpoch(),owner:sbUid()}))[0];
+    let L;
+    try{L=(await sb("POST","leagues",{code,name,epoch:olNextEpoch(),owner:sbUid(),mode}))[0];}
+    catch(e){
+      if(mode==="ready"&&/mode|column/i.test(e.message))return err.textContent="Hazırız modu için Supabase'e yeni SQL eklenmeli (bana sor). Şimdilik Saatli mod kullan.";
+      throw e;
+    }
     await sb("POST","members",{league_id:L.id,user_id:sbUid(),stable:st,silk1:PICK1,silk2:PICK2});
     olLobby(L.id);
   }catch(e){err.textContent="Olmadı: "+e.message;}
@@ -5383,9 +5437,20 @@ async function olJoin(){
   if(code.length!==6||!st)return err.textContent="6 haneli kod ve eküri adı gerekli.";
   err.textContent="Aranıyor...";
   try{
-    const Ls=await sb("GET","leagues?code=eq."+code+"&select=id");
+    let Ls;
+    try{Ls=await sb("GET","leagues?code=eq."+code+"&select=id,mode");}
+    catch(e){Ls=await sb("GET","leagues?code=eq."+code+"&select=id");}
     if(!Ls.length)return err.textContent="Bu kodla lig bulunamadı.";
-    await sb("POST","members",{league_id:Ls[0].id,user_id:sbUid(),stable:st,silk1:PICK1,silk2:PICK2});
+    const me=(await sb("POST","members",{league_id:Ls[0].id,user_id:sbUid(),stable:st,silk1:PICK1,silk2:PICK2}))[0];
+    /* 🤝 hazırız moduna sonradan katılan, kapanmış günler için otomatik hazır sayılır */
+    if(Ls[0].mode==="ready"&&me){
+      try{
+        const mems=await sb("GET","members?league_id=eq."+Ls[0].id+"&select=id");
+        const rds=await sb("GET","readies?league_id=eq."+Ls[0].id+"&select=gday,member_id");
+        const closedBefore=olReadyClosed(rds,mems.length-1);
+        for(let d=1;d<=closedBefore;d++)await sb("POST","readies",{league_id:Ls[0].id,gday:d,member_id:me.id}).catch(()=>{});
+      }catch(e){}
+    }
     olLobby(Ls[0].id);
   }catch(e){err.textContent="Olmadı: "+(/duplicate/i.test(e.message)?"Zaten bu ligdesin veya eküri adı alınmış.":e.message);}
 }
@@ -5394,39 +5459,55 @@ async function olLobby(lid){
   clearInterval(OL_TIMER);
   const body=document.getElementById("olBody");
   body.innerHTML='<p style="color:#aab6cc">Lobi yükleniyor...</p>';
-  let L,mems;
+  let L,mems,rds=[];
   try{
     L=(await sb("GET","leagues?id=eq."+lid+"&select=*"))[0];
     mems=await sb("GET","members?league_id=eq."+lid+"&select=id,stable,silk1,silk2,state,user_id&order=updated_at.asc");
   }catch(e){return olHub();}
+  if(L.mode==="ready"){try{rds=await sb("GET","readies?league_id=eq."+lid+"&select=gday,member_id");}catch(e){rds=[];}}
   function paint(){
-    const cd=olClosedDays(L.epoch);
+    const ready=L.mode==="ready";
+    const cd=ready?olReadyClosed(rds,mems.length):olClosedDays(L.epoch);
     const nextN=Math.min(cd+1,SEASON_DAYS);
     const left=olCloseMs(L.epoch,nextN)-Date.now();
+    const rdSet={};rds.forEach(r=>{if(r.gday===cd+1)rdSet[r.member_id]=1;});
+    const rdCount=Object.keys(rdSet).length;
     body.innerHTML='<div class="olBox" style="max-width:560px">'
-      +'<h2 style="color:var(--gold)">🏆 '+L.name+'</h2>'
+      +'<h2 style="color:var(--gold)">🏆 '+L.name+(ready?' <span style="font-size:11px;color:#8fd694">🤝 HAZIRIZ MODU</span>':'')+'</h2>'
       +'<p style="color:#aab6cc;font-size:11px;margin:4px 0">Arkadaşlarını davet et — lig kodu:</p>'
       +'<div class="olCode">'+L.code+'</div>'
-      +'<p style="font-size:13px;margin:8px 0">'+(cd===0
-        ?'Sezon başlamadı — ilk koşular <b style="color:#e8c96a">'+olCountdown(left)+'</b> sonra (09:00)'
-        :cd>=SEASON_DAYS?'🏁 Sezon tamamlandı!'
+      +'<p style="font-size:13px;margin:8px 0">'+(cd>=SEASON_DAYS?'🏁 Sezon tamamlandı!'
+        :ready?'Gün <b>'+cd+'/'+SEASON_DAYS+'</b> koşuldu · Gün '+(cd+1)+' için <b style="color:#e8c96a">'+rdCount+'/'+mems.length+' eküri hazır</b> — herkes hazır olunca koşular koşulur'
+        :cd===0?'Sezon başlamadı — ilk koşular <b style="color:#e8c96a">'+olCountdown(left)+'</b> sonra (09:00)'
         :'Gün <b>'+cd+'/'+SEASON_DAYS+'</b> koşuldu · sıradaki kapanış: <b style="color:#e8c96a">'+olCountdown(left)+'</b>')+'</p>'
       +'<h3 style="color:var(--gold);margin:14px 0 6px">Eküriler ('+mems.length+')</h3>'
       +mems.map(m=>'<div style="display:flex;align-items:center;gap:8px;justify-content:center;padding:5px 0;border-bottom:1px solid var(--navyL)">'
         +'<span style="width:14px;height:14px;border-radius:3px;background:'+(m.silk1||"#d21f26")+';border:2px solid '+(m.silk2||"#fff")+'"></span>'
-        +'<b>'+m.stable+'</b>'+(m.user_id===sbUid()?' <span style="color:#8fd694">(sen)</span>':'')+'</div>').join("")
+        +'<b>'+m.stable+'</b>'+(m.user_id===sbUid()?' <span style="color:#8fd694">(sen)</span>':'')
+        +(ready&&cd<SEASON_DAYS?(rdSet[m.id]?' <span style="color:#8fd694">✅ hazır</span>':' <span style="color:#aab6cc">⏳ bekleniyor</span>'):'')+'</div>').join("")
       +'<p style="margin-top:16px"><button onclick="olEnter(\''+L.id+'\')" style="padding:11px 26px;font-size:14px">🏇 Lige Gir ▸</button> '
       +'<button class="sec" onclick="olHub()">◂ Liglerim</button></p></div>';
   }
   paint();
-  OL_TIMER=setInterval(paint,30000);
+  OL_TIMER=setInterval(async()=>{
+    if(L.mode==="ready"){try{rds=await sb("GET","readies?league_id=eq."+lid+"&select=gday,member_id");mems=await sb("GET","members?league_id=eq."+lid+"&select=id,stable,silk1,silk2,state,user_id&order=updated_at.asc");}catch(e){}}
+    paint();
+  },L.mode==="ready"?12000:30000);
 }
 /* ============ 🌐 ONLINE LİG — OYUN MOTORU ============ */
 const olSeed=s=>hashStr(OL.lid+"|"+s);
 function olSetOwner(i,name){if(!OL)return;if(OL.ownBak[i]===undefined)OL.ownBak[i]=HORSES[i][5];HORSES[i][5]=name;}
 function olRestoreOwners(){if(!OL)return;Object.keys(OL.ownBak).forEach(i=>{if(HORSES[i])HORSES[i][5]=OL.ownBak[i];});OL.ownBak={};}
+function olDayCloseAt(n){ /* gün N'in kapanış ANI (hazırız modunda: son ekürinin hazır dediği an) */
+  if(OL.mode==="ready"){
+    const rows=(OL.readies||[]).filter(r=>r.gday===n);
+    if(rows.length<OL.mems.length)return Infinity; /* gün henüz kapanmadı */
+    return Math.max(...rows.map(r=>Date.parse(r.created_at||0)))+1;
+  }
+  return olCloseMs(OL.epoch,n);
+}
 function olOwnedAt(n){ /* gün N kapanışından ÖNCE satın alınmış atlar (determinizm için) */
-  const t=olCloseMs(OL.epoch,n),m={};
+  const t=olDayCloseAt(n),m={};
   OL.purch.forEach(p=>{if(Date.parse(p.created_at)<t)m[p.horse_idx]=p.member_id;});
   return m;
 }
@@ -5441,7 +5522,9 @@ async function olEnter(lid){
     const ents=await sb("GET","entries?league_id=eq."+lid+"&select=gday,race_no,member_id,horse_idx,jockey,perf,created_at");
     const me=mems.find(m=>m.user_id===sbUid());
     if(!me)throw new Error("bu ligde üye değilsin");
-    OL={lid,mid:me.id,code:L.code,name:L.name,epoch:L.epoch,mems,purch,ents,ownBak:{}};
+    let rds=[];
+    if(L.mode==="ready"){try{rds=await sb("GET","readies?league_id=eq."+lid+"&select=gday,member_id,created_at");}catch(e){rds=[];}}
+    OL={lid,mid:me.id,code:L.code,name:L.name,epoch:L.epoch,mode:L.mode||"clock",readies:rds,mems,purch,ents,ownBak:{}};
     applyYear(L.y0||2026);
     /* kişisel durum: sunucu vs yerel önbellek — ileride olan kazanır */
     let st=null,dbSt=null;
@@ -5462,7 +5545,7 @@ async function olEnter(lid){
     olOpenDay();
     show("scrGame");refreshTop();showTab(0);
     olStartTimer();
-    toast("🌐 "+L.name+" — Gün "+G.day+"/"+SEASON_DAYS+" · sıradaki kapanışta koşular otomatik koşulur");
+    toast("🌐 "+L.name+" — Gün "+G.day+"/"+SEASON_DAYS+(OL.mode==="ready"?" · 🤝 herkes 'Günü Bitir' deyince koşulur":" · sıradaki kapanışta koşular otomatik koşulur"));
   }catch(e){
     body.innerHTML='<p class="olErr">Lige girilemedi: '+e.message+'</p><button class="sec" onclick="olHub()">◂ Geri</button>';
   }
@@ -5506,7 +5589,7 @@ function olProcessDay(n){ /* kapanmış bir günü herkesle birebir aynı şekil
   G.olDone=n;
 }
 function olCatchUp(){
-  const closed=olClosedDays(OL.epoch);
+  const closed=olClosed();
   let guard=0;
   while((G.olDone||0)<closed&&guard++<SEASON_DAYS+2)olProcessDay((G.olDone||0)+1);
   olFlushNow();
@@ -5523,22 +5606,29 @@ function olOpenDay(){ /* açık günün programı + benim mevcut deklarelerim */
     .forEach(e=>{(G.entries[e.race_no]=G.entries[e.race_no]||[]).push({h:e.horse_idx,j:e.jockey});});
 }
 let OLD_TIMER=null,OL_SAVE_T=null;
+async function olPoll(){
+  if(!G||!G.online||!OL)return clearInterval(OLD_TIMER);
+  if(OL.mode==="ready"){ /* 🤝 hazır durumlarını tazele */
+    try{
+      OL.readies=await sb("GET","readies?league_id=eq."+OL.lid+"&select=gday,member_id,created_at");
+      OL.mems=await sb("GET","members?league_id=eq."+OL.lid+"&select=id,user_id,stable,silk1,silk2");
+    }catch(e){return;}
+  }
+  const closed=olClosed();
+  if(closed>(G.olDone||0)){ /* kapanış geçti: taze veriyle günleri işle */
+    try{
+      OL.ents=await sb("GET","entries?league_id=eq."+OL.lid+"&select=gday,race_no,member_id,horse_idx,jockey,perf,created_at");
+      OL.purch=await sb("GET","purchases?league_id=eq."+OL.lid+"&select=horse_idx,member_id,price,created_at");
+      OL.mems=await sb("GET","members?league_id=eq."+OL.lid+"&select=id,user_id,stable,silk1,silk2");
+      OL.purch.forEach(p=>{const m=OL.mems.find(x=>x.id===p.member_id);if(m)olSetOwner(p.horse_idx,m.stable);});
+    }catch(e){return;}
+    olCatchUp();olOpenDay();refreshTop();showTab(G.tab||0);
+    toast("🏁 Koşular koşuldu! Gün "+G.day+"/"+SEASON_DAYS+" — sonuçlar Gelen Kutusu ve Sıralamalar'da.");
+  }else refreshTop(); /* sayaç/hazır durumu tazele */
+}
 function olStartTimer(){
   clearInterval(OLD_TIMER);
-  OLD_TIMER=setInterval(async()=>{
-    if(!G||!G.online||!OL)return clearInterval(OLD_TIMER);
-    const closed=olClosedDays(OL.epoch);
-    if(closed>(G.olDone||0)){ /* kapanış geçti: taze veriyle günleri işle */
-      try{
-        OL.ents=await sb("GET","entries?league_id=eq."+OL.lid+"&select=gday,race_no,member_id,horse_idx,jockey,perf,created_at");
-        OL.purch=await sb("GET","purchases?league_id=eq."+OL.lid+"&select=horse_idx,member_id,price,created_at");
-        OL.mems=await sb("GET","members?league_id=eq."+OL.lid+"&select=id,user_id,stable,silk1,silk2");
-        OL.purch.forEach(p=>{const m=OL.mems.find(x=>x.id===p.member_id);if(m)olSetOwner(p.horse_idx,m.stable);});
-      }catch(e){return;}
-      olCatchUp();olOpenDay();refreshTop();showTab(G.tab||0);
-      toast("🏁 Koşular koşuldu! Gün "+G.day+"/"+SEASON_DAYS+" — sonuçlar Gelen Kutusu ve Sıralamalar'da.");
-    }else refreshTop(); /* sayaç tazele */
-  },20000);
+  OLD_TIMER=setInterval(olPoll,OL&&OL.mode==="ready"?12000:20000);
 }
 /* 📺 TEKRAR İZLEME: kapanışta koşulan yarışı film gibi oynat (sonuç resmi sonuçla birebir) */
 function olWatch(day,idx){

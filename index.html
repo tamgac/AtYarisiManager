@@ -1336,13 +1336,20 @@ const TRACK_PAIRS=[[0,3],[1,5],[2,4],[0,6],[1,9],[2,7],[0,8]];
    oyunda kazanan %60 aldığı için toplam 85M = 1.'ye ~51M. Diğerleri oranlandı. */
 const NAMED=[
 [12,"Şanlıurfa Kupası","A",60,1900,20000000,5],
+[16,"Anafartalar Koşusu","İ",75,2100,26000000,0],
 [24,"TBMM Koşusu","İ",70,2100,28000000,1],
+[31,"Vehbi Koç Koşusu","İ",72,1900,26000000,1],
 [36,"Kısrak Koşusu","İ",65,1600,22000000,0],
+[45,"Dişi Tay Deneme","İ",65,1600,24000000,0],   /* 3 yaş dişiler — Gazi provası */
 [48,"Erkek Tay Deneme","İ",70,1600,25000000,0],
+[49,"19 Mayıs Koşusu","İ",70,1600,26000000,1],
 [57,"Cumhuriyet Koşusu","A",75,2100,38000000,1],
+[59,"Fetih Koşusu","İ",80,2400,32000000,0],      /* 29 Mayıs — İstanbul'un Fethi */
+[63,"Haliç Koşusu","İ",76,2100,28000000,0],      /* 3 yaşlılara Gazi öncesi büyük prova */
 [66,"Kraliçe II.Elizabeth K.","İ",70,2100,30000000,0],
+[70,"Topkapı Koşusu","İ",78,1600,30000000,0],
 [75,"Çaldıran Koşusu","İ",85,2400,34000000,3],
-[82,"GAZİ KOŞUSU","İ",90,2400,85000000,0]   /* sadece gerçek elitler — FM'de ŞL gibi */
+[82,"GAZİ KOŞUSU","İ",75,2400,85000000,0]   /* dev kadro (~22 at) — kazanmak yine ŞL zorluğunda */
 ];
 /* 💹 sezon geçtikçe ikramiyeler enflasyonla artar (yılda ~%35) */
 const P_INF=()=>Math.pow(1.35,Math.max(0,(typeof G!=="undefined"&&G?G.year-(G.y0||2026):0)));
@@ -1563,13 +1570,20 @@ const TRAINERS_2008=[
 /* ikramiyeler GERÇEK 2008 değerleri (YTL ölçeğinde gösterilir: iç değer ×10) */
 const NAMED_2008=[
 [12,"Şanlıurfa Kupası","A",60,1900,1750000,5],
+[16,"Anafartalar Koşusu","İ",75,2100,2300000,0],
 [24,"TBMM Kupası","A",70,2100,2500000,1],
+[31,"Vehbi Koç Koşusu","İ",72,1900,2300000,1],
 [36,"Kısrak Koşusu","İ",65,2400,3000000,0],
+[45,"Dişi Tay Deneme","İ",65,1600,2100000,0],
 [48,"Erkek Tay Deneme","İ",70,1600,1800000,0],
+[49,"19 Mayıs Koşusu","İ",70,1600,2300000,1],
 [57,"Cumhuriyet Koşusu","A",75,1600,6000000,1],
+[59,"Fetih Koşusu","İ",80,2400,2800000,0],
+[63,"Haliç Koşusu","İ",76,2100,2500000,0],
 [66,"Kraliçe II.Elizabeth K.","İ",70,1400,1800000,0],
+[70,"Topkapı Koşusu","İ",78,1600,2600000,0],
 [75,"Çaldıran Koşusu","İ",85,1600,2500000,3],
-[82,"GAZİ KOŞUSU","İ",90,2400,7500000,0]
+[82,"GAZİ KOŞUSU","İ",75,2400,7500000,0]
 ];
 /* 2008 dönemi aygır pazarı — gerçek pedigriler */
 const SIREMARKET_2008=[
@@ -1603,7 +1617,7 @@ const goingOf=d=>weatherOf(d); /* 0 normal, 1 nemli, 2 ağır */
 const mudOf=i=>{const x=hashStr(HORSES[i][0]+"mud")%10;return x<2?0:(x<7?1:2);};
 const mudName=i=>["🌧✗ çamurda zorlanır","🌧• çamurda nötr","🌧💪 ÇAMURCU"][mudOf(i)];
 /* 🔨 CANLI MÜZAYEDE GÜNLERİ (yılda 2 kez) */
-const AUC_DAYS=[28,63];
+const AUC_DAYS=[28,64]; /* 64: Haliç Koşusu (63) ile çakışmasın */
 /* 🚦 START TAVRI: bazı atlar start makinesinde huysuzlanır (kalıcı gizli karakter) */
 const gateOf=i=>hashStr(HORSES[i][0]+"gate")%10<2;
 /* ⚖️ PROTESTO ücreti */
@@ -1654,6 +1668,7 @@ const ACHS=[
 ["gal30","Efsane Ahır","30 galibiyet al"],
 ["isimli","Büyük Sahne","Bir isimli koşu kazan"],
 ["gazi","GAZİ ŞAMPİYONU","Gazi Koşusu'nu kazan"],
+["ucluTac","👑 ÜÇLÜ TAÇ","Aynı atla aynı sezonda Tay Deneme + Haliç + GAZİ üçlemesini yap"],
 ["surpriz","Sürpriz Yaptık","Gücü 60'ın altında bir atla koşu kazan"],
 ["kazanc25","İkramiye Kralı","Tek sezonda dev ikramiye topla"],
 ["milyoner","Para Babası","Kasanda büyük servet biriktir"],
@@ -1953,13 +1968,15 @@ function genProgram(){
         pool=pool.slice().sort((a,b)=>lastD(a)-lastD(b)).slice(0,Math.max(13,fresh.length));
       }
     }
-    /* isimli koşularda katılım şartı: kalifiye atlar önce; kadro dolmazsa en iyiler tamamlar */
+    /* isimli koşularda katılım şartı: kalifiye atlar önce; kadro dolmazsa en iyiler tamamlar
+       🏆 GAZİ dev kadroyla koşulur (gerçekteki gibi ~22 at) */
+    const fieldCap=/GAZİ/.test(r.name)?22:(r.named?14:10);
     if(r.named){
       const q=pool.filter(i=>qualifies(i,r));
       const rest=pool.filter(i=>!q.includes(i)).sort((a,b)=>hpOf(b)-hpOf(a));
       pool=q.concat(rest);
-      pool=pool.slice(0,Math.max(14,q.length>=14?q.length:14));
-      if(q.length>=14)pool=q;
+      pool=pool.slice(0,Math.max(fieldCap,q.length>=fieldCap?q.length:fieldCap));
+      if(q.length>=fieldCap)pool=q;
     }
     pool.sort((a,b)=>(hashStr(HORSES[a][0]+"#"+G.day+"_"+r.id)%997)-(hashStr(HORSES[b][0]+"#"+G.day+"_"+r.id)%997));
     if(r.named){
@@ -1967,9 +1984,9 @@ function genProgram(){
          grup koşusu kazanmak ŞL kazanmak gibi zor olmalı */
       pool.sort((a,b)=>((qualifies(b,r)?1:0)-(qualifies(a,r)?1:0))||(hpOf(b)-hpOf(a)));
     }
-    /* her jokey koşuda TEK ata biner — 🏟 GERÇEKÇİ KALABALIK: sıradan 10, kupalı 14 at */
+    /* her jokey koşuda TEK ata biner — 🏟 GERÇEKÇİ KALABALIK: sıradan 10, kupalı 14, GAZİ 22 at */
     const usedJ={};
-    r.decl=pool.slice(0,r.named?14:10).map(h=>{
+    r.decl=pool.slice(0,fieldCap).map(h=>{
       let k=hashStr(HORSES[h][0]+"J"+G.day)%topJ.length,guard=0;
       while(usedJ[topJ[k]]&&guard++<topJ.length)k=(k+1)%topJ.length;
       usedJ[topJ[k]]=1;
@@ -2091,8 +2108,9 @@ function eligible(hIdx,r){
   /* 🎂 GERÇEK YAŞ/CİNSİYET ŞARTLARI (TJK kuralları) */
   if(r.named){
     const a=ageOf(hIdx);
-    if(/GAZİ KOŞUSU|Çaldıran/.test(r.name)&&a!==3)return false;      /* klasikler sadece 3 yaş */
+    if(/GAZİ KOŞUSU|Çaldıran|Haliç/.test(r.name)&&a!==3)return false; /* klasikler sadece 3 yaş */
     if(/Erkek Tay Deneme/.test(r.name)&&(a!==3||h[2]!=="E"))return false;
+    if(/Dişi Tay Deneme/.test(r.name)&&(a!==3||h[2]!=="D"))return false;
     if(/Kısrak Koşusu/.test(r.name)&&(a!==3||h[2]!=="D"))return false;
     if(/Cumhuriyet/.test(r.name)&&a<4)return false;                   /* olgun Araplar */
   }
@@ -2127,7 +2145,7 @@ function oddsTable(r,dark,runners){
 }
 /* ============ BÜYÜK KOŞU KATILIM ŞARTLARI (kalifikasyon) ============ */
 function seasonWins(h){return ((G.hlog||{})[h]||[]).filter(e=>e.y===G.year&&e.p===1).length;}
-function trialQ(h){return ((G.hlog||{})[h]||[]).some(e=>e.y===G.year&&e.p<=2&&/Tay Deneme|Kısrak Koşusu/.test(e.r));}
+function trialQ(h){return ((G.hlog||{})[h]||[]).some(e=>e.y===G.year&&e.p<=2&&/Tay Deneme|Kısrak Koşusu|Haliç/.test(e.r));}
 function qualifies(h,r){
   if(!r.named)return true;
   if(/Tay Deneme|Kısrak Koşusu|Şanlıurfa/.test(r.name))return true; /* eleme/açılış koşuları şartsız */
@@ -2354,7 +2372,7 @@ function viewCareer(){
     +card("En yüksek tek ikramiye",R_.big?R_.big.n+" · "+fmt(R_.big.v)+" ("+R_.big.y+")":null)
     +card("Ekürinin en iyi sezonu",R_.myBest?fmt(R_.myBest.v)+" ("+R_.myBest.y+")":null)
     +'</div><h3 style="margin:12px -10px 6px">GAZİ Şampiyonları</h3>'
-    +((R_.gazi&&R_.gazi.length)?('<table><tr><th>Yıl</th><th>At</th></tr>'+R_.gazi.map(g=>'<tr><td>'+g.y+'</td><td><b>'+g.n+'</b>'+(g.mine?' <span class="gTxt">★ SENİN ATIN</span>':'')+'</td></tr>').join('')+'</table>')
+    +((R_.gazi&&R_.gazi.length)?('<table><tr><th>Yıl</th><th>At</th></tr>'+R_.gazi.map(g=>'<tr><td>'+g.y+'</td><td><b>'+g.n+'</b>'+(g.tc?' <span style="color:#8a6d1d;font-weight:700">👑 ÜÇLÜ TAÇ</span>':'')+(g.mine?' <span class="gTxt">★ SENİN ATIN</span>':'')+'</td></tr>').join('')+'</table>')
       :'<p class="muted">Oyun içinde henüz Gazi Koşusu yapılmadı.</p>')
     +'</div>';
   return html;
@@ -5272,7 +5290,17 @@ function finishRace(){
   const winName=HORSES[win.h][0],winPrize=Math.round(r.purse*0.6);
   if(r.named){
     pushNews("⭐",r.name+" sonuçlandı","Kazanan: "+winName+" ("+JOCKEYS[win.j][0]+" ile). İkramiye: "+fmt(winPrize)+"."+(win.mine?" HEM DE SENİN ATINLA! 🎉":""));
-    if(r.name==="GAZİ KOŞUSU"){const R_=G.rec=G.rec||{};(R_.gazi=R_.gazi||[]).push({y:G.year,n:winName,mine:!!win.mine});}
+    if(r.name==="GAZİ KOŞUSU"){
+      /* 👑 ÜÇLÜ TAÇ: aynı sezonda Tay Deneme + Haliç + GAZİ (Türk yarışçılığının zirvesi) */
+      const wl=((G.hlog||{})[win.h]||[]).filter(e=>e.y===G.year&&e.p===1);
+      const tc=wl.some(e=>/Tay Deneme/.test(e.r))&&wl.some(e=>/Haliç/.test(e.r));
+      const R_=G.rec=G.rec||{};(R_.gazi=R_.gazi||[]).push({y:G.year,n:winName,mine:!!win.mine,tc});
+      if(tc){
+        pushNews("👑","ÜÇLÜ TAÇ! Tarih yazıldı: "+winName,winName+" aynı sezonda Tay Deneme, Haliç ve GAZİ Koşusu'nu kazanarak ÜÇLÜ TAÇ'a ulaştı — Türk yarış tarihine geçti!"+(win.mine?" VE BU EFSANE SENİN AHIRINDA! 🏆👑":""));
+        if(win.mine)unlockAch("ucluTac");
+        if(!quiet)setTimeout(()=>setComment("👑 <b>ÜÇLÜ TAÇ!</b> "+winName+" — Tay Deneme + Haliç + GAZİ! Tarihe geçti!"+(win.mine?" <b>SENİN ATIN!</b>":"")),2500);
+      }
+    }
   }else if(win.mine){
     pushNews("🏆","Eküriden zafer: "+winName,r.name+"'nda kazandı, kasaya "+fmt(winPrize)+" girdi. Basın ekürini konuşuyor.");
   }

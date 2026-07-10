@@ -1604,8 +1604,26 @@ const mudOf=i=>{const x=hashStr(HORSES[i][0]+"mud")%10;return x<2?0:(x<7?1:2);};
 const mudName=i=>["🌧✗ çamurda zorlanır","🌧• çamurda nötr","🌧💪 ÇAMURCU"][mudOf(i)];
 /* 🔨 CANLI MÜZAYEDE GÜNLERİ (yılda 2 kez) */
 const AUC_DAYS=[28,63];
-/* 🩺 RAPORLU JOKEY: deterministik — herkes aynı raporu görür */
+/* 🚦 START TAVRI: bazı atlar start makinesinde huysuzlanır (kalıcı gizli karakter) */
+const gateOf=i=>hashStr(HORSES[i][0]+"gate")%10<2;
+/* ⚖️ PROTESTO ücreti */
+const PROT_FEE=150000;
+/* ⚖️ KİLO SİSTEMİ (gerçek TJK): handikapta güçlü at fazla taşır, apranti indirim alır */
+function raceKilo(r,i,j){
+  let kg;
+  if(/Handikap/.test(r.name))kg=50+Math.max(0,Math.min(12,(hpOf(i)-(r.lo||40))*0.5));
+  else{
+    kg=ageOf(i)===2?55:58;
+    if(HORSES[i][2]==="D")kg-=1.5; /* dişi indirimi */
+  }
+  if(JOCKEYS[j]&&JOCKEYS[j][5]==="AP")kg-=3.5; /* apranti kilo indirimi (gerçek TJK kuralı) */
+  return Math.round(kg*2)/2;
+}
+/* 🩺 RAPORLU JOKEY: deterministik — herkes aynı raporu görür.
+   ⚖️ Komiser cezaları (protesto) da buradan işler. */
 function jRaporlu(j){
+  const cz=(G&&G.jcez||{})[j];
+  if(cz&&cz>G.day)return cz-G.day;
   for(let s=Math.max(1,G.day-6);s<=G.day;s++){
     const h=hashStr("rapor"+G.year+"_"+s+"_"+j);
     if(h%1000<10){const sure=3+h%5;if(s+sure>G.day)return s+sure-G.day;}
@@ -1993,6 +2011,12 @@ function buildRunners(r,olEnt){
   const HPu=u=>(u.snap&&u.snap.hp)?u.snap.hp:hpOf(u.h);
   const avgHP=runners.reduce((s,u)=>s+HPu(u),0)/runners.length;
   const wthr=weatherOf(G.day),srfIdx=r.srf==="Kum"?1:0;
+  /* 🎰 KULVAR KURASI (aleni kura — deterministik): iç kulvar viraja avantaj */
+  const kura=runners.map((u,k)=>k).sort((a,b)=>
+    hashStr(HORSES[runners[a].h][0]+"KV"+G.year+"_"+G.day+"_"+r.id)-hashStr(HORSES[runners[b].h][0]+"KV"+G.year+"_"+G.day+"_"+r.id));
+  kura.forEach((rIx,pos)=>{runners[rIx].kv=pos+1;});
+  /* ⚖️ kilo ortalaması (handikapta fark yaratır) */
+  const avgKg=runners.reduce((s,u)=>s+raceKilo(r,u.h,u.j),0)/runners.length;
   runners.forEach((u,idx)=>{
     const s=u.snap?{cond:(u.snap.c!=null?u.snap.c:80),form:(u.snap.f||0)}
            :(u.mine&&G.owned.includes(u.h)?horseState(u.h):null);
@@ -2018,8 +2042,19 @@ function buildRunners(r,olEnt){
       if(gr.includes("DB")&&r.dist>=1900)perf+=1.5;
       if(gr.includes("KT")&&r.named)perf+=2;
     }else{perf+=rnd(-1,3);} /* AI atları da bakımlı gelir — rakipler ciddi */
-    /* 🎓 apranti: gerçek TJK kilo indirimi avantajı ↔ tecrübesizlik riski */
-    if(JOCKEYS[u.j]&&JOCKEYS[u.j][5]==="AP")perf+=2+rnd(-5,3);
+    /* ⚖️ KİLO ETKİSİ: alan ortalamasından her kg sapma performansı etkiler
+       (apranti kilo indirimi burada gerçek avantaja dönüşür) */
+    u.kg=raceKilo(r,u.h,u.j);
+    perf+=(avgKg-u.kg)*0.9;
+    /* 🎓 apranti: kilo avantajını yukarıda aldı — burada sadece tecrübesizlik riski */
+    if(JOCKEYS[u.j]&&JOCKEYS[u.j][5]==="AP")perf+=rnd(-4.5,1.5);
+    /* 🎰 KULVAR ETKİSİ: iç kulvar öne kaçana yarar, kalabalıkta dış kulvar zarar */
+    const nR=runners.length;
+    if(styleOf(u.h)<0.4)perf+=(nR-u.kv)/(nR-1||1)*1.6-0.8; /* iç=+0.8, dış=-0.8 */
+    if(nR>=10&&u.kv>=nR-2)perf-=1.2; /* geniş alanda en dış kulvarlar */
+    /* 🚦 START OLAYI: huysuz at bazen makinede gerginleşir ve kötü çıkar */
+    u.badStart=gateOf(u.h)&&rnd(0,1)<0.35;
+    if(u.badStart)perf-=3;
     perf+=rnd(-8.5,8.5); /* şans payı azaltıldı — kalite konuşur */
     u.perf=Math.max(25,perf);
     u.style=Math.min(1,Math.max(0,styleOf(u.h)+rnd(-0.08,0.08)));
@@ -2035,7 +2070,7 @@ function buildRunners(r,olEnt){
     /* dayanıklılık: kondisyon bilinen atlarda ona bağlı, AI'da rastgele */
     u.sta=s?Math.min(1.05,Math.max(0.6,0.9+(s.cond-80)*0.004)):rnd(0.75,1.0);
     u.fat=0;u.turnAdj=0;u.tSpd=1;u.tSeg=0;
-    u.x=0;u.done=false;u.lane=idx;
+    u.x=0;u.done=false;u.lane=u.kv-1; /* görsel kulvar = kura sonucu */
     if(u.mine){u.color=G.silk1||"#d21f26";u.color2=G.silk2||"#f5f5f5";}
     else if(u.stable){u.color=u.mSilk1||"#d21f26";u.color2=u.mSilk2||"#f5f5f5";}
     else{u.color=SILKS[idx%SILKS.length];u.color2=u.color;}
@@ -2075,13 +2110,20 @@ function raceOdds(r){
     return {...p,agf:pr*100,gny:Math.max(1.1,Math.round(0.9/pr*100)/100)};
   }).sort((a,b)=>b.agf-a.agf);
 }
-function oddsTable(r,dark){
+function oddsTable(r,dark,runners){
   const o=raceOdds(r);
   if(!o.length)return "<p class='muted'>Deklare boş.</p>";
-  return '<table style="margin-top:6px"><tr><th>At</th><th>Jokey</th><th>Güç</th><th title="Son 5 koşunun dereceleri">Form</th><th>Ganyan</th><th>AGF</th></tr>'
-    +o.map((p,k)=>'<tr'+(k===0?' style="font-weight:700"':'')+'><td>'+(p.mine?'★ ':'')
+  const kvOf=h=>{const u=(runners||[]).find(x=>x.h===h);return u?u:null;};
+  const ek=!!runners; /* kulvar kurası çekildiyse kulvar + kilo göster */
+  return '<table style="margin-top:6px"><tr>'+(ek?'<th title="Kulvar (aleni kura)">K</th>':'')+'<th>At</th><th>Jokey</th>'+(ek?'<th title="Taşıdığı kilo">Kg</th>':'')+'<th>Güç</th><th title="Son 5 koşunun dereceleri">Form</th><th>Ganyan</th><th>AGF</th></tr>'
+    +o.map((p,k)=>{const u=kvOf(p.h);
+      return '<tr'+(k===0?' style="font-weight:700"':'')+'>'
+      +(ek?'<td>'+(u?u.kv:"—")+'</td>':'')
+      +'<td>'+(p.mine?'★ ':'')
       +(dark?HORSES[p.h][0]:hLink(p.h))+(k===0?' <span class="named">— FAVORİ</span>':'')
-      +'</td><td class="muted">'+(JOCKEYS[p.j][5]==="AP"?"🎓 ":"")+JOCKEYS[p.j][0]+'</td><td>'+hpOf(p.h)+'</td><td style="letter-spacing:1px">'+formStr(p.h)+'</td><td><b>'+p.gny.toFixed(2)+'</b></td><td>%'+p.agf.toFixed(1)+'</td></tr>').join('')+'</table>';
+      +'</td><td class="muted">'+(JOCKEYS[p.j][5]==="AP"?"🎓 ":"")+JOCKEYS[p.j][0]+'</td>'
+      +(ek?'<td>'+(u&&u.kg?u.kg:raceKilo(r,p.h,p.j))+'</td>':'')
+      +'<td>'+hpOf(p.h)+'</td><td style="letter-spacing:1px">'+formStr(p.h)+'</td><td><b>'+p.gny.toFixed(2)+'</b></td><td>%'+p.agf.toFixed(1)+'</td></tr>';}).join('')+'</table>';
 }
 /* ============ BÜYÜK KOŞU KATILIM ŞARTLARI (kalifikasyon) ============ */
 function seasonWins(h){return ((G.hlog||{})[h]||[]).filter(e=>e.y===G.year&&e.p===1).length;}
@@ -2341,8 +2383,9 @@ function viewJockeys(){
     +list.map((o,i)=>{
       const pct=o.s.rides?Math.round(o.s.w/o.s.rides*100):0;
       const mine=G.cJockey===o.k,rap=jRaporlu(o.k),hot=jHot(o.k);
+      const cez=((G.jcez||{})[o.k]||0)>G.day;
       return "<tr"+(mine?" style='background:#d6e0c9'":rap?" style='opacity:.55'":"")+"><td>"+(i+1)+"</td>"
-        +"<td><b>"+(o.j[5]==="AP"?"🎓 ":"")+(hot?"🔥 ":"")+o.j[0]+"</b>"+(o.j[5]==="AP"?" <span class='muted'>apranti</span>":"")+(mine?" <span class='gTxt'>⭐ anlaşmalı</span>":"")+(rap?" <span style='color:#b03a2e;font-weight:700'>🩺 RAPORLU — "+rap+" gün</span>":hot?" <span style='color:#c8791e;font-weight:700'>formda</span>":"")+"</td>"
+        +"<td><b>"+(o.j[5]==="AP"?"🎓 ":"")+(hot?"🔥 ":"")+o.j[0]+"</b>"+(o.j[5]==="AP"?" <span class='muted'>apranti</span>":"")+(mine?" <span class='gTxt'>⭐ anlaşmalı</span>":"")+(rap?" <span style='color:#b03a2e;font-weight:700'>"+(cez?"⚖️ CEZALI":"🩺 RAPORLU")+" — "+rap+" gün</span>":hot?" <span style='color:#c8791e;font-weight:700'>formda</span>":"")+"</td>"
         +"<td>"+hpBar(o.j[4])+"</td><td>%"+o.j[1]+"</td>"
         +"<td>"+o.s.rides+"</td><td class='"+(o.s.w?"pos1":"")+"'>"+o.s.w+"</td><td>"+o.s.p2+"</td><td>"+o.s.p3+"</td>"
         +"<td>"+(o.s.rides?"%"+pct:"—")+"</td><td><b>"+fmt(o.s.earn)+"</b></td><td>"+fmt(jFee(o.k))+"</td>"
@@ -2978,8 +3021,10 @@ function openEntry(rid,preH){
     const mFit=gng===2?(mudOf(i)===2?" · 🌧💪 çamurcu":mudOf(i)===0?" · 🌧✗ çamur sevmez":""):"";
     return "<option value='"+i+"'>"+HORSES[i][0]+" — form "+formStr(i)+" (Güç "+hpOf(i)+", kond %"+horseState(i).cond+dFit+sFit+mFit+")</option>";
   }).join("");
-  /* bu koşuda zaten binen jokeyler (senin diğer atların) ve raporlular seçilemez */
+  /* bu koşuda zaten binen jokeyler (senin atların + rakip atlar) ve raporlular seçilemez */
   const takenJ={};(G.entries[rid]||[]).forEach(e=>takenJ[e.j]=1);
+  (r.decl||[]).forEach(d=>takenJ[d.j]=1); /* rakip ata binen jokey kiralanamaz */
+  if(G.online&&OL)OL.ents.filter(e=>e.gday===G.day&&e.race_no===rid).forEach(e=>takenJ[e.jockey]=1);
   let jOpts=JOCKEYS.map((j,k)=>({k})).sort((a,b)=>(b.k===G.cJockey)-(a.k===G.cJockey)||effJFee(b.k)-effJFee(a.k))
     .map(o=>{const rap=jRaporlu(o.k);
     return "<option value='"+o.k+"'"+((takenJ[o.k]||rap)?" disabled":"")+">"+(o.k===G.cJockey?"⭐ ":"")+(JOCKEYS[o.k][5]==="AP"?"🎓 ":"")+(jHot(o.k)?"🔥 ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+(JOCKEYS[o.k][5]==="AP"?" · APRANTİ: kilo avantajı, tecrübesiz":"")+(jHot(o.k)?" · FORMDA":"")+(rap?" — 🩺 RAPORLU ("+rap+" gün)":takenJ[o.k]?" — BU KOŞUDA BİNİYOR":"")+"</option>";}).join("");
@@ -3000,6 +3045,7 @@ function openEntry(rid,preH){
     +"<p class='muted' id='tacHint' style='margin-top:4px'></p>"
     +"<div class='flexrow' style='margin-top:16px;justify-content:flex-end'><button class='sec' onclick='closeModal()'>Vazgeç</button><button onclick='confirmEntry("+rid+","+fee+")'>Kaydet</button></div>";
   document.getElementById("modalBg").classList.add("show");
+  window._entryRid=rid;
   if(preH!==undefined&&my.includes(preH))document.getElementById("selH").value=String(preH);
   updEntryCost(fee,nak);updTacHint();
 }
@@ -3210,13 +3256,22 @@ function updTacHint(){
   const el=document.getElementById("tacHint"),sel=document.getElementById("selH");
   if(!el||!sel)return;
   const i=+sel.value,s=styleOf(i);
+  let kiloTxt="";
+  const r=window._entryRid!=null&&G.program.races.find(x=>x.id===window._entryRid);
+  const jSel=document.getElementById("selJ");
+  if(r&&jSel){
+    const kg=raceKilo(r,i,+jSel.value);
+    kiloTxt=" ⚖️ Taşıyacağı kilo: "+kg+" kg"+(/Handikap/.test(r.name)?" (handikap — güçlü at fazla taşır)":"")+(JOCKEYS[+jSel.value][5]==="AP"?" — apranti indirimi dahil":"")+".";
+  }
   el.textContent="Atın karakteri: "+(s<0.33?"öne kaçar — önerilen: 🚀":s<0.67?"dengeli — önerilen: 👀":"finişçi — önerilen: ⚡")
-    +(styleReal(i)?"":" (tahmini)")+". Karakterine uyan talimat bonus verir, ters talimat performansı düşürür.";
+    +(styleReal(i)?"":" (tahmini)")+". Karakterine uyan talimat bonus verir, ters talimat performansı düşürür."
+    +(gateOf(i)?" 🚦 Bu at start makinesinde huysuzlanabilir!":"")+kiloTxt;
 }
 function updEntryCost(fee,nak){
   const j=+document.getElementById("selJ").value;
   document.getElementById("jFeeCell").textContent=fmt(effJFee(j));
   document.getElementById("totCell").textContent=fmt(fee+nak+effJFee(j));
+  updTacHint(); /* kilo bilgisi jokeye göre değişir (apranti indirimi) */
 }
 function enteredElsewhere(h,rid){
   return Object.keys(G.entries).some(k=>+k!==rid&&(G.entries[k]||[]).some(e=>e.h===h));
@@ -3336,6 +3391,7 @@ function showHorse(i){
   html+='<div class="attrRow"><span class="muted" style="font-size:9px">◀ 1200m &nbsp;&nbsp;·&nbsp;&nbsp; 2400m ▶</span><span></span></div>';
   html+=attr("Pist Tercihi","",(sp===0?"🟢 Çim":sp===1?"🟤 Kum":"Her pist"),"(tahmini)");
   html+=attr("Çamur Uyumu","",["🌧✗ çamurda zorlanır","🌧 nötr","🌧💪 ÇAMURCU"][mudOf(i)],"(tahmini)");
+  html+=attr("Start Tavrı","",gateOf(i)?"🚦⚡ huysuz — makinede gerginleşebilir":"🚦 sakin","(tahmini)");
   if(owned&&G.inj[i]>0)html+='<p class="rTxt" style="margin-top:8px">🩹 '+injLabel(i)+' — '+G.inj[i]+' gün koşamaz</p>';
   if((G.injHist||{})[i])html+='<p class="muted" style="margin-top:4px">⚠ Tendon geçmişi ('+G.injHist[i]+' kez) — koşu sonrası sakatlık riski artar</p>';
   html+='</div>';
@@ -3400,6 +3456,8 @@ function confirmEntry(rid,fee){
   const total=fee+nak+effJFee(j);
   if(G.money<total)return toast("Yetersiz bütçe! Gerekli: "+fmt(total));
   if((G.entries[rid]||[]).some(e=>e.j===j))return toast("Bu jokey bu koşuda zaten başka atına biniyor!");
+  if((r.decl||[]).some(d=>d.j===j))return toast(JOCKEYS[j][0]+" bu koşuda zaten rakip bir ata biniyor — başka jokey seç!");
+  if(G.online&&OL&&OL.ents.some(e=>e.gday===G.day&&e.race_no===rid&&e.jockey===j))return toast(JOCKEYS[j][0]+" bu koşuda başka bir ekürinin atına biniyor — başka jokey seç!");
   const tac=(document.getElementById("selT")||{}).value||null;
   if(G.online){ /* deklare sunucuya yazılır — kapanış kilidi veritabanında */
     const s=horseState(h);
@@ -3691,6 +3749,7 @@ function genFoal(stud){
   return name;
 }
 function newSeason(){
+  G.jcez={}; /* ⚖️ komiser cezaları yeni sezona taşınmaz */
   /* emeklilik: 10 yaşına gelenler damızlığa geçer (yer varsa), yoksa satılır */
   G.owned.filter(i=>ageOf(i)+1>=10).forEach(i=>{
     if((G.studs=G.studs||[]).length<3){
@@ -3783,8 +3842,8 @@ function runRace(rid){
   /* YARIŞ ÖNCESİ: ganyan & AGF tablosu ekranda birkaç saniye kalır, sonra start */
   const po=document.getElementById("preOdds");
   po.innerHTML='<h3 style="color:#e8c96a;margin-bottom:2px">'+(r.named?"⭐ ":"")+r.name+'</h3>'
-    +'<p style="color:#aab6cc;font-size:11px;margin-bottom:8px">'+r.dist+'m · '+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+' · '+TRACKS[r.track]+' · İkramiye '+fmt(r.purse)+'</p>'
-    +oddsTable(r,true)
+    +'<p style="color:#aab6cc;font-size:11px;margin-bottom:8px">'+r.dist+'m · '+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+' · '+TRACKS[r.track]+' · İkramiye '+fmt(r.purse)+' · Pist: '+GOINGS[goingOf(G.day)]+'</p>'
+    +oddsTable(r,true,R.runners)
     +'<p style="color:#e8c96a;font-size:12px;margin-top:10px;font-weight:700" id="preCnt">Start birazdan...</p>';
   po.style.display="block";
   let cnt=3;
@@ -3799,7 +3858,9 @@ function runRace(rid){
       }else{
         clearInterval(R.cd);
         po.style.display="none";
-        sfx("bell");setComment("🔔 <b>VE BAŞLADILAR!</b>");
+        sfx("bell");
+        const bads=(R.runners||[]).filter(u=>u.badStart);
+        setComment("🔔 <b>VE BAŞLADILAR!</b>"+(bads.length?" ❗ <b>"+bads.map(u=>HORSES[u.h][0]).join(", ")+"</b> makinede huysuzlandı, starta kötü çıktı!":""));
         R.phase="run";R.going=true;R.last=undefined;requestAnimationFrame(raceFrame);
       }
     },850);
@@ -4905,6 +4966,8 @@ function raceFrame(now){
       let phase=1;
       if(prog<0.35)phase=1.08-u.style*0.20;
       else if(prog>0.65)phase=0.89+u.style*0.30;
+      /* 🚦 kötü start: ilk %8'de belirgin yavaş (makinede huysuzlandı) */
+      if(u.badStart&&prog<0.08)phase*=0.82;
       /* ÇEKİŞME: ilk %70'te güç farkı bastırılır (grup bir arada),
          son %30'da tam açılır (belirleyici sprint) */
       const pw=prog<0.7?0.35:1.2;
@@ -5079,6 +5142,24 @@ function finishRace(){
     }
   }
   const r=R.race,order=R.order;
+  /* ⚖️ PROTESTO & YARIŞ KOMİSERLERİ: sadece foto finiş / burun farkı bitişlerde (nadir) */
+  let prot=null;
+  if(!R.replay&&order.length>=2&&!order[0].hurt&&(R.photo||(R.margin!==undefined&&R.margin<0.0032))){
+    const auto=rnd(0,1)<0.09; /* rakip eküri protesto çeker — sezonda ~5-7 kez (nadir olsun ki olay olsun) */
+    let player=false;
+    if(!auto&&order[1].mine&&!order[0].mine&&!G.online&&R.mode!=="sim"&&G.money>=PROT_FEE){
+      player=confirm("⚖️ Atın "+HORSES[order[1].h][0]+" fotofinişte kıl payı İKİNCİ!\n\nKural ihlali gerekçesiyle PROTESTO çekmek ister misin?\nÜcret: "+fmt(PROT_FEE)+" — komiserler hak verirse birincilik senin olur ve ücret iade edilir; haksız çıkarsan yanar.");
+      if(player){G.money-=PROT_FEE;addExp("kayit",PROT_FEE);}
+    }
+    if(auto||player){
+      const ok=rnd(0,1)<(player?0.30:0.28);
+      prot={by:player?"SEN":(order[1].stable||HORSES[order[1].h][5]),ok,player};
+      if(ok){
+        const t=order[0];order[0]=order[1];order[1]=t; /* 1.-2. yer değişir */
+        (G.jcez=G.jcez||{})[order[1].j]=G.day+3+Math.floor(rnd(0,3)); /* kusurlu jokeye ceza */
+      }
+    }
+  }
   const win=order[0];
   if(R.mode==="3d"){
     document.getElementById("bannerTxt").textContent="🏆 KAZANAN: "+HORSES[win.h][0];
@@ -5167,6 +5248,18 @@ function finishRace(){
   });
   r.done=true;r.result=res;
   delete G.entries[r.id];
+  /* ⚖️ protesto sonucu duyurulur */
+  if(prot){
+    const wN=HORSES[order[0].h][0];
+    if(prot.ok){
+      if(prot.player)G.money+=PROT_FEE; /* haklı çıkan ücretini geri alır */
+      pushNews("⚖️","PROTESTO KABUL: "+r.name,(prot.player?"Protestona":prot.by+" ekürisinin protestosuna")+" komiserler hak verdi! "+HORSES[order[1].h][0]+" kural ihlali nedeniyle geri alındı — resmi birinci: "+wN+". Kusurlu jokey "+JOCKEYS[order[1].j][0]+" "+(G.jcez[order[1].j]-G.day)+" gün ceza aldı."+(prot.player?" Protesto ücretin iade edildi.":""));
+      if(!quiet)setComment("⚖️ <b>PROTESTO KABUL EDİLDİ!</b> Birincilik el değiştirdi — resmi kazanan: <b>"+wN+"</b>"+(order[0].mine?" SENİN ATIN! 🎉":"")+" · "+JOCKEYS[order[1].j][0]+" ceza aldı.");
+    }else{
+      pushNews("⚖️","Protesto reddedildi: "+r.name,(prot.player?"Protestona":prot.by+" ekürisinin protestosuna")+" komiserler hak vermedi — sonuç geçerli."+(prot.player?" Protesto ücreti yandı.":""));
+      if(!quiet)setComment("⚖️ <b>PROTESTO REDDEDİLDİ</b> — komiserler sonucu onayladı: kazanan <b>"+wN+"</b>."+(prot.player?" Protesto ücretin yandı.":""));
+    }
+  }
   /* ⚔️ RAKİP EKÜRİ KARŞILAŞMASI: aynı koşuda kim önde bitirdi? */
   if(G.rival&&G.rival.y===G.year&&!R.replay){
     const myP=order.findIndex(u=>u.mine),rvP=order.findIndex(u=>!u.mine&&(u.stable||HORSES[u.h][5])===G.rival.n);
@@ -5245,7 +5338,9 @@ function simPendingRaces(){
     runners.forEach(u=>{u.score=u.perf+rnd(-5,5);});
     const order=[...runners].sort((a,b)=>b.score-a.score);
     order.forEach(u=>{u.done=true;u.x=1;});
-    R={race:r,runners,order,conf:[],mode:"sim",phase:"done",finished:false,slow:1,photo:false,flash:0,dust:[],confT:0,bob:0,cam:0,worldLen:2000};
+    /* foto finiş bilgisi simde de hesaplanır — protesto simde de çıkabilsin */
+    const marg=order[1]?Math.min(0.04,Math.max(0.0008,(order[0].score-order[1].score)*0.0025)):0.01;
+    R={race:r,runners,order,conf:[],mode:"sim",phase:"done",finished:false,slow:1,photo:marg<0.0032,margin:marg,flash:0,dust:[],confT:0,bob:0,cam:0,worldLen:2000};
     finishRace();
     order.forEach((u,i)=>{if(u.mine)myResults.push(HORSES[u.h][0]+" → "+(i+1)+".");});
   });

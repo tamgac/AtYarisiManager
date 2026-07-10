@@ -219,7 +219,7 @@ canvas{width:100%;display:block;border-radius:4px;}
       <button id="tab5" class="mi" onclick="showTab(5)">Yarış Programı</button>
       <button id="tab11" class="mi" onclick="showTab(11)">Takvim</button>
       <button id="tab13" class="mi" onclick="showTab(13)">🎫 Büyük Koşu Yolu</button>
-      <button id="tab14" class="mi" onclick="showTab(14)">🎰 Altılı Sonuçları</button>
+      <button id="tab14" class="mi" onclick="showTab(14)">💵 Bahislerim</button>
       <button id="tab9" class="mi" onclick="showTab(9)">Jokeyler</button>
       <button id="tab6" class="mi" onclick="showTab(6)">Personel</button>
       <div class="menuTitle">Kariyer</div>
@@ -1596,6 +1596,33 @@ function applyYear(y){
 }
 const WEATHERS=["☀️ Güneşli","⛅ Parçalı Bulutlu","🌧 Yağmurlu"];
 const weatherOf=d=>{const x=(d*37+11)%10;return x<5?0:(x<8?1:2);};
+/* 🌧 PİST DURUMU: yağmur pisti ağırlaştırır — çamurcular şaha kalkar */
+const GOINGS=["NORMAL","NEMLİ","AĞIR"];
+const goingOf=d=>weatherOf(d); /* 0 normal, 1 nemli, 2 ağır */
+/* atın çamur uyumu (kalıcı karakter): 0=çamurda zorlanır, 1=nötr, 2=ÇAMURCU */
+const mudOf=i=>{const x=hashStr(HORSES[i][0]+"mud")%10;return x<2?0:(x<7?1:2);};
+const mudName=i=>["🌧✗ çamurda zorlanır","🌧• çamurda nötr","🌧💪 ÇAMURCU"][mudOf(i)];
+/* 🔨 CANLI MÜZAYEDE GÜNLERİ (yılda 2 kez) */
+const AUC_DAYS=[28,63];
+/* 🩺 RAPORLU JOKEY: deterministik — herkes aynı raporu görür */
+function jRaporlu(j){
+  for(let s=Math.max(1,G.day-6);s<=G.day;s++){
+    const h=hashStr("rapor"+G.year+"_"+s+"_"+j);
+    if(h%1000<10){const sure=3+h%5;if(s+sure>G.day)return s+sure-G.day;}
+  }
+  return 0;
+}
+/* 🔥 JOKEY FORMU: son 3 günde 2+ galibiyet = ateşli (paylaşılan hlog'dan, deterministik) */
+function jHotMap(){
+  if(G._jf&&G._jf.day===G.day&&G._jf.year===G.year)return G._jf.map;
+  const map={};
+  Object.values(G.hlog||{}).forEach(arr=>arr.forEach(e=>{
+    if(e.y===G.year&&e.p===1&&e.d>=G.day-3)map[e.j]=(map[e.j]||0)+1;
+  }));
+  G._jf={day:G.day,year:G.year,map};
+  return map;
+}
+const jHot=j=>(jHotMap()[JOCKEYS[j]&&JOCKEYS[j][0]]||0)>=2;
 /* antrenman türleri */
 const TRAIN={R:{ad:"Dinlenme",ic:"😴"},K:{ad:"Kondisyon",ic:"💪"},S:{ad:"Sprint",ic:"⚡"},M:{ad:"Mesafe",ic:"🏃"}};
 /* başarımlar */
@@ -1617,7 +1644,13 @@ const ACHS=[
 const ageOf=i=>HORSES[i][4]+(G?G.year-(G.y0||2026):0);
 /* para ölçeği: 2008'de tüm tutarlar YTL döneminin 1/10 ölçeğinde gösterilir */
 let MSCALE=1;
-const fmt=n=>{const v=Math.round(n*MSCALE).toLocaleString("tr-TR");return MSCALE===1?"₺"+v:v+" YTL";};
+const fmt=n=>{
+  const x=n*MSCALE;
+  const v=(Math.abs(x)<100&&x%1!==0)
+    ?(Math.round(x*100)/100).toLocaleString("tr-TR",{maximumFractionDigits:2})
+    :Math.round(x).toLocaleString("tr-TR");
+  return MSCALE===1?"₺"+v:v+" YTL";
+};
 const fmtShort=n=>{const x=n*MSCALE;const s=x>=1000000?(Math.round(x/100000)/10).toLocaleString("tr-TR")+"M":Math.round(x/1000)+"B";return MSCALE===1?"₺"+s:s+" YTL";};
 /* TOHUMLU RASTGELELİK: online ligde herkes aynı yarışı aynı sonuçla üretir */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -1650,7 +1683,7 @@ function newGame(name){
     owned:[],cond:{},form:{},stats:{},ownerEarn:{},jockeyWins:{},
     entries:{},program:null,tab:0,history:[],exp:{},gear:{},
     trainer:-1,cJockey:-1,train:{},inj:{},offers:[],ach:{},seasonWins:0,champCount:0,
-    studs:[],foals:[],sty:{},bets:{},barn:1,groom:0};
+    studs:[],foals:[],sty:{},bets:{},betLog:[],barn:1,groom:0};
 }
 function horseState(i){
   if(!(i in G.cond))G.cond[i]=Math.round(rnd(70,95));
@@ -1782,7 +1815,7 @@ function load(id){try{const d=localStorage.getItem("atmenajer_"+id);if(d){const 
     g.slot=id;applyYear(g.y0||2026);G=g;return true;}
   if(g&&g.v===5){g.silk1=g.silk1||"#d21f26";g.silk2=g.silk2||"#f5f5f5";
     g.slot=id;applyYear(g.y0||2026);
-    g.studs=g.studs||[];g.foals=g.foals||[];g.sty=g.sty||{};g.sires=g.sires||[];g.bets=g.bets||{};
+    g.studs=g.studs||[];g.foals=g.foals||[];g.sty=g.sty||{};g.sires=g.sires||[];g.bets=g.bets||{};g.betLog=g.betLog||[];
     g.groom=g.groom||0;
     if(!g.barn){g.barn=1;while(g.barn<BARNS.length&&BARNS[g.barn-1][0]<(g.owned||[]).length)g.barn++;} /* eski kayıt: mevcut atlar sığacak kademe */
     /* eski kayıt göçü: extra listesi yoksa oluştur */
@@ -1877,7 +1910,7 @@ function genProgram(){
   if(nm){races.push({id:races.length,name:nm[1],breed:nm[2],lo:nm[3],hi:200,
     dist:nm[4],purse:nPurse(nm),named:true,track:nm[6],srf:"Çim",done:false,result:null});}
   /* DEKLARE: her koşunun AI katılımcıları önceden bellidir (gün bazlı sabit) */
-  const topJ=JOCKEYS.map((j,k)=>k).sort((a,b)=>jSkill(b)-jSkill(a)).slice(0,28);
+  const topJ=JOCKEYS.map((j,k)=>k).filter(k=>!jRaporlu(k)).sort((a,b)=>jSkill(b)-jSkill(a)).slice(0,28);
   races.forEach(r=>{
     /* 🔄 ROTASYON: dünkü/önceki gün koşan AI atları bugün dinlenir (isimli koşular hariç) —
        böylece hep aynı atlar koşmaz, kadro çeşitlenir */
@@ -1941,10 +1974,10 @@ function buildRunners(r,olEnt){
   {
     const usedJ={};
     runners.forEach(u=>{if(u.mine||u.stable)usedJ[u.j]=1;});
-    const rank=JOCKEYS.map((x,k)=>k).sort((a,b)=>jSkill(b)-jSkill(a));
+    const rank=JOCKEYS.map((x,k)=>k).filter(k=>!jRaporlu(k)).sort((a,b)=>jSkill(b)-jSkill(a));
     runners.forEach(u=>{
       if(u.mine||u.stable)return;
-      if(usedJ[u.j]){
+      if(usedJ[u.j]||jRaporlu(u.j)){
         let k=Math.max(0,rank.indexOf(u.j)),g=0;
         while(usedJ[rank[k]]&&g++<rank.length)k=(k+1)%rank.length;
         u.j=rank[k];
@@ -1963,7 +1996,13 @@ function buildRunners(r,olEnt){
     let perf=52+(HPu(u)-avgHP)*hpW+(jSkill(u.j)-55)*0.13-distPen;
     const sp=srfPref(u.h);
     if(sp!==2)perf+=(sp===srfIdx)?2.5:-2.5;
-    if(wthr===2)perf+=rnd(-5,5)+(r.srf==="Çim"?rnd(-2,0):0);
+    /* 🌧 PİST DURUMU: ağır pistte çamurcular kazanır, narinler kaybeder (kalıcı karakter) */
+    if(wthr>0){
+      const eff=(r.srf==="Çim"?1:0.5)*(wthr===2?1:0.35);
+      perf+=[-6,-1,6][mudOf(u.h)]*eff+rnd(-1.5,1.5);
+    }
+    /* 🔥 FORMDA JOKEY: son 3 günde 2+ galibiyet = özgüven */
+    if(jHot(u.j))perf+=2;
     if(s){
       perf+=(s.cond-80)*0.2+s.form*0.55; /* bakım avantajı var ama her şey değil */
       const tb=u.snap?(u.snap.tb||0):(G.trainer>=0?TRAINERS[G.trainer][1]:0);
@@ -1979,13 +2018,14 @@ function buildRunners(r,olEnt){
     perf+=rnd(-8.5,8.5); /* şans payı azaltıldı — kalite konuşur */
     u.perf=Math.max(25,perf);
     u.style=Math.min(1,Math.max(0,styleOf(u.h)+rnd(-0.08,0.08)));
-    /* 🏇 jokey talimatı: karaktere uyarsa bonus, ters düşerse ceza */
+    /* 🏇 JOKEY TALİMATI HÜKMEDER: at verilen taktiğe göre koşar —
+       karaktere uyarsa bonus, ters düşerse ceza ama plan yine uygulanır */
     if(u.tac){
-      const target=u.tac==="A"?0.15:u.tac==="D"?0.5:0.85;
+      const target=u.tac==="A"?0.10:u.tac==="D"?0.5:0.90;
       const fit=Math.abs(target-styleOf(u.h));
-      if(fit<=0.25){u.perf+=1.5;u.style=Math.min(1,Math.max(0,target+rnd(-0.05,0.05)));}
-      else if(fit>=0.5){u.perf-=3;u.style=Math.min(1,Math.max(0,(target+styleOf(u.h))/2));}
-      else u.style=Math.min(1,Math.max(0,target+rnd(-0.08,0.08)));
+      if(fit<=0.25){u.perf+=2.5;u.style=Math.min(1,Math.max(0,target+rnd(-0.04,0.04)));}
+      else if(fit>=0.5){u.perf-=4;u.style=Math.min(1,Math.max(0,target*0.75+styleOf(u.h)*0.25));}
+      else u.style=Math.min(1,Math.max(0,target+rnd(-0.06,0.06)));
     }
     /* dayanıklılık: kondisyon bilinen atlarda ona bağlı, AI'da rastgele */
     u.sta=s?Math.min(1.05,Math.max(0.6,0.9+(s.cond-80)*0.004)):rnd(0.75,1.0);
@@ -2090,26 +2130,43 @@ function showTab(n){
   const views=[viewHome,viewStable,viewTraining,viewMarket,viewTransfers,viewProgram,viewStaff,viewStandings,viewAch,viewJockeys,viewInbox,viewCalendar,viewCareer,viewQualPath,viewAltiLog];
   el.innerHTML=views[n]();
 }
-/* ============ 🎰 ALTILI SONUÇLARI (gerçekteki gibi tevzi arşivi) ============ */
+/* ============ 💵 BAHİSLERİM (kupon defteri + altılı tevzi arşivi) ============ */
 function viewAltiLog(){
-  const log=G.altiLog||[];
-  let html='<div class="card"><h3>🎰 Altılı Ganyan Sonuçları</h3>'
-    +'<p class="muted" style="margin:4px 0 8px">Her günün altılısında kazanan 6 at, ganyanları ve tevzi (₺1.000 birim kupona ödenen). Yüksek ganyanlı sürprizler tevziyi uçurur!</p>';
-  if((G.altiCarry||0)>0)html+='<p style="font-weight:700;color:#b03a2e;margin:4px 0">🔄 DEVREDEN HAVUZ: '+fmt(G.altiCarry)+' — bugünkü altılıda dev ödül var!</p>';
-  if(!log.length)html+='<p class="muted" style="margin:8px 0">Henüz sonuçlanmış altılı yok — ilk günün koşuları bitince burada birikecek.</p>';
+  const bets=G.betLog||[];
+  let html='<div class="card"><h3>💵 Kuponlarım</h3>';
+  if(!bets.length)html+='<p class="muted" style="margin:6px 0">Henüz kupon oynamadın. Yarış Programı\'ndan 🎰 Bahis veya 🎫 Altılı oyna.</p>';
   else{
-    html+='<table><tr><th>Gün</th><th>Kazananlar (ganyan)</th><th style="text-align:right">Havuz</th><th style="text-align:right">Bilen</th><th style="text-align:right">Tevzi</th></tr>'
-      +log.map(e=>{
-        return '<tr><td style="white-space:nowrap"><b>'+e.d+'</b>'+(e.y!==G.year?'<span class="muted">/'+e.y+'</span>':'')+'</td>'
+    const tot=bets.reduce((s,b)=>({y:s.y+b.amt,k:s.k+b.win}),{y:0,k:0});
+    html+='<div class="flexrow" style="margin:6px 0">'
+      +'<div class="statbox"><b>'+bets.length+'</b>Kupon</div>'
+      +'<div class="statbox"><b class="rTxt">'+fmt(tot.y)+'</b>Yatırılan</div>'
+      +'<div class="statbox"><b class="gTxt">'+fmt(tot.k)+'</b>Kazanılan</div>'
+      +'<div class="statbox"><b style="color:'+(tot.k-tot.y>=0?'#8fd694':'#e88')+'">'+fmt(tot.k-tot.y)+'</b>Net</div></div>';
+    html+='<table><tr><th>Gün</th><th>Kupon</th><th style="text-align:right">Yatırılan</th><th style="text-align:right">Sonuç</th></tr>'
+      +bets.map(b=>'<tr><td style="white-space:nowrap"><b>'+b.d+'</b>'+(b.y!==G.year?'<span class="muted">/'+b.y+'</span>':'')+'</td>'
+        +'<td style="font-size:10px">'+(b.k==="A6"?"🎫 ":"🎰 ")+b.desc+'</td>'
+        +'<td style="text-align:right" class="muted">'+fmt(b.amt)+'</td>'
+        +'<td style="text-align:right;font-weight:700;color:'+(b.st==="W"?'#2e7d32':b.st==="R"?'#8a6d1d':'#b03a2e')+'">'
+        +(b.st==="W"?"+"+fmt(b.win):b.st==="R"?"iade":"yandı")+'</td></tr>').join('')+'</table>';
+  }
+  html+='</div>';
+  /* altılı tevzi arşivi */
+  const log=G.altiLog||[];
+  html+='<div class="card"><h3>🎫 Altılı Tevzi Arşivi</h3>'
+    +'<p class="muted" style="margin:4px 0 8px">Brüt havuzdan kanuni kesintiler (%53) düşülür, kalan net tutar bilen birim sayısına bölünür. Bilen çıkmazsa yarına devreder.</p>';
+  if((G.altiCarry||0)>0)html+='<p style="font-weight:700;color:#b03a2e;margin:4px 0">🔄 DEVREDEN: '+fmt(G.altiCarry)+' — bugünkü altılıda dev havuz var!</p>';
+  if(!log.length)html+='<p class="muted" style="margin:8px 0">Henüz sonuçlanmış altılı yok.</p>';
+  else{
+    html+='<table><tr><th>Gün</th><th>Kazananlar (ganyan)</th><th style="text-align:right">Brüt Havuz</th><th style="text-align:right">Bilen</th><th style="text-align:right">Tevzi</th></tr>'
+      +log.map(e=>'<tr><td style="white-space:nowrap"><b>'+e.d+'</b>'+(e.y!==G.year?'<span class="muted">/'+e.y+'</span>':'')+'</td>'
           +'<td style="font-size:10px">'+e.legs.map(l=>l.n+' <b style="color:#8a6d1d">('+(l.g?l.g.toFixed(2):'—')+')</b>').join(' · ')+'</td>'
           +'<td style="text-align:right" class="muted">'+fmt(e.pool||0)+'</td>'
-          +'<td style="text-align:right">'+(e.rolled?'—':(e.winners||0))+'</td>'
-          +'<td style="text-align:right;font-weight:700;'+(e.rolled?'color:#b03a2e':'color:#2e7d32')+'">'+(e.rolled?'DÖNDÜ 🔄':fmt(e.div))+'</td></tr>';
-      }).join('')+'</table>';
+          +'<td style="text-align:right">'+(e.rolled?'—':(e.winners||0).toLocaleString("tr-TR"))+'</td>'
+          +'<td style="text-align:right;font-weight:700;'+(e.rolled?'color:#b03a2e':'color:#2e7d32')+'">'+(e.rolled?'DÖNDÜ 🔄':fmt(e.div))+'</td></tr>').join('')+'</table>';
     const paid=log.filter(e=>!e.rolled&&e.div);
     if(paid.length){
       const mx=paid.reduce((m,e)=>e.div>m.div?e:m,paid[0]);
-      html+='<p class="muted" style="margin-top:8px">📈 Kayıtlardaki rekor tevzi: <b>'+fmt(mx.div)+'</b> ('+mx.d+'. gün, '+mx.winners+' kişi bildi)</p>';
+      html+='<p class="muted" style="margin-top:8px">📈 Rekor tevzi: <b>'+fmt(mx.div)+'</b> ('+mx.d+'. gün, '+(mx.winners||0)+' bilen)</p>';
     }
   }
   html+='</div>';
@@ -2165,6 +2222,27 @@ function updInboxBadge(){
   const b=document.getElementById("inbxB");
   if(b)b.textContent=(G&&G.unread)?("("+G.unread+")"):"";
 }
+/* ============ ⚔️ RAKİP EKÜRİ (FM usulü ezeli rekabet) ============ */
+function rivalTick(){
+  const owners=Object.entries(G.ownerEarn).sort((a,b)=>b[1]-a[1]);
+  let myIx=owners.findIndex(o=>o[0]===G.stable);
+  if(myIx<0)myIx=owners.length; /* henüz ikramiye kazanmadıysan en dipten başlarsın */
+  if(!G.rival||G.rival.y!==G.year){
+    /* sezonun 10. gününden sonra sıralamada en yakın eküri rakip ilan edilir */
+    if(G.day<10||owners.length<4)return;
+    const cand=owners[myIx>0?myIx-1:myIx+1];
+    if(!cand||cand[0]===G.stable)return;
+    G.rival={n:cand[0],y:G.year,me:0,him:0};
+    pushNews("⚔️","Basın bir rekabet doğurdu: "+cand[0],"Sıralamada en yakın rakibin "+cand[0]+" ekürisi. Artık her karşılaşmanız manşetlere taşınacak. Sezonu kim önde bitirecek?");
+  }else if(G.day%7===0){
+    const rv=owners.find(o=>o[0]===G.rival.n);
+    if(!rv)return;
+    const gap=(G.ownerEarn[G.stable]||0)-rv[1];
+    pushNews("⚔️","Haftalık rekabet raporu",gap>=0
+      ?G.rival.n+" ekürisinin "+fmt(gap)+" önündesin. Karşılaşma skoru: "+(G.rival.me||0)+"-"+(G.rival.him||0)+". Sakın gevşeme!"
+      :G.rival.n+" senden "+fmt(-gap)+" önde! Karşılaşma skoru: "+(G.rival.me||0)+"-"+(G.rival.him||0)+". Basın seni sıkıştırıyor.");
+  }
+}
 function viewInbox(){
   G.unread=0;updInboxBadge();save();
   const inbox=G.inbox||[];
@@ -2184,7 +2262,7 @@ function viewInbox(){
 }
 /* ============ TAKVİM ============ */
 function viewCalendar(){
-  let html='<div class="card"><h3>📅 Sezon Takvimi — '+G.year+'</h3><p class="muted" style="margin:4px 0 8px">⭐ = isimli büyük koşu · sarı = bugün</p>';
+  let html='<div class="card"><h3>📅 Sezon Takvimi — '+G.year+'</h3><p class="muted" style="margin:4px 0 8px">⭐ = isimli büyük koşu · 🔨 = canlı açık artırma müzayedesi · sarı = bugün</p>';
   const months=[["Nisan",1,30],["Mayıs",31,61],["Haziran",62,84]];
   months.forEach(mo=>{
     html+='<div style="background:var(--navyL);color:#fff;padding:4px 8px;font-size:11px;margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px">'+mo[0]+'</div>'
@@ -2200,12 +2278,16 @@ function viewCalendar(){
         +(today?'background:#e8c96a;font-weight:700;':past?'opacity:.4;':'background:var(--cream2);cursor:pointer;')+'"'
         +(future?' onmouseover="this.style.background=\'#d6e0c9\'" onmouseout="this.style.background=\'var(--cream2)\'"':'')+'>'
         +new Date(G.year,3,1+(d-1)).getDate()
-        +(nm?'<br><span style="color:#8a6d1d;font-weight:700">⭐'+nm[1].split(" ")[0]+'</span>':'')+'</div>';
+        +(nm?'<br><span style="color:#8a6d1d;font-weight:700">⭐'+nm[1].split(" ")[0]+'</span>':'')
+        +(AUC_DAYS.includes(d)?'<br><span style="color:#7a4a12;font-weight:700">🔨Müzayede</span>':'')+'</div>';
     }
     html+='</div>';
   });
   html+='</div><div class="card"><h3>Büyük Koşular</h3><table><tr><th>Tarih</th><th>Koşu</th><th>Irk</th><th>Mesafe</th><th>İkramiye</th><th>Pist</th></tr>'
-    +NAMED.map(n=>'<tr'+(n[0]<G.day?' style="opacity:.5"':'')+'><td>'+dateStr(n[0])+'</td><td class="named">⭐ '+n[1]+'</td><td>'+(n[2]==="A"?"Arap":"İngiliz")+'</td><td>'+n[4]+'m</td><td>'+fmt(nPurse(n))+'</td><td>'+TRACKS[n[6]]+'</td></tr>').join('')+'</table></div>';
+    +NAMED.map(n=>'<tr'+(n[0]<G.day?' style="opacity:.5"':'')+'><td>'+dateStr(n[0])+'</td><td class="named">⭐ '+n[1]+'</td><td>'+(n[2]==="A"?"Arap":"İngiliz")+'</td><td>'+n[4]+'m</td><td>'+fmt(nPurse(n))+'</td><td>'+TRACKS[n[6]]+'</td></tr>').join('')+'</table></div>'
+  +'<div class="card"><h3>🔨 Canlı Açık Artırma Müzayedeleri</h3><p class="muted" style="margin:4px 0 8px">Seçkin safkanlar canlı müzayedede satılır — diğer at sahipleriyle kızışan tekliflerle yarışırsın (temsili müzayede).</p>'
+    +'<table><tr><th>Tarih</th><th>Müzayede</th><th>Durum</th></tr>'
+    +AUC_DAYS.map((d,ix)=>'<tr'+(d<G.day?' style="opacity:.5"':'')+'><td>'+dateStr(d)+'</td><td><b>'+(ix===0?"İlkbahar Seçkin Safkan Müzayedesi":"Yaz Elit Tay & Safkan Müzayedesi")+'</b></td><td>'+(d<G.day||(G.aucDone||{})[G.year+"_"+d]?'<span class="muted">tamamlandı</span>':d===G.day?'<span class="gTxt" style="font-weight:700">BUGÜN! Programdan katıl</span>':(d-G.day)+' gün kaldı')+'</td></tr>').join('')+'</table></div>';
   return html;
 }
 /* ============ KARİYER & REKORLAR ============ */
@@ -2253,9 +2335,9 @@ function viewJockeys(){
     +'<table><tr><th>#</th><th>Jokey</th><th>Prestij</th><th>Kariyer %1</th><th>Koşu</th><th>1.</th><th>2.</th><th>3.</th><th>Sezon %1</th><th>Sezon Kazancı</th><th>Ücret</th><th></th></tr>'
     +list.map((o,i)=>{
       const pct=o.s.rides?Math.round(o.s.w/o.s.rides*100):0;
-      const mine=G.cJockey===o.k;
-      return "<tr"+(mine?" style='background:#d6e0c9'":"")+"><td>"+(i+1)+"</td>"
-        +"<td><b>"+(o.j[5]==="AP"?"🎓 ":"")+o.j[0]+"</b>"+(o.j[5]==="AP"?" <span class='muted'>apranti</span>":"")+(mine?" <span class='gTxt'>⭐ anlaşmalı</span>":"")+"</td>"
+      const mine=G.cJockey===o.k,rap=jRaporlu(o.k),hot=jHot(o.k);
+      return "<tr"+(mine?" style='background:#d6e0c9'":rap?" style='opacity:.55'":"")+"><td>"+(i+1)+"</td>"
+        +"<td><b>"+(o.j[5]==="AP"?"🎓 ":"")+(hot?"🔥 ":"")+o.j[0]+"</b>"+(o.j[5]==="AP"?" <span class='muted'>apranti</span>":"")+(mine?" <span class='gTxt'>⭐ anlaşmalı</span>":"")+(rap?" <span style='color:#b03a2e;font-weight:700'>🩺 RAPORLU — "+rap+" gün</span>":hot?" <span style='color:#c8791e;font-weight:700'>formda</span>":"")+"</td>"
         +"<td>"+hpBar(o.j[4])+"</td><td>%"+o.j[1]+"</td>"
         +"<td>"+o.s.rides+"</td><td class='"+(o.s.w?"pos1":"")+"'>"+o.s.w+"</td><td>"+o.s.p2+"</td><td>"+o.s.p3+"</td>"
         +"<td>"+(o.s.rides?"%"+pct:"—")+"</td><td><b>"+fmt(o.s.earn)+"</b></td><td>"+fmt(jFee(o.k))+"</td>"
@@ -2275,11 +2357,13 @@ function viewHome(){
     +'<div class="statbox"><b>'+(rank||"-")+'</b>Sahip Sırası</div>'
     +'<div class="statbox"><b>'+G.owned.length+(injured?" ("+injured+" sakat)":"")+'</b>Atlarım</div>'
     +'<div class="statbox"><b>'+Object.keys(G.ach).length+'/'+ACHS.length+'</b>Başarı</div></div></div>';
-  html+='<div class="card"><h3>Bugün — '+dateStr(G.day)+' · '+WEATHERS[weatherOf(G.day)]+'</h3>'
+  html+='<div class="card"><h3>Bugün — '+dateStr(G.day)+' · '+WEATHERS[weatherOf(G.day)]+' · Pist: '+GOINGS[goingOf(G.day)]+'</h3>'
+    +(AUC_DAYS.includes(G.day)&&!(G.aucDone||{})[G.year+"_"+G.day]&&!(OL&&OL.lid)?'<p style="margin:4px 0"><b>🔨 Bugün canlı müzayede günü!</b> <button class="sec" onclick="openAuction()">Müzayedeye Katıl</button></p>':'')
     +'<p style="margin:4px 0">Koşular: <b>'+TRACKS[G.program.pair[0]]+'</b> ve <b>'+TRACKS[G.program.pair[1]]+'</b>'
     +(G.program.races.some(r=>r.named)?' · <span class="named">⭐ '+G.program.races.find(r=>r.named).name+' bugün!</span>':'')+'</p>'
     +'<p style="margin:4px 0">'+(elig?'<span class="gTxt">✔ '+elig+' koşuya girebilecek atın var.</span>':'<span class="muted">Bugünkü koşulara uygun boşta atın yok.</span>')
     +(G.offers.length?' · <span class="gTxt">📨 '+G.offers.length+' transfer teklifi bekliyor!</span>':'')+'</p>'
+    +(G.rival&&G.rival.y===G.year?'<p style="margin:4px 0">⚔️ Ezeli rakibin: <b>'+G.rival.n+'</b> · karşılaşma skoru <b>'+(G.rival.me||0)+'-'+(G.rival.him||0)+'</b></p>':'')
     +'<p style="margin:4px 0" class="muted">Antrenör: '+(G.trainer>=0?TRAINERS[G.trainer][0]+" (haftalık "+fmt(tFee(G.trainer))+")":"yok — Personel menüsünden tut")
     +' · Anlaşmalı jokey: '+(G.cJockey>=0?JOCKEYS[G.cJockey][0]:"yok")+'</p></div>';
   if(G.history.length){
@@ -2343,8 +2427,19 @@ function viewTraining(){
   let rows=G.owned.map(i=>{
     const h=HORSES[i],s=horseState(i);const cur=G.train[i]||"R";
     const btns=Object.keys(TRAIN).map(k=>"<button class='trainBtn"+(cur===k?" on":"")+"' onclick='setTrain("+i+",\""+k+"\")'>"+TRAIN[k].ic+" "+TRAIN[k].ad+"</button>").join(" ");
-    const tedavi=G.inj[i]>1?" <button class='trainBtn' onclick='fastHeal("+i+")'>💉 Yoğun tedavi "+fmt(G.inj[i]*8000)+"</button>":"";
-    const inj=G.inj[i]>0?"<span class='rTxt'>🩹 Sakat — "+G.inj[i]+" gün</span>"+tedavi:"";
+    let tedavi="";
+    if(G.inj[i]>0){
+      const t=(G.injT||{})[i];
+      if(t==="nal")tedavi=" <button class='trainBtn' "+(G.money<60000?"disabled":"")+" onclick='nalbant("+i+")'>🦶 Nalbant çağır "+fmt(60000)+"</button>";
+      else if(t==="tendon"){
+        const sc=Math.round((350000+hpOf(i)*3000)/1000)*1000;
+        tedavi=" <button class='trainBtn' "+(G.money<sc?"disabled":"")+" onclick='surgery("+i+")' title='Süreyi kısaltır, tekrarlama riskini sıfırlar'>🏥 Ameliyat "+fmt(sc)+"</button>";
+      }
+      else if(G.inj[i]>1)tedavi=" <button class='trainBtn' onclick='fastHeal("+i+")'>💉 Yoğun tedavi "+fmt(G.inj[i]*8000)+"</button>";
+      if(G.inj[i]<=4)tedavi+=" <button class='trainBtn' onclick='earlyReturn("+i+")' title='Hemen döner ama kondisyon -20; tendonsa tekrarlama riski artar'>🐎 Erken dönüş (riskli)</button>";
+    }
+    const inj=G.inj[i]>0?"<span class='rTxt'>🩹 "+injLabel(i)+" — "+G.inj[i]+" gün</span>"+((G.injHist||{})[i]?" <span class='muted' title='Tendon geçmişi: koşu sonrası sakatlık riski artar'>⚠ tendon geçmişi ×"+G.injHist[i]+"</span>":"")+tedavi
+      :((G.injHist||{})[i]?"<span class='muted' title='Tendon geçmişi: koşu sonrası sakatlık riski artar'>⚠ tendon geçmişi</span>":"");
     const fizC=physioCost(i);
     const fizOk=(G.physio||{})[i]===undefined||G.day-G.physio[i]>=5;
     const fiz=(!G.inj[i]&&s.cond<95)
@@ -2354,7 +2449,8 @@ function viewTraining(){
   return '<div class="card"><h3>Günlük Antrenman Programı</h3><table><tr><th>At</th><th>Kondisyon</th><th>Form</th><th>Program</th></tr>'+rows+'</table>'
     +'<p class="muted" style="margin-top:8px">😴 Dinlenme: kondisyon +3 · 💪 Kondisyon: +2 kond, hafif form · ⚡ Sprint: form +2, kond -3, sakatlık riski %2.5 · 🏃 Mesafe: form +1, kond +1, risk %1.2 · 💆 Fizyoterapi: anında +9 kond (5 günde 1)'
     +(tb?' — Antrenörün ('+TRAINERS[G.trainer][0]+') kazanımları artırıyor, riski azaltıyor.':' — Antrenör tutarsan kazanımlar artar, sakatlık riski düşer.')
-    +'<br>⚠ Kondisyonu %55 altında at koşturmak sakatlık riskini ciddi artırır!</p></div>';
+    +'<br>⚠ Kondisyonu %55 altında at koşturmak sakatlık riskini ciddi artırır!'
+    +'<br>🏥 Sakatlık çeşitleri: 💪 kas (kısa, yoğun tedaviyle hızlanır) · 🦶 nal/ayak (nalbant ertesi güne çözer) · 🦵 tendon (uzun; ameliyat pahalıdır ama tekrarlama riskini sıfırlar — ameliyatsız iyileşen tendon her koşuda tekrar sakatlanma riski taşır) · 🐎 erken dönüş her sakatlıkta mümkündür ama kondisyonu -20 düşürür.</p></div>';
 }
 /* 💆 fizyoterapi: pahalı ama anında toparlar (değerli at = pahalı bakım) */
 const physioCost=i=>Math.round((100000+hpOf(i)*2000)/1000)*1000;
@@ -2383,6 +2479,19 @@ function removeGear(i,k){
   if(G.gear&&G.gear[i])G.gear[i]=G.gear[i].filter(x=>x!==k);
   save();showHorse(i);
 }
+/* 🏥 SAKATLIK ÇEŞİTLERİ & VETERİNER KARARLARI (temsili tıbbi model) */
+const INJT={kas:["💪","Kas zorlanması"],nal:["🦶","Nal/ayak sorunu"],tendon:["🦵","Tendon sakatlığı"]};
+function injure(i,race){
+  const x=Math.random();let t;
+  if(x<0.40){t="kas";G.inj[i]=2+Math.floor(rnd(0,4));}
+  else if(x<0.72){t="nal";G.inj[i]=3+Math.floor(rnd(0,4));}
+  else{t="tendon";G.inj[i]=9+Math.floor(rnd(0,8));}
+  if(race)G.inj[i]+=1;
+  if(t==="tendon")(G.injHist=G.injHist||{})[i]=(G.injHist[i]||0)+1;
+  (G.injT=G.injT||{})[i]=t;
+  return t;
+}
+const injLabel=i=>{const t=(G.injT||{})[i];return t?INJT[t][0]+" "+INJT[t][1]:"Sakatlık";};
 function fastHeal(i){
   const cost=G.inj[i]*8000;
   if(G.money<cost)return toast("Bütçe yetersiz!");
@@ -2390,6 +2499,35 @@ function fastHeal(i){
   G.inj[i]=Math.max(1,Math.floor(G.inj[i]/2));
   save();refreshTop();showTab(2);
   toast(HORSES[i][0]+" yoğun tedaviye alındı — kalan: "+G.inj[i]+" gün.");
+}
+/* 🦶 nalbant: nal/ayak sorununu ertesi güne çözer */
+function nalbant(i){
+  if(G.money<60000)return toast("Bütçe yetersiz!");
+  G.money-=60000;addExp("vet",60000);
+  G.inj[i]=1;
+  save();refreshTop();showTab(2);
+  toast("🦶 Nalbant geldi — "+HORSES[i][0]+" yarın koşulara hazır.");
+}
+/* 🏥 tendon ameliyatı: pahalı ama güvenli — tekrarlama riskini sıfırlar */
+function surgery(i){
+  const c=Math.round((350000+hpOf(i)*3000)/1000)*1000;
+  if(G.money<c)return toast("Bütçe yetersiz!");
+  G.money-=c;addExp("vet",c);
+  G.inj[i]=Math.max(5,Math.floor(G.inj[i]*0.55));
+  if(G.injHist)G.injHist[i]=0;
+  save();refreshTop();showTab(2);
+  pushNews("🏥","Ameliyat: "+HORSES[i][0],"Tendon ameliyatı başarılı geçti. Tekrarlama riski ortadan kalktı. Kalan istirahat: "+G.inj[i]+" gün.");
+  toast("🏥 Ameliyat başarılı! "+HORSES[i][0]+" — kalan "+G.inj[i]+" gün, tekrarlama riski sıfırlandı.");
+}
+/* 🐎 erken dönüş: riskli veteriner kararı — hemen koşabilir ama bedeli var */
+function earlyReturn(i){
+  const t=(G.injT||{})[i];
+  G.inj[i]=0;
+  G.cond[i]=Math.max(20,(G.cond[i]||80)-20);
+  G.form[i]=Math.max(-15,(G.form[i]||0)-3);
+  if(t==="tendon")(G.injHist=G.injHist||{})[i]=(G.injHist[i]||0)+1;
+  save();refreshTop();showTab(2);
+  toast("⚠ "+HORSES[i][0]+" tam iyileşmeden idmana döndü — kondisyon düştü"+(t==="tendon"?", tendonun tekrarlama riski arttı":"")+".");
 }
 function viewTransfers(){
   let html='<div class="card"><h3>Transfer Teklifleri</h3>';
@@ -2587,6 +2725,169 @@ async function olBuy(i,p){
       showTab(3);}catch(e2){}
   }
 }
+/* ============ 🔨 CANLI AÇIK ARTIRMA MÜZAYEDESİ (yılda 2 kez — takvimde) ============ */
+let AUC=null;
+function aucLots(){
+  const cands=HORSES.map((h,x)=>x).filter(x=>!G.owned.includes(x)&&!isStud(x)&&ageOf(x)>=2&&ageOf(x)<=5&&hpOf(x)>=72&&!(G.aucSold||{})[x]);
+  if(!cands.length)return [];
+  const seed=G.year*1000+G.day,lots=[],used={};
+  for(let k=0;k<60&&lots.length<4;k++){
+    const ix=cands[hashStr("auc"+seed+"_"+k)%cands.length];
+    if(!used[ix]){used[ix]=1;lots.push(ix);}
+  }
+  return lots.sort((a,b)=>hpOf(a)-hpOf(b)); /* zayıftan yıldıza — kapanış lotu gecenin atı */
+}
+function aucAIs(){
+  /* teklif savaşına girecek rakip sahipler: gerçek isimler, farklı cüzdanlar */
+  const names=[...new Set(HORSES.map(h=>h[5]).filter(n=>n&&n!==G.stable))];
+  const seed=G.year*1000+G.day;
+  return [0,1,2,3].map(k=>({name:names[hashStr("aucai"+seed+"_"+k)%names.length]||"Yabancı Alıcı",
+    greed:0.75+ (hashStr("aucg"+seed+"_"+k)%60)/100})); /* 0.75–1.35 × değer limiti */
+}
+function openAuction(){
+  if(OL&&OL.lid)return toast("🌐 Online ligde müzayede yok — pazar ortak.");
+  if(!AUC_DAYS.includes(G.day)||(G.aucDone||{})[G.year+"_"+G.day])return toast("Bugün müzayede yok.");
+  if(!AUC){
+    const lots=aucLots();
+    if(!lots.length){(G.aucDone=G.aucDone||{})[G.year+"_"+G.day]=true;save();return toast("Müzayedeye uygun at bulunamadı.");}
+    AUC={lots,cur:0,price:0,holder:null,ais:aucAIs(),log:[],results:[],hammer:0,timer:null};
+    aucStartLot();
+  }
+  aucRender();
+  document.getElementById("modalBg").classList.add("show");
+}
+function aucStartLot(){
+  const i=AUC.lots[AUC.cur];
+  AUC.price=Math.round(horsePrice(i)*0.5/10000)*10000;
+  AUC.holder=null;AUC.log=[];AUC.hammer=0;
+  AUC.limits=AUC.ais.map(a=>Math.round(horsePrice(i)*a.greed*(0.9+Math.random()*0.25)));
+  AUC.log.push("📢 Açılış fiyatı: "+fmt(AUC.price));
+  aucSchedule(900);
+}
+const aucStep=()=>Math.max(25000,Math.round(AUC.price*0.06/5000)*5000);
+function aucSchedule(ms){
+  clearTimeout(AUC.timer);
+  AUC.timer=setTimeout(aucAITurn,ms);
+}
+function aucAITurn(){
+  if(!AUC)return;
+  const next=AUC.price+aucStep();
+  /* limiti yeten rakipler arasından biri artırır */
+  const willing=AUC.ais.map((a,k)=>k).filter(k=>AUC.limits[k]>=next&&AUC.holder!=="AI"+k);
+  if(willing.length&&(AUC.holder===null||Math.random()<0.82)){
+    const k=willing[Math.floor(Math.random()*willing.length)];
+    AUC.price=next;AUC.holder="AI"+k;AUC.hammer=0;
+    AUC.log.push("💰 <b>"+AUC.ais[k].name+"</b>: "+fmt(AUC.price));
+    aucSchedule(700+Math.random()*900);
+  }else{
+    /* kimse artırmıyor → çekiç sayar */
+    AUC.hammer++;
+    if(AUC.hammer===1)AUC.log.push("🔨 Satıyorummm...");
+    else if(AUC.hammer===2)AUC.log.push("🔨 Satıyorum, son fırsat...");
+    else return aucSold();
+    aucSchedule(1400);
+  }
+  aucRender();
+}
+function aucBid(){
+  if(!AUC||AUC.holder==="SEN")return;
+  const next=AUC.price+aucStep();
+  if(G.money<next)return toast("Bütçe yetersiz!");
+  if(G.owned.length>=barnCap())return toast("🏚 Ahırın dolu — müzayededen at alamazsın!");
+  AUC.price=next;AUC.holder="SEN";AUC.hammer=0;
+  AUC.log.push("✋ <b>SEN</b>: "+fmt(AUC.price));
+  aucRender();
+  aucSchedule(600+Math.random()*800);
+}
+function aucSold(){
+  const i=AUC.lots[AUC.cur];
+  clearTimeout(AUC.timer);
+  if(AUC.holder==="SEN"){
+    G.money-=AUC.price;addExp("at",AUC.price);
+    G.owned.push(i);horseState(i);G.train[i]="R";
+    (G.aucSold=G.aucSold||{})[i]=1;
+    AUC.results.push({i,who:"SEN",p:AUC.price});
+    AUC.log.push("🔨 <b>SATILDI!</b> "+HORSES[i][0]+" — "+fmt(AUC.price)+" ile SENİN! 🎉");
+    pushNews("🔨","Müzayede: "+HORSES[i][0]+" senin!","Canlı açık artırmada "+fmt(AUC.price)+" bedelle kazandın.");
+    checkAchBasics();
+  }else if(AUC.holder){
+    const k=+AUC.holder.slice(2),w=AUC.ais[k].name;
+    HORSES[i][5]=w;(G.aucSold=G.aucSold||{})[i]=1;
+    AUC.results.push({i,who:w,p:AUC.price});
+    AUC.log.push("🔨 SATILDI — "+HORSES[i][0]+" → <b>"+w+"</b> ("+fmt(AUC.price)+")");
+  }else{
+    AUC.results.push({i,who:null,p:0});
+    AUC.log.push("❌ Alıcı çıkmadı — lot geri çekildi.");
+  }
+  save();refreshTop();
+  AUC.hammer=-1; /* lot arası */
+  aucRender();
+}
+function aucNext(){
+  if(!AUC)return;
+  AUC.cur++;
+  if(AUC.cur>=AUC.lots.length)return aucFinish();
+  aucStartLot();aucRender();
+}
+function aucFinish(){
+  (G.aucDone=G.aucDone||{})[G.year+"_"+G.day]=true;
+  const sold=AUC.results.filter(r=>r.who);
+  pushNews("🔨","Müzayede sona erdi",sold.length?sold.map(r=>HORSES[r.i][0]+" → "+r.who+" ("+fmt(r.p)+")").join(" · "):"Satış gerçekleşmedi.");
+  clearTimeout(AUC.timer);AUC=null;
+  save();closeModal();showTab(5);
+  toast("🔨 Müzayede tamamlandı!");
+}
+/* gün müzayedeye uğramadan kapanırsa lotlar rakiplere gider */
+function aucAutoResolve(){
+  if(!AUC_DAYS.includes(G.day)||(G.aucDone||{})[G.year+"_"+G.day]||(OL&&OL.lid))return;
+  if(AUC){clearTimeout(AUC.timer);AUC=null;}
+  const lots=aucLots(),ais=aucAIs();
+  const res=lots.map(i=>{
+    const a=ais[hashStr("aucw"+G.year+"_"+G.day+"_"+i)%ais.length];
+    const p=Math.round(horsePrice(i)*(0.85+(hashStr("aucp"+i)%40)/100));
+    HORSES[i][5]=a.name;(G.aucSold=G.aucSold||{})[i]=1;
+    return HORSES[i][0]+" → "+a.name+" ("+fmt(p)+")";
+  });
+  (G.aucDone=G.aucDone||{})[G.year+"_"+G.day]=true;
+  if(res.length)pushNews("🔨","Müzayedeyi kaçırdın!","Canlı müzayedede satılanlar: "+res.join(" · "));
+}
+function aucRender(){
+  if(!AUC)return;
+  const i=AUC.lots[AUC.cur],h=HORSES[i];
+  const soldMode=AUC.hammer===-1;
+  const holderTxt=AUC.holder==="SEN"?'<span style="color:#3a6b35;font-weight:700">SENDE ✋</span>'
+    :AUC.holder?'<b>'+AUC.ais[+AUC.holder.slice(2)].name+'</b>':'<span class="muted">henüz teklif yok</span>';
+  document.getElementById("modalBox").innerHTML=
+    '<h3>🔨 Canlı Müzayede — Lot '+(AUC.cur+1)+'/'+AUC.lots.length+'</h3>'
+    +'<div style="border:2px solid #8a6d1d;border-radius:4px;padding:10px;margin:8px 0;background:var(--cream2)">'
+    +'<b style="font-size:15px">'+h[0]+'</b> '+breedBadge(h[1])+' — '+ageOf(i)+' yaş '+(h[2]==="E"?"erkek":"dişi")
+    +' · Güç '+hpOf(i)+' · '+["🌧✗","🌧","🌧💪"][mudOf(i)]
+    +(h[6]?'<br><span style="color:#8a6d1d">🏆 '+h[6]+'</span>':'')
+    +'<br><span class="muted">Piyasa değeri (eksper tahmini): '+fmt(horsePrice(i))+' · form '+formStr(i)+'</span></div>'
+    +'<div style="text-align:center;margin:8px 0"><span style="font-size:22px;font-weight:700;color:#7a4a12">'+fmt(AUC.price)+'</span><br>'+holderTxt+'</div>'
+    +'<div style="max-height:150px;overflow:auto;border:1px solid var(--line);padding:6px;font-size:11px;background:#fff">'+AUC.log.slice(-9).map(l=>'<div>'+l+'</div>').join('')+'</div>'
+    +'<div class="flexrow" style="margin-top:12px;justify-content:flex-end">'
+    +(soldMode
+      ?'<button onclick="aucNext()">'+(AUC.cur+1>=AUC.lots.length?"Müzayedeyi Bitir":"Sonraki Lot ▸")+'</button>'
+      :'<button class="sec" onclick="aucSkipLot()">Bu lotu bırak</button><button '+(AUC.holder==="SEN"||G.money<AUC.price+aucStep()?"disabled":"")+' onclick="aucBid()">✋ Teklif: '+fmt(AUC.price+aucStep())+'</button>')
+    +'</div>';
+}
+function aucSkipLot(){
+  /* oyuncu çekilir — kalan rakipler kendi aralarında bitirir */
+  if(!AUC)return;
+  if(AUC.holder!=="SEN"){
+    clearTimeout(AUC.timer);
+    let guard=0;
+    while(guard++<60){
+      const next=AUC.price+aucStep();
+      const willing=AUC.ais.map((a,k)=>k).filter(k=>AUC.limits[k]>=next&&AUC.holder!=="AI"+k);
+      if(!willing.length)break;
+      const k=willing[Math.floor(Math.random()*willing.length)];
+      AUC.price=next;AUC.holder="AI"+k;
+    }
+    aucSold();
+  }else toast("En yüksek teklif sende — çekiç inene kadar bekle!");
+}
 function sellHorse(i){
   if(G.online)return toast("🌐 Online ligde at satışı yok — ekürini sezon boyunca yönetirsin.");
   const p=Math.round(horsePrice(i)*0.5); /* aceleyle satış zarardır */
@@ -2596,7 +2897,10 @@ function sellHorse(i){
 }
 function viewProgram(){
   const P=G.program;
+  const gng=goingOf(G.day);
   let html='<div class="card"><h3>'+dateStr(G.day)+' — Yarış Günü</h3><p class="muted" style="margin-top:4px">Bugün koşular <b>'+TRACKS[P.pair[0]]+'</b> ve <b>'+TRACKS[P.pair[1]]+'</b> hipodromlarında. Kayıt: ikramiyenin %2\'si (isimli koşuda %3) + jokey ücreti + at nakliyesi. İkramiye dağılımı: %60 / %20 / %10 / %6 / %4</p>'
+  +'<p style="margin:6px 0 0;font-weight:700">'+WEATHERS[weatherOf(G.day)]+' · Pist: <span style="color:'+(gng===2?"#7a4a12":gng===1?"#8a6d1d":"#3a6b35")+'">'+GOINGS[gng]+(gng===2?" 🌧 — çamurcu atlar avantajlı!":gng===1?" — pist hafif etkilenir":"")+'</span></p>'
+  +(AUC_DAYS.includes(G.day)&&!(G.aucDone||{})[G.year+"_"+G.day]&&!(OL&&OL.lid)?'<div style="margin-top:8px;padding:8px;background:#f3e4c2;border:2px solid #8a6d1d;border-radius:4px"><b>🔨 BUGÜN CANLI MÜZAYEDE GÜNÜ!</b> Seçkin safkanlar açık artırmada. <button onclick="openAuction()">Müzayedeye Katıl</button></div>':'')
   +'<div style="text-align:right;margin-top:6px">'
     +((G.alti&&G.alti.day===G.day)
       ?'<span style="font-size:11px;font-weight:700;color:#8a6d1d">🎫 Altılı kuponun oynandı ('+fmt(G.alti.amt)+') </span>'
@@ -2662,15 +2966,18 @@ function openEntry(rid,preH){
   if(!my.length)return toast(r.named&&qualText(r)?"Şartları sağlayan atın yok! "+qualText(r):"Bu koşuya uygun (ırk/güç) boşta atın yok.");
   const fee=Math.round(r.purse*(r.named?0.05:0.02)); /* büyük koşu kaydı taksitli ve tuzlu (gerçekteki gibi) */
   const nak=NAKLIYE[r.track];
+  const gng=goingOf(G.day);
   let hOpts=my.map(i=>{
     const dFit=Math.abs(r.dist-idealDist(i))<=200?" · mesafe ✓":"";
     const sp=srfPref(i),sFit=sp===2?"":(sp===(r.srf==="Kum"?1:0)?" · pist ✓":" · pist ✗");
-    return "<option value='"+i+"'>"+HORSES[i][0]+" — form "+formStr(i)+" (Güç "+hpOf(i)+", kond %"+horseState(i).cond+dFit+sFit+")</option>";
+    const mFit=gng===2?(mudOf(i)===2?" · 🌧💪 çamurcu":mudOf(i)===0?" · 🌧✗ çamur sevmez":""):"";
+    return "<option value='"+i+"'>"+HORSES[i][0]+" — form "+formStr(i)+" (Güç "+hpOf(i)+", kond %"+horseState(i).cond+dFit+sFit+mFit+")</option>";
   }).join("");
-  /* bu koşuda zaten binen jokeyler (senin diğer atların) seçilemez */
+  /* bu koşuda zaten binen jokeyler (senin diğer atların) ve raporlular seçilemez */
   const takenJ={};(G.entries[rid]||[]).forEach(e=>takenJ[e.j]=1);
   let jOpts=JOCKEYS.map((j,k)=>({k})).sort((a,b)=>(b.k===G.cJockey)-(a.k===G.cJockey)||effJFee(b.k)-effJFee(a.k))
-    .map(o=>"<option value='"+o.k+"'"+(takenJ[o.k]?" disabled":"")+">"+(o.k===G.cJockey?"⭐ ":"")+(JOCKEYS[o.k][5]==="AP"?"🎓 ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+(JOCKEYS[o.k][5]==="AP"?" · APRANTİ: kilo avantajı, tecrübesiz":"")+(takenJ[o.k]?" — BU KOŞUDA BİNİYOR":"")+"</option>").join("");
+    .map(o=>{const rap=jRaporlu(o.k);
+    return "<option value='"+o.k+"'"+((takenJ[o.k]||rap)?" disabled":"")+">"+(o.k===G.cJockey?"⭐ ":"")+(JOCKEYS[o.k][5]==="AP"?"🎓 ":"")+(jHot(o.k)?"🔥 ":"")+JOCKEYS[o.k][0]+" — "+fmt(effJFee(o.k))+" · %"+JOCKEYS[o.k][1]+" galibiyet"+(o.k===G.cJockey?" (anlaşmalı)":"")+(JOCKEYS[o.k][5]==="AP"?" · APRANTİ: kilo avantajı, tecrübesiz":"")+(jHot(o.k)?" · FORMDA":"")+(rap?" — 🩺 RAPORLU ("+rap+" gün)":takenJ[o.k]?" — BU KOŞUDA BİNİYOR":"")+"</option>";}).join("");
   document.getElementById("modalBox").innerHTML=
     "<h3>"+r.name+" — Kayıt</h3>"
     +"<table style='margin:10px 0'><tr><th colspan=2>Masraf Dökümü</th></tr>"
@@ -2765,27 +3072,35 @@ function confirmBet(rid,cap){
    Bilen sayısı halkın AGF dağılımından hesaplanır; kimse bilemezse DÖNER (jackpot büyür).
    Çoklu at işaretlenebilir: kombinasyon arttıkça kupon bedeli katlanır. */
 function altiLegs(){return G.program.races.filter(r=>!r.named).slice(2,8);}
-const ALTI_BIRIM=1000; /* birim kupon bedeli */
-function altiPool(){ /* günün havuzu: taban + devir (deterministik) */
-  return 25000000+(hashStr("alti"+G.day+"_"+G.year+(G.online?G.online.lid:""))%20000001)+(G.altiCarry||0);
+/* GERÇEK TJK TARİFESİ (2026): 6'lı ganyan birim fiyatı 1,25 TL, asgari kupon 20 TL,
+   bedel = kombinasyon × birim × misli. Tevzi = net havuz ÷ bilen birim sayısı. */
+const ALTI_BIRIM=1.25, ALTI_MIN=20, ALTI_KESINTI=0.53; /* devlet + TJK + yetiştirme payı */
+function altiPool(){ /* günün brüt havuzu (deterministik) + devir */
+  return 30000000+(hashStr("alti"+G.day+"_"+G.year+(G.online?G.online.lid:""))%90000001)+(G.altiCarry||0);
+}
+/* 💵 kupon defteri: oynanan HER bahis burada arşivlenir */
+function pushBet(k,desc,amt,win,st){
+  (G.betLog=G.betLog||[]).unshift({d:G.day,y:G.year,k,desc,amt,win:win||0,st});
+  if(G.betLog.length>60)G.betLog.pop();
 }
 function openAlti(){
   const legs=altiLegs();
   if(legs.length<6)return toast("Bugün altılı oynanacak 6 ayak yok.");
   if(legs.some(r=>r.done))return toast("⏳ Ayaklardan biri koşuldu — altılı kuponu için geç kaldın!");
   if(G.alti&&G.alti.day===G.day)return toast("Bugünün altılı kuponunu zaten bastın.");
-  const cap=Math.min(250000,Math.floor(G.money*0.15/1000)*1000);
-  if(cap<ALTI_BIRIM)return toast("Altılı için yeterli paran yok.");
+  const cap=Math.min(250000,Math.floor(G.money*0.15));
+  if(cap<ALTI_MIN)return toast("Altılı için yeterli paran yok.");
   window._altiOdds={};
   let html="<h3>🎫 Altılı Ganyan — "+dateStr(G.day)+"</h3>"
-    +"<p class='muted' style='margin:6px 0'>Günün son 6 koşusu. Her ayakta İSTEDİĞİN KADAR at işaretle — kombinasyon arttıkça kupon bedeli katlanır (birim "+fmt(ALTI_BIRIM)+"). Bugünkü havuz: <b>"+fmt(altiPool())+"</b>"+((G.altiCarry||0)>0?" <b style='color:#b03a2e'>(devreden dahil! 🔥)</b>":"")+"</p>";
+    +"<p class='muted' style='margin:6px 0'>Günün son 6 koşusu. Her ayakta istediğin kadar at işaretle. Birim: <b>"+fmt(ALTI_BIRIM)+"</b> · asgari kupon "+fmt(ALTI_MIN)+" (gerçek TJK tarifesi). Bugünkü brüt havuz: <b>"+fmt(altiPool())+"</b>"+((G.altiCarry||0)>0?" <b style='color:#b03a2e'>(devreden "+fmt(G.altiCarry)+" dahil! 🔥)</b>":"")+"</p>";
   legs.forEach((r,k)=>{
     const o=raceOdds(r);
     window._altiOdds[r.id]={};o.forEach(p=>window._altiOdds[r.id][p.h]=p.gny);
     html+="<p style='margin:8px 0 2px'><b>"+(k+1)+". ayak:</b> "+r.name+" ("+r.dist+"m)</p><div data-leg='"+k+"' data-rid='"+r.id+"'>"
       +o.map(p=>"<label style='display:inline-block;margin:1px 8px 1px 0;font-size:11px;white-space:nowrap'><input type='checkbox' class='altc"+k+"' value='"+p.h+"' onchange='updAlti()'> "+HORSES[p.h][0]+" <span style='color:#8a6d1d'>("+p.gny.toFixed(2)+")</span></label>").join("")+"</div>";
   });
-  html+="<p id='altiPay' style='margin:12px 0;font-weight:700;color:#2e7d32'></p>"
+  html+="<p style='margin:10px 0 4px'><b>Misli:</b> aynı kuponu kaç kat oynuyorsun? <input id='altiM' type='number' min='1' max='500' step='1' value='1' style='width:90px' oninput='updAlti()'></p>"
+    +"<p id='altiPay' style='margin:12px 0;font-weight:700;color:#2e7d32'></p>"
     +"<div class='flexrow' style='justify-content:flex-end'><button class='sec' onclick='closeModal()'>Vazgeç</button><button id='altiBtn' onclick='confirmAlti("+cap+")'>Kuponu Bas</button></div>";
   document.getElementById("modalBox").innerHTML=html;
   document.getElementById("modalBg").classList.add("show");
@@ -2800,22 +3115,25 @@ function altiCombos(){
   }
   return {combos,okAll};
 }
+function altiCost(combos,misli){return Math.max(ALTI_MIN,Math.round(combos*ALTI_BIRIM*misli*100)/100);}
 function updAlti(){
   const el=document.getElementById("altiPay");if(!el)return;
   const {combos,okAll}=altiCombos();
-  const cost=combos*ALTI_BIRIM;
-  const cap=Math.min(250000,Math.floor(G.money*0.15/1000)*1000);
-  let txt=combos+" kombinasyon × "+fmt(ALTI_BIRIM)+" = <b>"+fmt(cost)+"</b>";
+  const misli=Math.max(1,Math.min(500,Math.floor(+((document.getElementById("altiM")||{}).value)||1)));
+  const cost=altiCost(combos,misli);
+  const cap=Math.min(250000,Math.floor(G.money*0.15));
+  let txt=combos+" kombinasyon × "+fmt(ALTI_BIRIM)+" × "+misli+" misli = <b>"+fmt(cost)+"</b>";
   if(!okAll)txt+=" — ⚠ her ayakta en az 1 at işaretle!";
-  else if(cost>cap)txt+=" — ⚠ limit "+fmt(cap)+", at azalt!";
-  else txt+=" · Bilen sayısına göre havuz bölüşülür — tek bilen SENSEN havuzun yarısı senin! 💰";
+  else if(cost>cap)txt+=" — ⚠ limit "+fmt(cap)+"!";
+  else txt+=" · Tutarsa: tevzi × "+misli+" misli ödenir. Tevzi son ayakta açıklanır.";
   el.innerHTML=txt;
   const btn=document.getElementById("altiBtn");
   if(btn)btn.disabled=!okAll||cost>cap||cost>G.money;
 }
 function confirmAlti(cap){
   const {combos,okAll}=altiCombos();
-  const cost=combos*ALTI_BIRIM;
+  const misli=Math.max(1,Math.min(500,Math.floor(+((document.getElementById("altiM")||{}).value)||1)));
+  const cost=altiCost(combos,misli);
   if(!okAll)return toast("Her ayakta en az 1 at işaretlemelisin.");
   if(cost>cap)return toast("Kupon bedeli limiti aşıyor: "+fmt(cost)+" > "+fmt(cap));
   if(G.money<cost)return toast("Kasan yetmiyor.");
@@ -2825,11 +3143,13 @@ function confirmAlti(cap){
     picks[rid]=[...document.querySelectorAll(".altc"+k+":checked")].map(c=>+c.value);
   });
   G.money-=cost;addExp("bahis",cost);
-  G.alti={day:G.day,cost,combos,picks};
+  G.alti={day:G.day,cost,combos,misli,picks};
   closeModal();save();refreshTop();showTab(5);
-  toast("🎫 Altılı kuponu basıldı: "+combos+" kombinasyon, "+fmt(cost)+" — 6 ayak seni bekliyor!");
+  toast("🎫 Altılı basıldı: "+combos+" komb. × "+misli+" misli = "+fmt(cost));
 }
-/* 💰 GÜN SONU: havuz → bilen sayısı → tevzi (kimse bilemezse DÖNER) */
+/* 💰 GÜN SONU — GERÇEK TEVZİ HESABI:
+   1) Brüt havuz  2) %53 kanuni kesinti + kurum payı düşülür  3) Net tevziye tabi tutar
+   4) Bilen birim sayısına bölünür  5) Bilen yoksa yarına DEVREDER */
 function recordAlti(){
   const legs=altiLegs();
   if(legs.length<6||legs.some(r=>!r.done||!r.result||!r.result[0]))return null;
@@ -2837,24 +3157,17 @@ function recordAlti(){
   let rec=G.altiLog.find(e=>e.d===G.day&&e.y===G.year);
   if(rec)return rec;
   const pool=altiPool();
-  const net=Math.round(pool*0.5);
-  /* halkın isabet olasılığı: her ayakta kazananın AGF payı (ganyanın tersi) */
+  const net=Math.round(pool*(1-ALTI_KESINTI)); /* tevziye tabi tutar */
+  /* bilen birim sayısı: satılan birim × halkın isabet olasılığı (AGF bazlı) × kombine kapsama */
   let prod=1;
-  legs.forEach(r=>{const g=r.result[0].g||3;prod*=Math.min(0.6,Math.max(0.005,0.9/g));});
-  /* bilen sayısı: kupon adedi × isabet olasılığı × kombine kapsama çarpanı
-     (halk çoklu at oynar — gerçekte döndü nadirdir, sürpriz günlerde olur) */
-  const winners=Math.floor((pool/ALTI_BIRIM)*prod*25);
+  legs.forEach(r=>{const g=r.result[0].g||3;prod*=Math.min(0.6,Math.max(0.004,0.9/g));});
+  const winners=Math.floor((pool/ALTI_BIRIM)*prod*10);
   rec={d:G.day,y:G.year,legs:legs.map(r=>({n:r.result[0].name,g:r.result[0].g||0})),
-    pool,winners,div:winners>0?Math.round(net/winners):0,rolled:winners<1};
+    pool,winners,div:winners>0?Math.round(net/winners*100)/100:0,rolled:winners<1};
   G.altiLog.unshift(rec);
-  if(G.altiLog.length>21)G.altiLog.pop();
-  if(rec.rolled){
-    G.altiCarry=(G.altiCarry||0)+net; /* 🔄 DÖNDÜ — havuz yarına devreder */
-    pushNews("🎫","ALTILI DÖNDÜ! 🔄","Kimse 6'yı bilemedi! "+fmt(net)+" yarının havuzuna devretti. Kazananlar: "+rec.legs.map(l=>l.n+" ("+(l.g?l.g.toFixed(2):"—")+")").join(" · "));
-  }else{
-    G.altiCarry=0;
-    pushNews("🎫","Altılı "+fmt(rec.div)+" verdi","Havuz "+fmt(pool)+" → "+rec.winners+" kişi bildi. Kazananlar: "+rec.legs.map(l=>l.n+" ("+(l.g?l.g.toFixed(2):"—")+")").join(" · "));
-  }
+  if(G.altiLog.length>30)G.altiLog.pop();
+  if(rec.rolled)G.altiCarry=(G.altiCarry||0)+net; /* 🔄 DÖNDÜ */
+  else G.altiCarry=0;
   return rec;
 }
 function resolveAlti(){
@@ -2866,25 +3179,26 @@ function resolveAlti(){
   const legs=altiLegs();
   legs.forEach(r=>{
     const winName=r.result[0].name;
-    const sel=A.picks[r.id]||[];
-    const ok=sel.some(h=>HORSES[h][0]===winName);
+    const ok=(A.picks[r.id]||[]).some(h=>HORSES[h][0]===winName);
     if(ok)hit++;
     detail.push((ok?"✅":"❌")+winName);
   });
+  const desc="Altılı ("+A.combos+" komb. × "+A.misli+" misli): "+detail.join(" ");
   if(hit===6){
     let pay;
-    if(rec.rolled){ /* halktan kimse bilememişti — TEK BİLEN SENSİN: net havuz senin! */
-      pay=Math.round(rec.pool*0.5);
-      G.altiCarry=0;rec.rolled=false;rec.winners=1;rec.div=pay;
-      pushNews("🎫","JACKPOT!!! ALTILIYI TEK BİLEN SENSİN! 🎉🎉🎉","Havuz "+fmt(rec.pool)+" → net "+fmt(pay)+" TAMAMEN SENİN! "+detail.join(" · "));
+    if(rec.rolled){ /* halktan bilen yoktu — tüm net havuz SENİN misli birimlerine */
+      pay=Math.round(rec.pool*(1-ALTI_KESINTI));
+      G.altiCarry=0;rec.rolled=false;rec.winners=A.misli;rec.div=Math.round(pay/A.misli*100)/100;
+      pushBet("A6",desc+" — JACKPOT! Tek bilen sendin, net havuz tamamen senin!",A.cost,pay,"W");
+      setTimeout(()=>toast("🎫🎉 JACKPOT! ALTILIYI TEK BİLEN SENSİN! +"+fmt(pay)),1000);
     }else{
-      pay=rec.div; /* bilenlerden birisin: tevzi payını alırsın */
-      pushNews("🎫","ALTILI TUTTU! 🎉","6/6! "+rec.winners+" kişiyle paylaştın — tevzi "+fmt(pay)+". Kupon "+fmt(A.cost)+" → net "+fmt(pay-A.cost)+".");
+      pay=Math.round(rec.div*A.misli); /* tevzi × misli */
+      pushBet("A6",desc+" — tevzi "+fmt(rec.div)+" × "+A.misli+" misli ("+rec.winners+" bilen)",A.cost,pay,"W");
+      setTimeout(()=>toast("🎫🎉 ALTILI TUTTU! Tevzi "+fmt(rec.div)+" × "+A.misli+" = +"+fmt(pay)),1000);
     }
     G.money+=pay;
-    setTimeout(()=>toast("🎫🎉 ALTILI TUTTU! +"+fmt(pay)),1000);
   }else{
-    pushNews("🎫","Altılı tutmadı ("+hit+"/6)",detail.join(" · ")+" — "+fmt(A.cost)+" yandı."+(rec.rolled?" Üstelik altılı DÖNDÜ — yarın dev havuz var! 🔄":" Bugünkü tevzi: "+fmt(rec.div)+"."));
+    pushBet("A6",desc+(rec.rolled?" — altılı DÖNDÜ, yarın dev havuz! 🔄":" — tevzi "+fmt(rec.div)+" idi"),A.cost,0,"L");
   }
 }
 function updTacHint(){
@@ -3016,7 +3330,9 @@ function showHorse(i){
   html+=attr("İdeal Mesafe",abar(50,(idealDist(i)-1200)/12),idealDist(i)+"m","(tahmini)");
   html+='<div class="attrRow"><span class="muted" style="font-size:9px">◀ 1200m &nbsp;&nbsp;·&nbsp;&nbsp; 2400m ▶</span><span></span></div>';
   html+=attr("Pist Tercihi","",(sp===0?"🟢 Çim":sp===1?"🟤 Kum":"Her pist"),"(tahmini)");
-  if(owned&&G.inj[i]>0)html+='<p class="rTxt" style="margin-top:8px">🩹 Sakat — '+G.inj[i]+' gün koşamaz</p>';
+  html+=attr("Çamur Uyumu","",["🌧✗ çamurda zorlanır","🌧 nötr","🌧💪 ÇAMURCU"][mudOf(i)],"(tahmini)");
+  if(owned&&G.inj[i]>0)html+='<p class="rTxt" style="margin-top:8px">🩹 '+injLabel(i)+' — '+G.inj[i]+' gün koşamaz</p>';
+  if((G.injHist||{})[i])html+='<p class="muted" style="margin-top:4px">⚠ Tendon geçmişi ('+G.injHist[i]+' kez) — koşu sonrası sakatlık riski artar</p>';
   html+='</div>';
   /* takılar */
   if(owned){
@@ -3102,6 +3418,11 @@ function confirmEntry(rid,fee){
   G.money-=total;
   addExp("kayit",fee);addExp("nakliye",nak);addExp("jokey",effJFee(j));
   (G.entries[rid]=G.entries[rid]||[]).push({h,j,t:tac});
+  /* ⚔️ rakip eküriyle aynı koşuda mısın? basın kokusunu alır */
+  if(G.rival&&G.rival.y===G.year&&!r._rivN&&(r.decl||[]).some(d=>HORSES[d.h][5]===G.rival.n)){
+    r._rivN=1;
+    pushNews("⚔️","BÜYÜK KAPIŞMA: "+r.name,"Bugün "+r.name+" koşusunda ezeli rakibin "+G.rival.n+" ile karşı karşıyasın! Tribünler bunu konuşuyor.");
+  }
   closeModal();save();refreshTop();showTab(5);
   toast(HORSES[h][0]+" kaydedildi — toplam masraf "+fmt(total));
 }
@@ -3113,8 +3434,11 @@ function viewStandings(){
     +'<div class="statbox"><b>'+fmt(G.money)+'</b>Kasa</div>'
     +'<div class="statbox"><b>'+fmt(myEarn)+'</b>Sezon İkramiyesi</div>'
     +'<div class="statbox"><b>'+(owners.findIndex(o=>o[0]===G.stable)+1||"-")+'</b>Sahip Sıralaman</div></div></div>';
-  html+='<div class="card"><h3 style="margin-bottom:8px">🏆 At Sahipleri Sıralaması (kazanç)</h3><table><tr><th>#</th><th>Sahip</th><th>Kazanç</th></tr>'
-    +(owners.length?owners.map((o,i)=>"<tr"+(o[0]===G.stable?" style='color:var(--gold)'":"")+"><td>"+(i+1)+"</td><td>"+o[0]+"</td><td>"+fmt(o[1])+"</td></tr>").join(""):"<tr><td colspan=3 class='muted'>Henüz koşu yapılmadı</td></tr>")+'</table></div>';
+  const rvN=(G.rival&&G.rival.y===G.year)?G.rival.n:null;
+  html+='<div class="card"><h3 style="margin-bottom:8px">🏆 At Sahipleri Sıralaması (kazanç)</h3>'
+    +(rvN?'<p style="margin:2px 0 6px;font-size:11px">⚔️ Ezeli rakibin: <b>'+rvN+'</b> · karşılaşma skoru <b>'+(G.rival.me||0)+'-'+(G.rival.him||0)+'</b></p>':'')
+    +'<table><tr><th>#</th><th>Sahip</th><th>Kazanç</th></tr>'
+    +(owners.length?owners.map((o,i)=>"<tr"+(o[0]===G.stable?" style='color:var(--gold)'":o[0]===rvN?" style='background:#f3d9d3'":"")+"><td>"+(i+1)+"</td><td>"+o[0]+(o[0]===rvN?" ⚔️":"")+"</td><td>"+fmt(o[1])+"</td></tr>").join(""):"<tr><td colspan=3 class='muted'>Henüz koşu yapılmadı</td></tr>")+'</table></div>';
   html+='<div class="card"><h3 style="margin-bottom:8px">🏇 Jokey Sıralaması (galibiyet)</h3><table><tr><th>#</th><th>Jokey</th><th>Galibiyet</th></tr>'
     +(jw.length?jw.map((o,i)=>"<tr><td>"+(i+1)+"</td><td>"+o[0]+"</td><td>"+o[1]+"</td></tr>").join(""):"<tr><td colspan=3 class='muted'>Henüz koşu yapılmadı</td></tr>")+'</table></div>';
   if(!G.online)html+='<div style="text-align:right"><button class="sec" onclick="resetGame()">⟲ Oyunu Sıfırla</button></div>';
@@ -3129,10 +3453,17 @@ function nextDay(silent){
   const hasMine=G.program.races.some(r=>!r.done&&(G.entries[r.id]||[]).length);
   if(hasMine&&!silent&&!confirm("Bugün kayıtlı ama koşulmamış atların var! Gün biterse koşuları izlemeden simüle edilecek. Devam mı?"))return;
   if(kalan)simPendingRaces();
+  aucAutoResolve(); /* 🔨 müzayedeye gidilmediyse lotlar rakiplere gider */
   dayTick(silent);
   G.day++;
   if(G.day>SEASON_DAYS)return endSeason();
-  genProgram();checkAchBasics();save();refreshTop();
+  genProgram();checkAchBasics();
+  rivalTick(); /* ⚔️ rakip eküri haberleri */
+  if(!(OL&&OL.lid)){
+    if(AUC_DAYS.includes(G.day))pushNews("🔨","BUGÜN CANLI MÜZAYEDE!","Seçkin safkanlar bugün açık artırmada satılıyor. Programdan müzayedeye katıl — kaçırırsan atlar rakip ekürilere gider!");
+    else if(AUC_DAYS.includes(G.day+1))pushNews("🔨","Yarın müzayede günü","Canlı açık artırma yarın! Kasanı hazırla — takvimde detaylar.");
+  }
+  save();refreshTop();
   if(!silent){
     showTab(5);
     if(G._lastCost>0)toast(dateStr(G.day)+" — günlük gider: "+fmt(G._lastCost));
@@ -3163,7 +3494,7 @@ function dayTick(silent){
   G.owned.forEach(i=>{
     horseState(i);
     /* sakatlık iyileşmesi */
-    if(G.inj[i]>0){G.inj[i]--;if(G.inj[i]===0){toast(HORSES[i][0]+" iyileşti, tekrar koşabilir! 🎉");pushNews("✅","İyileşti: "+HORSES[i][0],"Tedavisi tamamlandı, koşulara dönmeye hazır.");}G.cond[i]=Math.min(100,G.cond[i]+2);return;}
+    if(G.inj[i]>0){G.inj[i]--;if(G.inj[i]===0){toast(HORSES[i][0]+" iyileşti, tekrar koşabilir! 🎉");pushNews("✅","İyileşti: "+HORSES[i][0],"Tedavisi ("+injLabel(i)+") tamamlandı, koşulara dönmeye hazır.");if(G.injT)delete G.injT[i];}G.cond[i]=Math.min(100,G.cond[i]+2);return;}
     /* antrenman uygula — kondisyon YAVAŞ dolar: koşu sonrası ~8-10 gün toparlanma */
     const t=G.train[i]||"R";let risk=0;
     if(t==="R"){G.cond[i]=Math.min(100,G.cond[i]+3);}
@@ -3174,11 +3505,11 @@ function dayTick(silent){
     /* 👨‍🌾 iyi seyis atın formunu diri tutar */
     if(GROOMS[G.groom||0][2]&&Math.random()<GROOMS[G.groom||0][2])G.form[i]=Math.min(15,G.form[i]+1);
     if(risk&&Math.random()<risk*riskCut){
-      G.inj[i]=3+Math.floor(rnd(2,8));
+      injure(i,false);
       const vet=10000+G.inj[i]*3000;
       G.money-=vet;addExp("vet",vet);
-      toast("🩹 "+HORSES[i][0]+" idmanda sakatlandı! "+G.inj[i]+" gün koşamaz. Veteriner: "+fmt(vet));
-      pushNews("🩹","Sakatlık: "+HORSES[i][0],"İdmanda sakatlandı, "+G.inj[i]+" gün koşamayacak. Veteriner faturası: "+fmt(vet)+".");
+      toast("🩹 "+HORSES[i][0]+" idmanda sakatlandı: "+injLabel(i)+" — "+G.inj[i]+" gün koşamaz. Veteriner: "+fmt(vet));
+      pushNews("🩹","Sakatlık: "+HORSES[i][0],"İdmanda sakatlandı. Teşhis: "+injLabel(i)+", "+G.inj[i]+" gün koşamayacak. Antrenman menüsünden veteriner kararını ver. Veteriner faturası: "+fmt(vet)+".");
     }
     if(G.day%3===0&&(G.groom||0)<2)G.form[i]=G.form[i]>0?G.form[i]-1:(G.form[i]<0?G.form[i]+1:0); /* Baş Seyis form kaybını önler */
   });
@@ -3233,6 +3564,14 @@ function endSeason(){
   /* sezon kapanışı: ödüller + kariyer arşivi + rekorlar (yılda bir kez) */
   if(G._closed!==G.year){
     G._closed=G.year;
+    /* ⚔️ sezon sonu rekabet karnesi */
+    if(G.rival&&G.rival.y===G.year){
+      const rvE=G.ownerEarn[G.rival.n]||0,meE=myEarn;
+      pushNews("⚔️","Sezon Rekabet Karnesi: "+G.rival.n,
+        (meE>=rvE?"Rekabeti SEN kazandın! ":"Bu sezonu rakibin önde bitirdi. ")
+        +"Kazanç: "+fmt(meE)+" — "+fmt(rvE)+" · Karşılaşmalar: "+(G.rival.me||0)+"-"+(G.rival.him||0)+". Yeni sezonda hesaplaşma yeniden başlar.");
+      G.rival=null;
+    }
     const yr=G.year;
     const hEarn={},hWins={};
     Object.entries(G.hlog||{}).forEach(([h,arr])=>arr.forEach(e=>{if(e.y===yr){hEarn[h]=(hEarn[h]||0)+e.pr;if(e.p===1)hWins[h]=(hWins[h]||0)+1;}}));
@@ -3424,7 +3763,7 @@ function runRace(rid){
   R.worldLen=1400+r.dist*1.7; /* piksel cinsinden pist uzunluğu */
   show("scrRace");
   document.getElementById("raceTitle").textContent=(r.named?"⭐ ":"")+r.name;
-  document.getElementById("raceMeta").textContent=r.dist+"m "+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+" · "+TRACKS[r.track]+" · "+WEATHERS[weatherOf(G.day)]+" · İkramiye "+fmt(r.purse);
+  document.getElementById("raceMeta").textContent=r.dist+"m "+(r.srf==="Kum"?"🟤 Kum":"🟢 Çim")+" · "+TRACKS[r.track]+" · "+WEATHERS[weatherOf(G.day)]+" · Pist: "+GOINGS[goingOf(G.day)]+" · İkramiye "+fmt(r.purse);
   /* yarış öncesi: GANYAN & AGF tablosu */
   const odds=raceOdds(r);
   document.getElementById("raceResult").innerHTML='<div class="card"><h3>Ganyan & AGF Tablosu</h3>'+oddsTable(r,true)+'</div>';
@@ -4555,17 +4894,18 @@ function raceFrame(now){
         u.x+=((u.perf||50)/78)/(11+R.race.dist/400)*0.15*dt*0.88; /* topallayarak ilerler */
         return;
       }
-      /* koşu stili: öne kaçanlar erken hızlı, finişçiler sonda atak yapar */
+      /* koşu stili/TAKTİK belirleyicidir: finişçi ERKEN geri durur, sonda uçar;
+         öne kaçan tempoyu kurar ama son düzlükte yakıtı biter */
       let phase=1;
-      if(prog<0.35)phase=1.05-u.style*0.10;
-      else if(prog>0.65)phase=0.93+u.style*0.20;
+      if(prog<0.35)phase=1.08-u.style*0.20;
+      else if(prog>0.65)phase=0.89+u.style*0.30;
       /* ÇEKİŞME: ilk %70'te güç farkı bastırılır (grup bir arada),
          son %30'da tam açılır (belirleyici sprint) */
       const pw=prog<0.7?0.35:1.2;
       const eff=52+(u.perf-52)*pw;
       const base=(Math.max(30,eff)/78)/dur;
       /* paket yapışması: geride kalan son düzlüğe kadar hafif toparlar */
-      const boost=prog<0.72?1+Math.min(0.07,(leadX-u.x)*0.9):1;
+      const boost=prog<0.72?1+Math.min(0.045,(leadX-u.x)*0.7):1;
       /* TEMPO DALGALARI: ataklar ve nefeslenmeler */
       const surge=1+0.065*Math.sin(now/900+u.lane*2.3)+0.05*Math.sin(now/2100+u.lane*1.1);
       /* YORGUNLUK: önde götüren ve atak basan at yorulur, son düzlükte fatura kesilir */
@@ -4798,11 +5138,14 @@ function finishRace(){
       const tCut=G.trainer>=0?(1-Math.min(0.5,TRAINERS[G.trainer][1]/35)):1;
       /* ⚠ YORGUN AT KOŞTURMANIN BEDELİ: kondisyon düştükçe sakatlık riski katlanır */
       const cnd=G.cond[u.h];
-      const risk=u.hurt?1:(0.02+(cnd<55?0.06:0)+(cnd<40?0.10:0)+(cnd<30?0.15:0))*tCut;
+      /* 🦵 tendon geçmişi olan at her koşuda ekstra risk taşır */
+      const tendonRisk=((G.injHist||{})[u.h]||0)*0.03;
+      const risk=u.hurt?1:(0.02+tendonRisk+(cnd<55?0.06:0)+(cnd<40?0.10:0)+(cnd<30?0.15:0))*tCut;
       if(Math.random()<risk){
-        G.inj[u.h]=3+Math.floor(rnd(3,10));
+        if(u.hurt&&Math.random()<0.6){(G.injT=G.injT||{})[u.h]="tendon";(G.injHist=G.injHist||{})[u.h]=(G.injHist[u.h]||0)+1;G.inj[u.h]=10+Math.floor(rnd(0,8));}
+        else injure(u.h,true);
         const vet=10000+G.inj[u.h]*3000;G.money-=vet;addExp("vet",vet);
-        setTimeout(()=>toast("🩹 "+h[0]+" koşuda sakatlandı! "+G.inj[u.h]+" gün dinlenecek. Veteriner: "+fmt(vet)),1500);
+        setTimeout(()=>toast("🩹 "+h[0]+" koşuda sakatlandı: "+injLabel(u.h)+" — "+G.inj[u.h]+" gün dinlenecek. Veteriner: "+fmt(vet)),1500);
       }
       G.history.push({d:G.day,r:r.name,h:h[0],p:i+1,pr:prize});
     }
@@ -4818,6 +5161,14 @@ function finishRace(){
   });
   r.done=true;r.result=res;
   delete G.entries[r.id];
+  /* ⚔️ RAKİP EKÜRİ KARŞILAŞMASI: aynı koşuda kim önde bitirdi? */
+  if(G.rival&&G.rival.y===G.year&&!R.replay){
+    const myP=order.findIndex(u=>u.mine),rvP=order.findIndex(u=>!u.mine&&(u.stable||HORSES[u.h][5])===G.rival.n);
+    if(myP>=0&&rvP>=0){
+      if(myP<rvP){G.rival.me=(G.rival.me||0)+1;pushNews("⚔️","Rakibini ezdin: "+r.name,G.rival.n+" ekürisinin önünde bitirdin ("+(myP+1)+". — "+(rvP+1)+".). Sezon skoru: "+G.rival.me+"-"+(G.rival.him||0));}
+      else{G.rival.him=(G.rival.him||0)+1;pushNews("⚔️","Rakibin bu raundu aldı: "+r.name,G.rival.n+" senden önde bitirdi ("+(rvP+1)+". — "+(myP+1)+".). Sezon skoru: "+(G.rival.me||0)+"-"+G.rival.him);}
+    }
+  }
   /* haberler + rekorlar */
   const winName=HORSES[win.h][0],winPrize=Math.round(r.purse*0.6);
   if(r.named){
@@ -4842,12 +5193,14 @@ function finishRace(){
       else if(bet.t==="S"&&p1===0&&p2===1){winAmt=Math.round(bet.amt*Math.min(400,bet.o1*bet.o2*0.75));txt="SIRALI İKİLİ TUTTU! 🎉";}
       else if(bet.t==="T"&&p1<=2&&p2<=2&&p3<=2){winAmt=Math.round(bet.amt*Math.min(600,bet.o1*bet.o2*bet.o3*0.12));txt="İLK ÜÇ TUTTU! 🎉";}
       else if(bet.t==="U"&&p1===0&&p2===1&&p3===2){winAmt=Math.round(bet.amt*Math.min(1500,bet.o1*bet.o2*bet.o3*0.5));txt="SIRALI ÜÇLÜ TUTTU!!! 🎉🎉";}
+      const tAd={G:"Ganyan",P:"Plase",S:"Sıralı İkili",T:"İlk Üç",U:"Sıralı Üçlü"}[bet.t]||bet.t;
+      const atlar=[bet.h1,bet.h2,bet.h3].filter(x=>x!=null).map(x=>HORSES[x][0]).join(" + ");
       if(winAmt>0){
         G.money+=winAmt;
-        pushNews("🎰","Kupon: "+txt,r.name+" — yatırılan "+fmt(bet.amt)+", ödeme "+fmt(winAmt)+".");
+        pushBet(bet.t,tAd+" · "+r.name+" · "+atlar+" — "+txt,bet.amt,winAmt,txt.includes("iade")?"R":"W");
         if(!quiet)setTimeout(()=>toast("🎰 "+txt+" +"+fmt(winAmt)),1600);
       }else{
-        pushNews("🎰","Kupon tutmadı",r.name+" — "+fmt(bet.amt)+" yandı."+(bet.t==="S"?" Sıralı ikili zor iştir!":""));
+        pushBet(bet.t,tAd+" · "+r.name+" · "+atlar,bet.amt,0,"L");
         if(!quiet)setTimeout(()=>toast("🎰 Kupon tutmadı — "+fmt(bet.amt)+" yandı."),1600);
       }
     }
